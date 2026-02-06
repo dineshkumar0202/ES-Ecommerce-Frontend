@@ -3,6 +3,12 @@ import { ThemeProvider, createTheme } from '@mui/material/styles';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Home from './Components/Pages/Home';
 import ProductDetails from './Components/SpecifiedComponents/HomePage/ProductDetails';
+import AllProducts from './Components/Pages/AllProducts';
+import OneDayOffer from './Components/Pages/OneDayOffer';
+import TShirts from './Components/Pages/TShirts';
+import KeepShopping from './Components/Pages/KeepShopping';
+import ShopByCategory from './Components/Pages/ShopByCategory';
+import CategoryPage from './Components/Pages/CategoryPage';
 import Login from './Components/Pages/Login';
 import Register from './Components/Pages/Register';
 import Wholesale from './Components/Pages/Wholesale';
@@ -36,6 +42,12 @@ function App() {
           <Route path="/resale" element={<Resale />} />
           <Route path="/freelance" element={<Freelance />} />
           <Route path="/product/:id" element={<ProductDetails />} />
+          <Route path="/products/all" element={<AllProducts />} />
+          <Route path="/products/one-day-offer" element={<OneDayOffer />} />
+          <Route path="/products/tshirt" element={<TShirts />} />
+          <Route path="/products/keep-shopping" element={<KeepShopping />} />
+          <Route path="/products/categories" element={<ShopByCategory />} />
+          <Route path="/category/:categoryName" element={<CategoryPage />} />
         </Routes>
       </BrowserRouter>
     </ThemeProvider>

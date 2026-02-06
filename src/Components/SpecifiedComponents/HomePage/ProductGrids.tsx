@@ -1,67 +1,28 @@
 import { useNavigate } from 'react-router-dom';
-import { Box, Typography, Card, CardContent, CardMedia, Rating, IconButton } from '@mui/material';
+import { Box, Typography, Card, CardContent, CardMedia, Rating, IconButton, Button } from '@mui/material';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import ShoppingCartOutlinedIcon from '@mui/icons-material/ShoppingCartOutlined';
-
-const products = [
-    {
-        id: 1,
-        title: "Classic Denim Jacket",
-        price: "$89.99",
-        rating: 4.5,
-        reviews: 120,
-        image: "https://images.unsplash.com/photo-1576995853123-5a10305d93c0?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80",
-        category: "Fashion"
-    },
-    {
-        id: 2,
-        title: "Ergonomic Office Chair",
-        price: "$249.99",
-        rating: 4.8,
-        reviews: 85,
-        image: "https://images.unsplash.com/photo-1505843490538-5133c6c7d0e1?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80",
-        category: "Furniture"
-    },
-    {
-        id: 3,
-        title: "Organic Skincare Set",
-        price: "$64.99",
-        rating: 4.7,
-        reviews: 210,
-        image: "https://images.unsplash.com/photo-1556228720-1957be979ea3?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80",
-        category: "Beauty"
-    },
-    {
-        id: 4,
-        title: "Minimalist Coffee Table",
-        price: "$129.99",
-        rating: 4.2,
-        reviews: 45,
-        image: "https://images.unsplash.com/photo-1532372320572-cda5a60424b6?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80",
-        category: "Furniture"
-    },
-    {
-        id: 5,
-        title: "Bluetooth Portable Speaker",
-        price: "$59.99",
-        rating: 4.6,
-        reviews: 156,
-        image: "https://images.unsplash.com/photo-1608043152269-423dbba4e7e1?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80",
-        category: "Electronics"
-    },
-    {
-        id: 6,
-        title: "Running Sneakers",
-        price: "$119.99",
-        rating: 4.9,
-        reviews: 320,
-        image: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80",
-        category: "Sports"
-    }
-];
+import { allProducts } from '../../../data/productsData';
 
 const ProductGrids = () => {
     const navigate = useNavigate();
+
+    // Get unique products for "Just For You" section (not used in other sections)
+    // Show 8 products initially (excluded IDs from other sections: 1, 2, 3, 4, 5, 6, 7, 9, 11, 12, 14, 15)
+    const justForYouProducts = [
+        allProducts.find(p => p.id === 8),   // Adidas Shoes
+        allProducts.find(p => p.id === 10),  // Women's Graphic T-Shirt
+        allProducts.find(p => p.id === 13),  // Women's V-Neck T-Shirt
+        allProducts.find(p => p.id === 16),  // Bose Headphones
+        allProducts.find(p => p.id === 17),  // MacBook Pro
+        allProducts.find(p => p.id === 19),  // iPad Air
+        allProducts.find(p => p.id === 21),  // Samsung Galaxy Watch
+        allProducts.find(p => p.id === 23),  // AirPods Pro
+    ].filter((p): p is NonNullable<typeof p> => p !== undefined);
+
+    const handleViewAll = () => {
+        navigate('/products/all');
+    };
 
     return (
         <Box sx={{ mt: 8, mb: 4 }}>
@@ -75,11 +36,11 @@ const ProductGrids = () => {
             </Box>
 
             <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3, justifyContent: 'center' }}>
-                {products.map((product) => (
+                {justForYouProducts.map((product) => (
                     <Box
                         key={product.id}
                         sx={{
-                            width: { xs: '100%', sm: 'calc(50% - 24px)', md: 'calc(33.33% - 24px)' },
+                            width: { xs: '100%', sm: 'calc(50% - 24px)', md: 'calc(33.33% - 24px)', lg: 'calc(25% - 24px)' }, // 4 per row on Large
                             mb: 2
                         }}
                     >
@@ -88,25 +49,38 @@ const ProductGrids = () => {
                             sx={{
                                 border: 'none',
                                 boxShadow: 'none',
+                                bgcolor: '#f8f9fa',
+                                borderRadius: 4,
+                                p: 2,
                                 cursor: 'pointer',
-                                height: '100%',
+                                height: '420px', // STRICT 420px HEIGHT
                                 display: 'flex',
                                 flexDirection: 'column',
+                                transition: 'transform 0.3s ease',
+                                '&:hover': {
+                                    transform: 'translateY(-8px)',
+                                    bgcolor: '#f1f3f5',
+                                },
                                 '&:hover .product-image': {
                                     transform: 'scale(1.05)',
                                 },
                             }}
                         >
-                            <Box sx={{ position: 'relative', borderRadius: 4, overflow: 'hidden', mb: 2 }}>
+                            <Box sx={{ position: 'relative', borderRadius: 4, overflow: 'hidden', mb: 2, pt: '100%', width: '100%' }}>
                                 <CardMedia
                                     component="img"
-                                    height="280"
                                     image={product.image}
-                                    alt={product.title}
+                                    alt={product.name}
                                     className="product-image"
                                     sx={{
+                                        position: 'absolute',
+                                        top: 0,
+                                        left: 0,
+                                        width: '100%',
+                                        height: '100%',
                                         transition: 'transform 0.5s ease',
                                         bgcolor: '#f5f5f5',
+                                        objectFit: 'cover', // COVER
                                     }}
                                 />
                                 <IconButton
@@ -123,38 +97,81 @@ const ProductGrids = () => {
                                 </IconButton>
                             </Box>
 
-                            <CardContent sx={{ p: 1, flexGrow: 1 }}>
-                                <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block', mb: 0.5 }}>
+                            <CardContent sx={{ p: 1, flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
+                                <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block', mb: 0.5, textTransform: 'uppercase' }}>
                                     {product.category}
                                 </Typography>
-                                <Typography variant="subtitle1" sx={{ fontWeight: 'bold', mb: 0.5 }}>
-                                    {product.title}
+                                <Typography
+                                    variant="subtitle1"
+                                    sx={{
+                                        fontWeight: 'bold',
+                                        mb: 0.5,
+                                        height: '2.6em',
+                                        overflow: 'hidden',
+                                        textOverflow: 'ellipsis',
+                                        display: '-webkit-box',
+                                        WebkitLineClamp: 2,
+                                        WebkitBoxOrient: 'vertical',
+                                        lineHeight: '1.3em'
+                                    }}
+                                >
+                                    {product.name}
                                 </Typography>
-                                <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                                    <Rating value={product.rating} readOnly size="small" sx={{ color: '#ffb400', mr: 0.5 }} />
-                                    <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-                                        ({product.reviews})
-                                    </Typography>
-                                </Box>
-                                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mt: 'auto' }}>
-                                    <Typography variant="h6" sx={{ fontWeight: 800 }}>
-                                        {product.price}
-                                    </Typography>
-                                    <IconButton
-                                        sx={{
-                                            bgcolor: '#212121',
-                                            color: 'white',
-                                            '&:hover': { bgcolor: '#424242' },
-                                        }}
-                                        size="small"
-                                    >
-                                        <ShoppingCartOutlinedIcon fontSize="small" />
-                                    </IconButton>
+
+                                <Box sx={{ mt: 'auto' }}>
+                                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                                        <Rating value={product.rating} readOnly size="small" sx={{ color: '#ffb400', mr: 0.5 }} />
+                                        <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+                                            ({product.ratingCount})
+                                        </Typography>
+                                    </Box>
+                                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                                        <Box>
+                                            <Typography variant="h6" sx={{ fontWeight: 800 }}>
+                                                ₹{product.price.toLocaleString()}
+                                            </Typography>
+                                        </Box>
+                                        <IconButton
+                                            sx={{
+                                                bgcolor: '#212121',
+                                                color: 'white',
+                                                '&:hover': { bgcolor: '#424242' },
+                                            }}
+                                            size="small"
+                                        >
+                                            <ShoppingCartOutlinedIcon fontSize="small" />
+                                        </IconButton>
+                                    </Box>
                                 </Box>
                             </CardContent>
                         </Card>
                     </Box>
                 ))}
+            </Box>
+
+            {/* View All Button */}
+            <Box sx={{ textAlign: 'center', mt: 4 }}>
+                <Button
+                    onClick={handleViewAll}
+                    variant="outlined"
+                    size="large"
+                    sx={{
+                        px: 6,
+                        py: 1.5,
+                        borderColor: '#212121',
+                        color: '#212121',
+                        fontWeight: 600,
+                        fontSize: '1rem',
+                        borderRadius: 2,
+                        '&:hover': {
+                            borderColor: '#212121',
+                            bgcolor: '#212121',
+                            color: 'white',
+                        },
+                    }}
+                >
+                    View All Products →
+                </Button>
             </Box>
         </Box>
     );

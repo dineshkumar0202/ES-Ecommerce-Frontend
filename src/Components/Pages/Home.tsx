@@ -1,17 +1,21 @@
 import { Box, Container, Stack } from '@mui/material';
 import Navbar from '../WrapperComponents/Navbar';
 import Footer from '../WrapperComponents/Footer';
-import HeroBanner from '../SpecifiedComponents/HomePage/HeroBanner';
-import SimpleBanner from '../SpecifiedComponents/HomePage/SimpleBanner';
 import QuadCategoryCard from '../SpecifiedComponents/HomePage/QuadCategoryCard';
 import ProductGrids from '../SpecifiedComponents/HomePage/ProductGrids';
+import SpecialOffersSection from '../SpecifiedComponents/HomePage/SpecialOffersSection';
+import ImpressiveOfferGrid from '../SpecifiedComponents/HomePage/ImpressiveOfferGrid';
+import ShopByVibe from '../SpecifiedComponents/HomePage/ShopByVibe';
+import { allProducts } from '../../data/productsData';
 
 const Home = () => {
+
+    // Get real products for "Keep shopping for" section (unique products with working images)
     const gamingItems = [
-        { id: 1, title: 'Headsets', image: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80' },
-        { id: 2, title: 'Keyboards', image: 'https://images.unsplash.com/photo-1587829741301-dc798b91a91e?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80' },
-        { id: 3, title: 'Mice', image: 'https://images.unsplash.com/photo-1527814050087-3793815479db?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80' },
-        { id: 4, title: 'Chairs', image: 'https://images.unsplash.com/photo-1505843490538-5133c6c7d0e1?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80' },
+        { id: 15, title: allProducts[14]?.name || 'Headphones', image: allProducts[14]?.image || '' },  // Sony Headphones
+        { id: 3, title: allProducts[2]?.name || 'Dress', image: allProducts[2]?.image || '' },          // Floral Dress
+        { id: 5, title: allProducts[4]?.name || 'Watch', image: allProducts[4]?.image || '' },          // Apple Watch
+        { id: 1, title: allProducts[0]?.name || 'Mobile', image: allProducts[0]?.image || '' },         // iPhone
     ];
 
     const categoryItems = [
@@ -27,11 +31,10 @@ const Home = () => {
 
             <Container maxWidth="xl" sx={{ mt: 3 }}>
                 <Stack spacing={3}>
-                    <HeroBanner />
+                    <SpecialOffersSection />
 
-                    <SimpleBanner text="Spl Day Offers" bgColor="#ffecb3" textColor="#8d6e63" />
-
-                    <SimpleBanner text="Spl Offers" bgColor="#c8e6c9" textColor="#2e7d32" />
+                    {/* Exclusive Impressive Grid Section */}
+                    <ImpressiveOfferGrid />
 
                     <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 3 }}>
                         <Box sx={{ flex: 1 }}>
@@ -41,6 +44,9 @@ const Home = () => {
                             <QuadCategoryCard title="Shop by Category" items={categoryItems} />
                         </Box>
                     </Box>
+
+                    {/* Vibe Explorer Section - Auto Scrolling Marquee */}
+                    <ShopByVibe />
 
                     <ProductGrids />
                 </Stack>
