@@ -1,17 +1,22 @@
 import { Box, Container } from '@mui/material';
 import Navbar from '../WrapperComponents/Navbar';
 import Footer from '../WrapperComponents/Footer';
-import QHero from '../SpecifiedComponents/Q-Commerces/Components/QHero';
 import QCategories from '../SpecifiedComponents/Q-Commerces/Components/QCategories';
+import QFlashDeals from '../SpecifiedComponents/Q-Commerces/Components/QFlashDeals';
+import QProductFeed from '../SpecifiedComponents/Q-Commerces/Components/QProductFeed';
+import QEssentials from '../SpecifiedComponents/Q-Commerces/Components/QEssentials';
+import QHeroBanner from '../SpecifiedComponents/Q-Commerces/Components/QHeroBanner';
 
 const QuickCommerce = () => {
     return (
-        <Box sx={{ minHeight: '100vh', bgcolor: '#fff' }}>
+        <Box sx={{ minHeight: '100vh', bgcolor: '#f8fafc' }}>
             <Navbar />
-            <Container maxWidth="lg" sx={{ mt: 3, mb: 5 }}>
-                <QHero />
+            <Container maxWidth="xl" sx={{ mt: 4, mb: 8 }}>
+                <QHeroBanner />
                 <QCategories />
-                {/* Additional product rows can be added here */}
+                <QFlashDeals />
+                <QProductFeed />
+                <QEssentials />
             </Container>
             <Footer />
         </Box>

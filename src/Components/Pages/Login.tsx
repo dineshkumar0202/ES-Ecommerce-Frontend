@@ -1,148 +1,144 @@
 import React, { useState } from 'react';
-import { Box, Typography, TextField, Button, Paper, Container, Tab, Tabs, InputAdornment, IconButton, Checkbox, FormControlLabel, Link as MuiLink } from '@mui/material';
-import { useNavigate, Link } from 'react-router-dom';
-import Visibility from '@mui/icons-material/Visibility';
-import VisibilityOff from '@mui/icons-material/VisibilityOff';
+import { Box, Typography, TextField, Button, Paper, Container, Tab, Tabs, Divider } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
 import Navbar from '../WrapperComponents/Navbar';
 import Footer from '../WrapperComponents/Footer';
+import GoogleIcon from '@mui/icons-material/Google';
 
 const Login = () => {
     const navigate = useNavigate();
-    const [userType, setUserType] = useState(0); // 0 = User, 1 = Admin
-    const [showPassword, setShowPassword] = useState(false);
+    const [userType, setUserType] = useState(0); // 0 = User, 1 = Seller, 2 = Admin
 
     const handleUserTypeChange = (_event: React.SyntheticEvent, newValue: number) => {
         setUserType(newValue);
     };
 
     return (
-        <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', bgcolor: '#f5f5f5' }}>
+        <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', bgcolor: '#f1f5f9' }}>
             <Navbar />
 
-            <Container maxWidth="md" sx={{ flexGrow: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', py: 8 }}>
+            <Container maxWidth="sm" sx={{ flexGrow: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', py: 8 }}>
                 <Paper
                     elevation={0}
                     sx={{
-                        display: 'flex',
                         width: '100%',
-                        maxWidth: '900px',
                         borderRadius: 4,
                         overflow: 'hidden',
-                        boxShadow: '0 20px 60px rgba(0,0,0,0.1)'
+                        boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+                        bgcolor: 'white',
+                        p: { xs: 3, md: 5 }
                     }}
                 >
-                    {/* Left Side - Image/Brand */}
-                    <Box
-                        sx={{
-                            width: '50%',
-                            display: { xs: 'none', md: 'flex' },
-                            flexDirection: 'column',
-                            justifyContent: 'center',
-                            alignItems: 'center',
-                            background: 'linear-gradient(135deg, #1a237e 0%, #0d47a1 100%)',
-                            color: 'white',
-                            p: 6,
-                            position: 'relative'
-                        }}
-                    >
-                        {/* Decorative Circles */}
-                        <Box sx={{ position: 'absolute', top: -50, left: -50, width: 200, height: 200, borderRadius: '50%', bgcolor: 'rgba(255,255,255,0.05)' }} />
-                        <Box sx={{ position: 'absolute', bottom: -50, right: -50, width: 300, height: 300, borderRadius: '50%', bgcolor: 'rgba(255,255,255,0.05)' }} />
-
-                        <Typography variant="h3" sx={{ fontWeight: 900, mb: 2, zIndex: 1 }}>ATOZ.</Typography>
-                        <Typography variant="h6" sx={{ textAlign: 'center', opacity: 0.8, zIndex: 1 }}>
-                            Your one-stop destination for everything. Experience the future of commerce.
+                    <Box sx={{ textAlign: 'center', mb: 4 }}>
+                        <Typography variant="h4" sx={{ fontWeight: 800, color: '#1e293b', mb: 1 }}>
+                            Welcome to AtoZ
+                        </Typography>
+                        <Typography variant="body2" sx={{ color: '#64748b' }}>
+                            Please sign in to your account
                         </Typography>
                     </Box>
 
-                    {/* Right Side - Form */}
-                    <Box sx={{ width: { xs: '100%', md: '50%' }, p: { xs: 4, md: 6 }, bgcolor: 'white' }}>
-                        <Typography variant="h4" sx={{ fontWeight: 800, mb: 3, color: '#333' }}>
-                            Welcome Back
+                    {/* Role Selection */}
+                    <Box sx={{ mb: 4 }}>
+                        <Typography variant="caption" sx={{ display: 'block', mb: 1, fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: 0.5 }}>
+                            Select Your Role
                         </Typography>
-
                         <Tabs
                             value={userType}
                             onChange={handleUserTypeChange}
-                            sx={{ mb: 4, borderBottom: 1, borderColor: 'divider' }}
-                            indicatorColor="primary"
-                            textColor="primary"
+                            variant="fullWidth"
+                            sx={{
+                                border: '1px solid #e2e8f0',
+                                borderRadius: 2,
+                                '& .MuiTabs-indicator': { display: 'none' },
+                                '& .MuiTab-root': {
+                                    textTransform: 'none',
+                                    fontWeight: 600,
+                                    zIndex: 1,
+                                    transition: 'all 0.2s',
+                                    color: '#64748b',
+                                    '&.Mui-selected': {
+                                        color: 'white',
+                                        bgcolor: '#2563eb', // Blue for primary selection
+                                        borderRadius: 1.5,
+                                        m: 0.5,
+                                        boxShadow: '0 2px 4px rgba(37, 99, 235, 0.2)'
+                                    }
+                                }
+                            }}
                         >
-                            <Tab label="User Login" sx={{ fontWeight: 600 }} />
-                            <Tab label="Admin Login" sx={{ fontWeight: 600 }} />
+                            <Tab label="User" disableRipple />
+                            <Tab label="Seller" disableRipple />
+                            <Tab label="Admin" disableRipple />
                         </Tabs>
+                    </Box>
 
-                        <Box component="form" noValidate>
-                            <TextField
-                                margin="normal"
-                                required
-                                fullWidth
-                                id="email"
-                                label="Email Address"
-                                name="email"
-                                autoComplete="email"
-                                autoFocus
-                                sx={{ mb: 2 }}
-                            />
-                            <TextField
-                                margin="normal"
-                                required
-                                fullWidth
-                                name="password"
-                                label="Password"
-                                type={showPassword ? 'text' : 'password'}
-                                id="password"
-                                autoComplete="current-password"
-                                InputProps={{
-                                    endAdornment: (
-                                        <InputAdornment position="end">
-                                            <IconButton
-                                                onClick={() => setShowPassword(!showPassword)}
-                                                edge="end"
-                                            >
-                                                {showPassword ? <VisibilityOff /> : <Visibility />}
-                                            </IconButton>
-                                        </InputAdornment>
-                                    ),
-                                }}
-                                sx={{ mb: 1 }}
-                            />
+                    <Box component="form" noValidate>
+                        <TextField
+                            margin="normal"
+                            required
+                            fullWidth
+                            id="identifier"
+                            label="Phone Number or Email"
+                            name="identifier"
+                            autoComplete="username"
+                            autoFocus
+                            sx={{
+                                mb: 3,
+                                '& .MuiOutlinedInput-root': {
+                                    borderRadius: 2
+                                }
+                            }}
+                        />
 
-                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-                                <FormControlLabel
-                                    control={<Checkbox value="remember" color="primary" size="small" />}
-                                    label={<Typography variant="body2">Remember me</Typography>}
-                                />
-                                <MuiLink component="button" variant="body2" sx={{ textDecoration: 'none', fontWeight: 600 }}>
-                                    Forgot password?
-                                </MuiLink>
-                            </Box>
+                        {/* Send OTP Button - Prominent Blue */}
+                        <Button
+                            fullWidth
+                            variant="contained"
+                            size="large"
+                            onClick={() => navigate('/')}
+                            sx={{
+                                py: 1.5,
+                                bgcolor: '#2563eb',
+                                fontWeight: 700,
+                                mb: 3,
+                                textTransform: 'none',
+                                borderRadius: 2,
+                                boxShadow: '0 4px 6px -1px rgba(37, 99, 235, 0.2)',
+                                '&:hover': { bgcolor: '#1d4ed8' }
+                            }}
+                        >
+                            Send OTP
+                        </Button>
 
-                            <Button
-                                fullWidth
-                                variant="contained"
-                                size="large"
-                                onClick={() => navigate('/')}
-                                sx={{
-                                    py: 1.5,
-                                    bgcolor: '#1a237e',
-                                    fontWeight: 'bold',
-                                    mb: 3,
-                                    '&:hover': { bgcolor: '#0d47a1' } // Darker shade on hover
-                                }}
-                            >
-                                Login as {userType === 0 ? 'User' : 'Admin'}
-                            </Button>
+                        <Divider sx={{ mb: 3, color: '#94a3b8', fontSize: '0.85rem' }}>OR</Divider>
 
-                            <Box sx={{ textAlign: 'center' }}>
-                                <Typography variant="body2" color="text.secondary">
-                                    Don't have an account? {' '}
-                                    <Link to="/register" style={{ textDecoration: 'none', fontWeight: 'bold', color: '#1a237e' }}>
-                                        Sign Up
-                                    </Link>
-                                </Typography>
-                            </Box>
-                        </Box>
+                        {/* Sign in with Google */}
+                        <Button
+                            fullWidth
+                            variant="outlined"
+                            startIcon={<GoogleIcon />}
+                            sx={{
+                                py: 1.5,
+                                color: '#1e293b',
+                                borderColor: '#e2e8f0',
+                                textTransform: 'none',
+                                fontWeight: 600,
+                                borderRadius: 2,
+                                mb: 3,
+                                '&:hover': {
+                                    bgcolor: '#f8fafc',
+                                    borderColor: '#cbd5e1'
+                                }
+                            }}
+                        >
+                            Sign in with Google
+                        </Button>
+
+                        {/* Terms */}
+                        <Typography variant="caption" align="center" display="block" sx={{ color: '#94a3b8' }}>
+                            By continuing, you agree to our <Box component="span" sx={{ color: '#2563eb', cursor: 'pointer', fontWeight: 600 }}>Terms of Service</Box> and <Box component="span" sx={{ color: '#2563eb', cursor: 'pointer', fontWeight: 600 }}>Privacy Policy</Box>.
+                        </Typography>
                     </Box>
                 </Paper>
             </Container>

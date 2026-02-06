@@ -1,35 +1,53 @@
-import { Box, Typography, Grid, Card, CardMedia, CardContent } from '@mui/material';
+import { Box, Typography, Card, CardMedia } from '@mui/material';
 
 const categories = [
-    { title: 'Vegetables', image: 'https://images.unsplash.com/photo-1597362925123-77861d3fbac7?auto=format&fit=crop&w=200&q=80' },
-    { title: 'Fruits', image: 'https://images.unsplash.com/photo-1610832958506-aa56368176cf?auto=format&fit=crop&w=200&q=80' },
-    { title: 'Dairy', image: 'https://images.unsplash.com/photo-1628088062854-d1870b4553da?auto=format&fit=crop&w=200&q=80' },
-    { title: 'Bakery', image: 'https://images.unsplash.com/photo-1555507036-ab1f40388085?auto=format&fit=crop&w=200&q=80' },
-    { title: 'Snacks', image: 'https://images.unsplash.com/photo-1621939514649-280e2ee25f60?auto=format&fit=crop&w=200&q=80' },
-    { title: 'Drinks', image: 'https://images.unsplash.com/photo-1622483767028-3f66f32aef97?auto=format&fit=crop&w=200&q=80' }
+    { title: 'FRUITS & VEG', image: 'https://cdn-icons-png.flaticon.com/512/3081/3081840.png' },
+    { title: 'BAKERY', image: 'https://cdn-icons-png.flaticon.com/512/3081/3081903.png' },
+    { title: 'PHARMACY', image: 'https://cdn-icons-png.flaticon.com/512/3081/3081961.png' },
+    { title: 'MEAT & FISH', image: 'https://cdn-icons-png.flaticon.com/512/3081/3081926.png' },
+    { title: 'DAIRY & EGGS', image: 'https://cdn-icons-png.flaticon.com/512/3082/3082008.png' },
+    { title: 'SNACKS', image: 'https://cdn-icons-png.flaticon.com/512/3081/3081820.png' }
 ];
 
 const QCategories = () => {
     return (
-        <Box sx={{ py: 2 }}>
-            <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2 }}>Shop by Category</Typography>
-            <Grid container spacing={2}>
-                {categories.map((cat, index) => (
-                    <Grid item xs={4} sm={2} key={index}>
-                        <Card sx={{ boxShadow: 'none', bgcolor: '#f5f5f5', textAlign: 'center' }}>
-                            <CardMedia
-                                component="img"
-                                image={cat.image}
-                                alt={cat.title}
-                                sx={{ height: 80, objectFit: 'contain', p: 1 }}
-                            />
-                            <CardContent sx={{ p: 1, '&:last-child': { pb: 1 } }}>
-                                <Typography variant="caption" sx={{ fontWeight: 600 }}>{cat.title}</Typography>
-                            </CardContent>
-                        </Card>
-                    </Grid>
-                ))}
-            </Grid>
+        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, mb: 4 }}>
+            {categories.map((cat, index) => (
+                <Box
+                    key={index}
+                    sx={{
+                        width: { xs: 'calc(50% - 8px)', sm: 'calc(33.33% - 11px)', md: 'calc(16.66% - 14px)' },
+                        flexGrow: 0,
+                        flexShrink: 0
+                    }}
+                >
+                    <Card
+                        sx={{
+                            boxShadow: '0 4px 20px rgba(0,0,0,0.03)',
+                            borderRadius: 4,
+                            p: 2,
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            aspectRatio: '1/1',
+                            cursor: 'pointer',
+                            transition: 'all 0.2s',
+                            '&:hover': { transform: 'translateY(-5px)', boxShadow: '0 8px 25px rgba(0,0,0,0.08)' }
+                        }}
+                    >
+                        <CardMedia
+                            component="img"
+                            image={cat.image}
+                            alt={cat.title}
+                            sx={{ width: 60, height: 60, objectFit: 'contain', mb: 2 }}
+                        />
+                        <Typography variant="caption" sx={{ fontWeight: 800, fontSize: '0.7rem', color: '#1e293b' }}>
+                            {cat.title}
+                        </Typography>
+                    </Card>
+                </Box>
+            ))}
         </Box>
     );
 };

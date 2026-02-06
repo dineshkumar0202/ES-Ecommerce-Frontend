@@ -14,7 +14,9 @@ import Register from './Components/Pages/Register';
 import Wholesale from './Components/Pages/Wholesale';
 import QuickCommerce from './Components/Pages/QuickCommerce';
 import Resale from './Components/Pages/Resale';
+
 import Freelance from './Components/Pages/Freelance';
+import WholesaleProductDetails from './Components/SpecifiedComponents/WholeSale/Components/WholesaleProductDetails';
 import './App.css';
 
 const theme = createTheme({
@@ -41,6 +43,8 @@ function App() {
           <Route path="/quick" element={<QuickCommerce />} />
           <Route path="/resale" element={<Resale />} />
           <Route path="/freelance" element={<Freelance />} />
+
+          <Route path="/wholesale/product/:id" element={<WholesaleProductDetails />} />
           <Route path="/product/:id" element={<ProductDetails />} />
           <Route path="/products/all" element={<AllProducts />} />
           <Route path="/products/one-day-offer" element={<OneDayOffer />} />

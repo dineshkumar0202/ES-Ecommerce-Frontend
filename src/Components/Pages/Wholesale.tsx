@@ -1,179 +1,138 @@
-import React from 'react';
-import { Box, Container, Typography, Button, Paper, Stack, Divider, Chip } from '@mui/material';
+import { useState } from 'react';
+import { Box, Container, Typography, Dialog, DialogContent, IconButton, Snackbar, Alert, Button } from '@mui/material';
 import Navbar from '../WrapperComponents/Navbar';
 import Footer from '../WrapperComponents/Footer';
-import LocationOnIcon from '@mui/icons-material/LocationOn';
-import CallIcon from '@mui/icons-material/Call';
-import VerifiedUserIcon from '@mui/icons-material/VerifiedUser';
+import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 
-// Mock B2B Data
-const wholesaleProducts = [
-    {
-        id: 1,
-        title: "Industrial Heavy Duty Knitting Machine",
-        price: "₹1,25,000",
-        unit: "Piece",
-        minOrder: "1 Piece",
-        company: "TexTech Industries",
-        location: "Ludhiana, Punjab",
-        verified: true,
-        image: "https://images.unsplash.com/photo-1605117882275-bf5d5016c681?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80"
-    },
-    {
-        id: 2,
-        title: "Bulk Organic Cotton Fabric Rolls",
-        price: "₹450",
-        unit: "Meter",
-        minOrder: "100 Meters",
-        company: "Green Weaves Pvt Ltd",
-        location: "Ahmedabad, Gujarat",
-        verified: true,
-        image: "https://images.unsplash.com/photo-1596462502278-27bfdd403348?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80"
-    },
-    {
-        id: 3,
-        title: "Commercial Grade Steel Pipes",
-        price: "₹65",
-        unit: "Kilogram",
-        minOrder: "500 Kilograms",
-        company: "MetalWorks Corp",
-        location: "Mumbai, Maharashtra",
-        verified: false,
-        image: "https://images.unsplash.com/photo-1535063406560-6495d4e6904e?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80"
-    },
-    {
-        id: 4,
-        title: "Solar Panels 500W Monocrystalline",
-        price: "₹12,000",
-        unit: "Piece",
-        minOrder: "50 Pieces",
-        company: "SolarSys Energy",
-        location: "Bangalore, Karnataka",
-        verified: true,
-        image: "https://images.unsplash.com/photo-1509391366360-2e959784a276?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80"
-    }
-];
+import WholesaleFeed from '../SpecifiedComponents/WholeSale/Components/WholesaleFeed';
+import WholesaleFilterBar from '../SpecifiedComponents/WholeSale/Components/WholesaleFilterBar';
+import WholesaleUploadForm from '../SpecifiedComponents/WholeSale/Components/WholesaleUploadForm';
+import CloseIcon from '@mui/icons-material/Close';
 
 const Wholesale = () => {
+    const [openUpload, setOpenUpload] = useState(false);
+    const [snackbarOpen, setSnackbarOpen] = useState(false);
+    const [refreshToken, setRefreshToken] = useState(0);
+
+    const handleProductPosted = () => {
+        setOpenUpload(false);
+        setRefreshToken(prev => prev + 1);
+        setSnackbarOpen(true);
+    };
+
+    const handleCloseSnackbar = () => {
+        setSnackbarOpen(false);
+    };
+
+    const handleCloseUpload = () => {
+        setOpenUpload(false);
+    };
+
     return (
-        <Box sx={{ minHeight: '100vh', bgcolor: '#f5f5f5' }}>
+        <Box sx={{ minHeight: '100vh', bgcolor: '#f8fafc' }}>
             <Navbar />
 
-            {/* Sub-Header for B2B Context */}
-            <Box sx={{ bgcolor: '#2e3b55', color: 'white', py: 1 }}>
-                <Container maxWidth="xl">
-                    <Stack direction="row" spacing={3} alignItems="center">
-                        <Typography variant="subtitle2" fontWeight="bold">ATOZ Business</Typography>
-                        <Divider orientation="vertical" flexItem sx={{ bgcolor: 'rgba(255,255,255,0.3)' }} />
-                        <Typography variant="body2" sx={{ opacity: 0.8, cursor: 'pointer' }}>Industrial Machinery</Typography>
-                        <Typography variant="body2" sx={{ opacity: 0.8, cursor: 'pointer' }}>Electronics & Electrical</Typography>
-                        <Typography variant="body2" sx={{ opacity: 0.8, cursor: 'pointer' }}>Construction & Material</Typography>
-                        <Typography variant="body2" sx={{ opacity: 0.8, cursor: 'pointer' }}>Packaging Machines</Typography>
-                    </Stack>
-                </Container>
-            </Box>
+            <Container maxWidth="xl" sx={{ mt: 4, mb: 8 }}>
 
-            <Container maxWidth="xl" sx={{ mt: 3, mb: 8 }}>
-                <Typography variant="h5" sx={{ fontWeight: 800, mb: 3, color: '#333' }}>
-                    Wholesale Marketplace
-                </Typography>
-
-                <Stack spacing={2}>
-                    {wholesaleProducts.map((item) => (
-                        <Paper
-                            key={item.id}
-                            elevation={0}
+                {/* Wholesale Hero Banner */}
+                <Box sx={{
+                    bgcolor: 'black',
+                    borderRadius: 4,
+                    p: { xs: 3, md: 4 },
+                    mb: 4,
+                    position: 'relative',
+                    overflow: 'hidden',
+                    display: 'flex',
+                    alignItems: 'center',
+                    minHeight: '200px'
+                }}>
+                    <Box sx={{ position: 'relative', zIndex: 1, maxWidth: '600px' }}>
+                        <Typography variant="overline" sx={{ color: '#bef264', fontWeight: 800, letterSpacing: 2, mb: 0.5, display: 'block' }}>
+                            B2B PLATFORM
+                        </Typography>
+                        <Typography variant="h4" sx={{ color: 'white', fontWeight: 900, mb: 1.5, lineHeight: 1.2 }}>
+                            Wholesale Marketplace
+                        </Typography>
+                        <Typography variant="body2" sx={{ color: '#94a3b8', mb: 3, maxWidth: '450px' }}>
+                            Source premium B2B products directly from manufacturers. Enjoy bulk savings up to <Box component="span" sx={{ color: '#bef264', fontWeight: 700 }}>25% off</Box> on industrial gear.
+                        </Typography>
+                        <Button
+                            variant="contained"
+                            size="medium"
+                            endIcon={<ArrowForwardIcon />}
                             sx={{
-                                p: 2,
-                                display: 'flex',
-                                flexDirection: { xs: 'column', md: 'row' },
-                                gap: 3,
-                                border: '1px solid #e0e0e0',
-                                borderRadius: 2,
-                                transition: 'box-shadow 0.2s',
-                                '&:hover': { boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }
+                                bgcolor: '#bef264',
+                                color: 'black',
+                                px: 3,
+                                py: 1,
+                                borderRadius: 50,
+                                fontWeight: 700,
+                                textTransform: 'none',
+                                '&:hover': { bgcolor: '#d9f99d' }
                             }}
                         >
-                            {/* Product Image */}
-                            <Box
-                                sx={{
-                                    width: { xs: '100%', md: '250px' },
-                                    height: '200px',
-                                    borderRadius: 1,
-                                    overflow: 'hidden',
-                                    flexShrink: 0
-                                }}
-                            >
-                                <img
-                                    src={item.image}
-                                    alt={item.title}
-                                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                                />
-                            </Box>
+                            Explore Products
+                        </Button>
+                    </Box>
 
-                            {/* Product Details */}
-                            <Box sx={{ flexGrow: 1 }}>
-                                <Typography variant="h6" sx={{ fontWeight: 700, mb: 1, color: '#1a237e' }}>
-                                    {item.title}
-                                </Typography>
+                    {/* Background Graphic (Right Side) */}
+                    <Box sx={{
+                        position: 'absolute',
+                        right: 0,
+                        top: 0,
+                        bottom: 0,
+                        width: '50%',
+                        background: 'radial-gradient(circle at center, rgba(50,50,50,0.5) 0%, rgba(0,0,0,1) 70%), url(https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=800&q=80)',
+                        backgroundSize: 'cover',
+                        backgroundPosition: 'center',
+                        opacity: 0.8,
+                        maskImage: 'linear-gradient(to right, transparent, black 20%)',
+                        WebkitMaskImage: 'linear-gradient(to right, transparent 0%, black 40%)'
+                    }} />
+                </Box>
 
-                                <Typography variant="h5" sx={{ fontWeight: 800, color: '#333', mb: 0.5 }}>
-                                    {item.price} <Typography component="span" variant="body1" color="text.secondary">/ {item.unit}</Typography>
-                                </Typography>
+                {/* Filter Bar */}
+                <WholesaleFilterBar />
 
-                                <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                                    Min. Order: {item.minOrder}
-                                </Typography>
-
-                                <Box sx={{ display: 'flex', gap: 1, mb: 1 }}>
-                                    <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>{item.company}</Typography>
-                                    {item.verified && (
-                                        <Chip
-                                            icon={<VerifiedUserIcon sx={{ fontSize: '1rem !important' }} />}
-                                            label="Verified Supplier"
-                                            size="small"
-                                            color="success"
-                                            variant="outlined"
-                                            sx={{ height: 20, fontSize: '0.7rem' }}
-                                        />
-                                    )}
-                                </Box>
-
-                                <Typography variant="body2" sx={{ display: 'flex', alignItems: 'center', color: 'text.secondary', gap: 0.5 }}>
-                                    <LocationOnIcon fontSize="small" /> {item.location}
-                                </Typography>
-                            </Box>
-
-                            {/* Action Buttons */}
-                            <Box sx={{
-                                width: { xs: '100%', md: '250px' },
-                                display: 'flex',
-                                flexDirection: 'column',
-                                justifyContent: 'center',
-                                gap: 2,
-                                borderLeft: { md: '1px solid #f0f0f0' },
-                                pl: { md: 2 }
-                            }}>
-                                <Button
-                                    variant="contained"
-                                    fullWidth
-                                    startIcon={<CallIcon />}
-                                    sx={{ bgcolor: '#00b0ff', fontWeight: 'bold' }}
-                                >
-                                    Contact Seller
-                                </Button>
-                                <Button
-                                    variant="outlined"
-                                    fullWidth
-                                    sx={{ fontWeight: 'bold', borderColor: '#333', color: '#333' }}
-                                >
-                                    Get Best Price
-                                </Button>
-                            </Box>
-                        </Paper>
-                    ))}
-                </Stack>
+                {/* Feed */}
+                <WholesaleFeed key={refreshToken} />
             </Container>
+
+            <Dialog
+                open={openUpload}
+                onClose={handleCloseUpload}
+                maxWidth="md"
+                fullWidth
+            >
+                <Box sx={{ position: 'relative' }}>
+                    <IconButton
+                        onClick={handleCloseUpload}
+                        sx={{
+                            position: 'absolute',
+                            right: 8,
+                            top: 8,
+                            color: (theme) => theme.palette.grey[500],
+                            zIndex: 1
+                        }}
+                    >
+                        <CloseIcon />
+                    </IconButton>
+                    <DialogContent sx={{ p: 0 }}>
+                        <WholesaleUploadForm onPost={handleProductPosted} />
+                    </DialogContent>
+                </Box>
+            </Dialog>
+
+            <Snackbar
+                open={snackbarOpen}
+                autoHideDuration={6000}
+                onClose={handleCloseSnackbar}
+                anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+            >
+                <Alert onClose={handleCloseSnackbar} severity="success" sx={{ width: '100%' }}>
+                    Product posted successfully!
+                </Alert>
+            </Snackbar>
 
             <Footer />
         </Box>
