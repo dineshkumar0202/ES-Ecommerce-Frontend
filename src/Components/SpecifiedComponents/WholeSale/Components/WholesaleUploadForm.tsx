@@ -1,10 +1,9 @@
 import React from 'react';
-import { Box, Paper, TextField, Button, Typography, MenuItem, Checkbox, FormControlLabel, Stack, IconButton, Alert } from '@mui/material';
+import { Box, Paper, TextField, Button, Typography, MenuItem, Stack, Alert } from '@mui/material';
 import CloudUploadOutlinedIcon from '@mui/icons-material/CloudUploadOutlined';
 import ArticleOutlinedIcon from '@mui/icons-material/ArticleOutlined';
 import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined';
 import SaveIcon from '@mui/icons-material/Save';
-import ListAltIcon from '@mui/icons-material/ListAlt';
 
 const WholesaleUploadForm = ({ onPost }: { onPost?: () => void }) => {
     // const navigate = useNavigate(); // Navigation handled by parent/onPost now
@@ -14,27 +13,31 @@ const WholesaleUploadForm = ({ onPost }: { onPost?: () => void }) => {
     const [availableFrom, setAvailableFrom] = React.useState('');
     const [description, setDescription] = React.useState('');
     const [quantity, setQuantity] = React.useState('');
-    const [price, setPrice] = React.useState('');
-    const [image, setImage] = React.useState<string | null>(null);
+    const [companyName, setCompanyName] = React.useState('');
+    const [location, setLocation] = React.useState('');
+    const [phoneNumber, setPhoneNumber] = React.useState('');
+    const [email, setEmail] = React.useState('');
+    const [images, setImages] = React.useState<string[]>([]);
+    const [activeImageIndex, setActiveImageIndex] = React.useState(0);
 
     const fileInputRef = React.useRef<HTMLInputElement>(null);
 
-    const totalPrice = (parseFloat(quantity || '0') * parseFloat(price || '0')).toFixed(2);
-
     const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-        const file = event.target.files?.[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                setImage(reader.result as string);
-            };
-            reader.readAsDataURL(file);
+        const files = event.target.files;
+        if (files && files.length > 0) {
+            Array.from(files).forEach(file => {
+                const reader = new FileReader();
+                reader.onloadend = () => {
+                    setImages(prev => [...prev, reader.result as string]);
+                };
+                reader.readAsDataURL(file);
+            });
         }
     };
 
     const handlePost = () => {
-        if (!productName || !price || !quantity) {
-            alert('Please fill in the required fields.');
+        if (!productName || !quantity || !companyName || !location || !phoneNumber || !email || images.length === 0) {
+            alert('Please fill in all required fields and upload at least one image.');
             return;
         }
 
@@ -43,14 +46,18 @@ const WholesaleUploadForm = ({ onPost }: { onPost?: () => void }) => {
             title: productName,
             description: description || "No description provided.",
             sku: `SKU-${Date.now()}`,
-            pricePerUnit: parseFloat(price),
             packSize: parseInt(quantity),
-            image: image || "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=400&q=80",
+            images: images,
+            image: images[0], // Fallback
+            companyName,
+            location,
+            phoneNumber,
+            email,
             inStock: true
         };
 
-        const existingProducts = JSON.parse(localStorage.getItem('wholesaleProducts') || '[]');
-        localStorage.setItem('wholesaleProducts', JSON.stringify([...existingProducts, newProduct]));
+        const existingProducts = JSON.parse(localStorage.getItem('wholesaleProducts_v1.2') || '[]');
+        localStorage.setItem('wholesaleProducts_v1.2', JSON.stringify([...existingProducts, newProduct]));
 
         if (onPost) {
             onPost();
@@ -97,15 +104,16 @@ const WholesaleUploadForm = ({ onPost }: { onPost?: () => void }) => {
                             <input
                                 type="file"
                                 hidden
+                                multiple
                                 accept="image/*"
                                 ref={fileInputRef}
                                 onChange={handleImageUpload}
                             />
 
-                            {image ? (
+                            {images.length > 0 ? (
                                 <Box
                                     component="img"
-                                    src={image}
+                                    src={images[activeImageIndex < images.length ? activeImageIndex : 0]}
                                     sx={{
                                         width: '100%',
                                         height: '100%',
@@ -121,7 +129,7 @@ const WholesaleUploadForm = ({ onPost }: { onPost?: () => void }) => {
                                         <CloudUploadOutlinedIcon sx={{ fontSize: 32, color: '#2563eb' }} />
                                     </Box>
                                     <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 0.5 }}>
-                                        Drop your image here
+                                        Drop your images here
                                     </Typography>
                                     <Typography variant="caption" color="text.secondary" display="block" sx={{ mb: 2, px: 2 }}>
                                         Supporting JPG, PNG. Max 5MB. Min 800x800px recommended.
@@ -138,29 +146,47 @@ const WholesaleUploadForm = ({ onPost }: { onPost?: () => void }) => {
                                             '&:hover': { bgcolor: '#dbeafe', boxShadow: 'none' }
                                         }}
                                     >
-                                        Select File
+                                        Select Files
                                     </Button>
                                 </>
                             )}
                         </Box>
 
-                        <Stack direction="row" spacing={1} sx={{ mt: 2 }}>
-                            {[1, 2, 3, 4].map((i) => (
-                                <Box key={i} sx={{
-                                    width: 60,
-                                    height: 60,
-                                    bgcolor: i === 1 ? '#eff6ff' : '#f1f5f9',
-                                    borderRadius: 2,
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    color: '#94a3b8',
-                                    fontSize: '1.5rem',
-                                    cursor: 'pointer'
-                                }}>
-                                    {i === 1 ? '+' : ''}
+                        <Stack direction="row" spacing={1} sx={{ mt: 2, overflowX: 'auto', pb: 1 }}>
+                            {images.map((img, index) => (
+                                <Box
+                                    key={index}
+                                    onClick={() => setActiveImageIndex(index)}
+                                    sx={{
+                                        width: 60,
+                                        height: 60,
+                                        bgcolor: '#f1f5f9',
+                                        borderRadius: 2,
+                                        overflow: 'hidden',
+                                        cursor: 'pointer',
+                                        border: activeImageIndex === index ? '2px solid #2563eb' : '1px solid transparent',
+                                        flexShrink: 0
+                                    }}>
+                                    <Box component="img" src={img} sx={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                                 </Box>
                             ))}
+                            <Box sx={{
+                                width: 60,
+                                height: 60,
+                                bgcolor: '#eff6ff',
+                                borderRadius: 2,
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                color: '#2563eb',
+                                fontSize: '1.5rem',
+                                cursor: 'pointer',
+                                flexShrink: 0
+                            }}
+                                onClick={() => fileInputRef.current?.click()}
+                            >
+                                +
+                            </Box>
                         </Stack>
                     </Paper>
 
@@ -208,6 +234,14 @@ const WholesaleUploadForm = ({ onPost }: { onPost?: () => void }) => {
                                         value={productName}
                                         onChange={(e) => setProductName(e.target.value)}
                                     />
+                                    <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600, color: '#334155' }}>Company Name</Typography>
+                                    <TextField
+                                        fullWidth
+                                        placeholder="e.g. Acme Wholesale Ltd."
+                                        InputProps={{ sx: { borderRadius: 2 } }}
+                                        value={companyName}
+                                        onChange={(e) => setCompanyName(e.target.value)}
+                                    />
                                 </Box>
                                 <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 3 }}>
                                     <Box sx={{ flex: 1 }}>
@@ -254,15 +288,15 @@ const WholesaleUploadForm = ({ onPost }: { onPost?: () => void }) => {
                             </Box>
                         </Paper>
 
-                        {/* Pricing Card */}
+                        {/* Inventory & Contact Details */}
                         <Paper elevation={0} sx={{ p: 4, borderRadius: 3, border: '1px solid #e2e8f0' }}>
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 3 }}>
                                 <Inventory2OutlinedIcon sx={{ color: '#2563eb' }} />
-                                <Typography variant="h6" sx={{ fontWeight: 700, color: '#0f172a' }}>Inventory & Pricing</Typography>
+                                <Typography variant="h6" sx={{ fontWeight: 700, color: '#0f172a' }}>Inventory & Contact</Typography>
                             </Box>
 
-                            <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 3, mb: 3 }}>
-                                <Box sx={{ flex: 1 }}>
+                            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                                <Box>
                                     <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600, color: '#334155' }}>Fixed Quantity (Bulk)</Typography>
                                     <TextField
                                         fullWidth
@@ -275,40 +309,44 @@ const WholesaleUploadForm = ({ onPost }: { onPost?: () => void }) => {
                                         onChange={(e) => setQuantity(e.target.value)}
                                     />
                                 </Box>
-                                <Box sx={{ flex: 1 }}>
-                                    <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600, color: '#334155' }}>Unit Price</Typography>
+
+                                <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 3 }}>
+                                    <Box sx={{ flex: 1 }}>
+                                        <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600, color: '#334155' }}>Phone Number</Typography>
+                                        <TextField
+                                            fullWidth
+                                            placeholder="+91 98765 43210"
+                                            InputProps={{ sx: { borderRadius: 2 } }}
+                                            value={phoneNumber}
+                                            onChange={(e) => setPhoneNumber(e.target.value)}
+                                        />
+                                    </Box>
+                                    <Box sx={{ flex: 1 }}>
+                                        <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600, color: '#334155' }}>Email</Typography>
+                                        <TextField
+                                            fullWidth
+                                            type="email"
+                                            placeholder="contact@company.com"
+                                            InputProps={{ sx: { borderRadius: 2 } }}
+                                            value={email}
+                                            onChange={(e) => setEmail(e.target.value)}
+                                        />
+                                    </Box>
+                                </Box>
+
+                                <Box>
+                                    <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600, color: '#334155' }}>Location</Typography>
                                     <TextField
                                         fullWidth
-                                        type="number"
-                                        InputProps={{
-                                            sx: { borderRadius: 2 },
-                                            startAdornment: <Typography sx={{ mr: 1, color: '#64748b' }}>₹</Typography>
-                                        }}
-                                        value={price}
-                                        onChange={(e) => setPrice(e.target.value)}
+                                        placeholder="e.g. Mumbai, Maharashtra"
+                                        InputProps={{ sx: { borderRadius: 2 } }}
+                                        value={location}
+                                        onChange={(e) => setLocation(e.target.value)}
                                     />
-                                </Box>
-                                <Box sx={{ flex: 1 }}>
-                                    <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600, color: '#334155' }}>Total Price</Typography>
-                                    <Box sx={{
-                                        p: '16.5px 14px',
-                                        bgcolor: '#eff6ff',
-                                        border: '1px solid #bfdbfe',
-                                        borderRadius: 2,
-                                        color: '#2563eb',
-                                        fontWeight: 700
-                                    }}>
-                                        ₹ {totalPrice}
-                                    </Box>
                                 </Box>
                             </Box>
 
-                            <Box sx={{ bgcolor: '#f8fafc', p: 2, borderRadius: 2 }}>
-                                <FormControlLabel
-                                    control={<Checkbox sx={{ '&.Mui-checked': { color: '#2563eb' } }} />}
-                                    label={<Typography variant="body2" sx={{ fontWeight: 500, color: '#475569' }}>Enable tiered pricing for larger quantities</Typography>}
-                                />
-                            </Box>
+
                         </Paper>
                     </Stack>
                 </Box>

@@ -195,14 +195,6 @@ const WholesaleProductDetails = () => {
                                 <Box sx={{ display: 'flex', gap: 4 }}>
                                     <Box>
                                         <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 700, display: 'block', mb: 0.5 }}>
-                                            PRICE PER UNIT
-                                        </Typography>
-                                        <Typography variant="h5" sx={{ fontWeight: 800, color: '#0f172a' }}>
-                                            {product.pricePerUnit ? `?${product.pricePerUnit.toLocaleString('en-IN')}` : 'Contact for Price'}
-                                        </Typography>
-                                    </Box>
-                                    <Box>
-                                        <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 700, display: 'block', mb: 0.5 }}>
                                             PACK SIZE
                                         </Typography>
                                         <Typography variant="h5" sx={{ fontWeight: 800, color: '#0f172a' }}>

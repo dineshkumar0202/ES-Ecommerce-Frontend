@@ -9,6 +9,7 @@ import ShopByVibe from '../SpecifiedComponents/HomePage/ShopByVibe';
 import ServiceFeatures from '../SpecifiedComponents/HomePage/ServiceFeatures';
 import NewsletterSection from '../SpecifiedComponents/HomePage/NewsletterSection';
 import TrustedBrands from '../SpecifiedComponents/HomePage/TrustedBrands';
+import PlatformShowcase from '../SpecifiedComponents/HomePage/PlatformShowcase';
 import { allProducts } from '../../data/productsData';
 
 const Home = () => {
@@ -29,12 +30,14 @@ const Home = () => {
     ];
 
     return (
-        <Box sx={{ minHeight: '100vh', pb: 4, bgcolor: '#eaeded' }}>
+        <Box sx={{ minHeight: '100vh', pb: 4, bgcolor: '#f8fafc' }}>
             <Navbar />
 
             <Container maxWidth="xl" sx={{ mt: 2 }}>
                 <Stack spacing={2}>
                     <SpecialOffersSection />
+
+                    <PlatformShowcase />
 
                     {/* Exclusive Impressive Grid Section */}
                     <ImpressiveOfferGrid />

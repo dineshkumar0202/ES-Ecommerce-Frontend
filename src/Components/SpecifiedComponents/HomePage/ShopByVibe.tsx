@@ -108,7 +108,7 @@ const ShopByVibe = () => {
                         width: 'fit-content'
                     }}
                 >
-                    Trending Categories
+                    Shop by Category
                 </Typography>
             </Box>
 

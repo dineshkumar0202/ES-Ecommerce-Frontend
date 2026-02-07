@@ -28,7 +28,7 @@ const ProductGrids = () => {
         <Box sx={{ mt: 8, mb: 4 }}>
             <Box sx={{ mb: 4, textAlign: 'center' }}>
                 <Typography variant="h4" sx={{ fontWeight: 800, mb: 1 }}>
-                    Just For You
+                    Trending Products
                 </Typography>
                 <Typography variant="body1" sx={{ color: 'text.secondary' }}>
                     Handpicked items based on your preferences

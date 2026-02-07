@@ -1,9 +1,8 @@
 import { useState } from 'react';
-import { Box, Container, Typography, Dialog, DialogContent, IconButton, Snackbar, Alert, Button, Paper, InputBase } from '@mui/material';
+import { Box, Container, Typography, Snackbar, Alert, Button } from '@mui/material';
 import Navbar from '../WrapperComponents/Navbar';
 import Footer from '../WrapperComponents/Footer';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
-import SearchIcon from '@mui/icons-material/Search';
 
 import WholesaleFeed from '../SpecifiedComponents/WholeSale/Components/WholesaleFeed';
 import WholesaleFilterBar from '../SpecifiedComponents/WholeSale/Components/WholesaleFilterBar';
@@ -11,23 +10,22 @@ import WholesaleUploadForm from '../SpecifiedComponents/WholeSale/Components/Who
 import CloseIcon from '@mui/icons-material/Close';
 
 const Wholesale = () => {
-    const [openUpload, setOpenUpload] = useState(false);
+    const [view, setView] = useState<'feed' | 'upload'>('feed');
     const [snackbarOpen, setSnackbarOpen] = useState(false);
     const [refreshToken, setRefreshToken] = useState(0);
-    const [searchQuery, setSearchQuery] = useState(''); // Added search state
 
     const handleProductPosted = () => {
-        setOpenUpload(false);
+        setView('feed');
         setRefreshToken(prev => prev + 1);
         setSnackbarOpen(true);
     };
 
-    const handleCloseSnackbar = () => {
-        setSnackbarOpen(false);
+    const handleCancelUpload = () => {
+        setView('feed');
     };
 
-    const handleCloseUpload = () => {
-        setOpenUpload(false);
+    const handleCloseSnackbar = () => {
+        setSnackbarOpen(false);
     };
 
     // Reverting to the "Old Type" look: Smaller banner, "Explore Products" button
@@ -61,23 +59,42 @@ const Wholesale = () => {
                         <Typography variant="body2" sx={{ color: '#94a3b8', mb: 3, maxWidth: '450px' }}>
                             Source premium B2B products directly from manufacturers. Enjoy bulk savings up to <Box component="span" sx={{ color: '#bef264', fontWeight: 700 }}>25% off</Box> on industrial gear.
                         </Typography>
-                        <Button
-                            variant="contained"
-                            size="medium"
-                            endIcon={<ArrowForwardIcon />}
-                            sx={{
-                                bgcolor: '#bef264',
-                                color: 'black',
-                                px: 3,
-                                py: 1,
-                                borderRadius: 50,
-                                fontWeight: 700,
-                                textTransform: 'none',
-                                '&:hover': { bgcolor: '#d9f99d' }
-                            }}
-                        >
-                            Explore Products
-                        </Button>
+                        <Box sx={{ display: 'flex', gap: 2 }}>
+                            <Button
+                                variant="contained"
+                                size="medium"
+                                endIcon={<ArrowForwardIcon />}
+                                onClick={() => setView('feed')}
+                                sx={{
+                                    bgcolor: '#bef264',
+                                    color: 'black',
+                                    px: 3,
+                                    py: 1,
+                                    borderRadius: 50,
+                                    fontWeight: 700,
+                                    textTransform: 'none',
+                                    '&:hover': { bgcolor: '#d9f99d' }
+                                }}
+                            >
+                                Explore Products
+                            </Button>
+                            <Button
+                                variant="outlined"
+                                onClick={() => setView('upload')}
+                                sx={{
+                                    color: 'white',
+                                    borderColor: 'rgba(255,255,255,0.3)',
+                                    px: 3,
+                                    py: 1,
+                                    borderRadius: 50,
+                                    fontWeight: 700,
+                                    textTransform: 'none',
+                                    '&:hover': { bgcolor: 'rgba(255,255,255,0.1)', borderColor: 'white' }
+                                }}
+                            >
+                                List Your Product
+                            </Button>
+                        </Box>
                     </Box>
 
                     {/* Background Graphic (Right Side) */}
@@ -96,37 +113,25 @@ const Wholesale = () => {
                     }} />
                 </Box>
 
-                {/* Filter Bar */}
-                <WholesaleFilterBar />
+                {
+                    view === 'feed' ? (
+                        <>
+                            {/* Filter Bar */}
+                            <WholesaleFilterBar />
 
-                {/* Feed */}
-                <WholesaleFeed key={refreshToken} />
-            </Container>
-
-            <Dialog
-                open={openUpload}
-                onClose={handleCloseUpload}
-                maxWidth="md"
-                fullWidth
-            >
-                <Box sx={{ position: 'relative' }}>
-                    <IconButton
-                        onClick={handleCloseUpload}
-                        sx={{
-                            position: 'absolute',
-                            right: 8,
-                            top: 8,
-                            color: (theme) => theme.palette.grey[500],
-                            zIndex: 1
-                        }}
-                    >
-                        <CloseIcon />
-                    </IconButton>
-                    <DialogContent sx={{ p: 0 }}>
-                        <WholesaleUploadForm onPost={handleProductPosted} />
-                    </DialogContent>
-                </Box>
-            </Dialog>
+                            {/* Feed */}
+                            <WholesaleFeed key={refreshToken} />
+                        </>
+                    ) : (
+                        <Box sx={{ bgcolor: 'white', borderRadius: 2, p: 4 }}>
+                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                                <Button onClick={handleCancelUpload} startIcon={<CloseIcon />} sx={{ color: '#64748b' }}>Back to Feed</Button>
+                            </Box>
+                            <WholesaleUploadForm onPost={handleProductPosted} />
+                        </Box>
+                    )
+                }
+            </Container >
 
             <Snackbar
                 open={snackbarOpen}
@@ -140,7 +145,7 @@ const Wholesale = () => {
             </Snackbar>
 
             <Footer />
-        </Box>
+        </Box >
     );
 };
 

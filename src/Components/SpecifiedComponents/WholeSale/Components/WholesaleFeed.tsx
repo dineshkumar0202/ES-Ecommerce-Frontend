@@ -5,6 +5,7 @@ import PhoneIcon from '@mui/icons-material/Phone';
 import ShoppingCartOutlinedIcon from '@mui/icons-material/ShoppingCartOutlined';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import BusinessIcon from '@mui/icons-material/Business';
+import EmailIcon from '@mui/icons-material/Email';
 
 // Mock Data adapted with pricePerUnit
 const wholesaleProducts = [
@@ -277,14 +278,6 @@ const ProductCard = ({ item }: { item: any }) => {
                 <Box sx={{ display: 'flex', gap: 4, mb: 3, p: 2, bgcolor: '#f8fafc', borderRadius: 2 }}>
                     <Box>
                         <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 700, display: 'block', mb: 0.5 }}>
-                            PRICE PER UNIT
-                        </Typography>
-                        <Typography variant="subtitle1" sx={{ fontWeight: 800, color: '#0f172a' }}>
-                            {item.pricePerUnit ? `?${item.pricePerUnit.toLocaleString('en-IN')}` : 'Contact for Price'}
-                        </Typography>
-                    </Box>
-                    <Box>
-                        <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 700, display: 'block', mb: 0.5 }}>
                             PACK SIZE
                         </Typography>
                         <Typography variant="subtitle1" sx={{ fontWeight: 800, color: '#0f172a' }}>
@@ -299,6 +292,12 @@ const ProductCard = ({ item }: { item: any }) => {
                         <LocationOnIcon sx={{ color: '#94a3b8', fontSize: 16 }} />
                         <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 600 }}>
                             {item.location}
+                        </Typography>
+                    </Box>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                        <EmailIcon sx={{ color: '#94a3b8', fontSize: 16 }} />
+                        <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 600 }}>
+                            {item.email || "N/A"}
                         </Typography>
                     </Box>
                 </Box>
