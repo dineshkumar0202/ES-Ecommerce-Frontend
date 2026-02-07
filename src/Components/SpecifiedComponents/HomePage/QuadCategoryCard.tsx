@@ -6,6 +6,7 @@ interface QuadCategoryItem {
     id: number;
     title: string;
     image: string;
+    path?: string;
 }
 
 interface QuadCategoryCardProps {
@@ -17,11 +18,13 @@ interface QuadCategoryCardProps {
 const QuadCategoryCard: React.FC<QuadCategoryCardProps> = ({ title, items, linkText = 'See more' }) => {
     const navigate = useNavigate();
 
-    const handleItemClick = (id: number) => {
-        navigate(`/product/${id}`);
+    const handleItemClick = (item: QuadCategoryItem) => {
+        if (item.path) {
+            navigate(item.path);
+        } else {
+            navigate(`/product/${item.id}`);
+        }
     };
-
-
 
     // Simplified Styles - removed custom backgrounds
     const cardBg = 'background.paper';
@@ -55,7 +58,7 @@ const QuadCategoryCard: React.FC<QuadCategoryCardProps> = ({ title, items, linkT
                 {items.slice(0, 4).map((item) => (
                     <Box
                         key={item.id}
-                        onClick={() => handleItemClick(item.id)}
+                        onClick={() => handleItemClick(item)}
                         sx={{
                             width: 'calc(50% - 8px)',
                             cursor: 'pointer',

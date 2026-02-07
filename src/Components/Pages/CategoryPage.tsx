@@ -30,6 +30,11 @@ const CategoryPage = () => {
             return cat.includes(term) || name.includes(term) || cat === term;
         });
 
+        // Special handling for Fruits & Veg: Exact 4 items, no mocks
+        if (term === 'fruits-veg' || term === 'fruits & veg') {
+            return filtered.slice(0, 4);
+        }
+
         // ENFORCE EXACTLY 8 PRODUCTS (Fill with mocks if needed)
         const targetCount = 8;
 

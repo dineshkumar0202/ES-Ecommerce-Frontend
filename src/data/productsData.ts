@@ -2270,6 +2270,80 @@ export const allProducts: Product[] = [
         features: ["Silent wiping", "All weather", "Long life", "Easy installation"],
         brand: "Bosch",
         inStock: true
+    },
+    {
+        id: 101, // Matches US$4.20 approx ₹350
+        name: "Fresh Organic Vegetable Basket",
+        category: "fruits-veg",
+        price: 350,
+        mrp: 499,
+        discount: 30,
+        rating: 4.8,
+        ratingCount: 120,
+        image: "https://images.unsplash.com/photo-1597362925123-77861d3fbac7?auto=format&fit=crop&w=400&q=80",
+        images: [
+            "https://images.unsplash.com/photo-1597362925123-77861d3fbac7?auto=format&fit=crop&w=800&q=80",
+            "https://images.unsplash.com/photo-1566385101042-1a0aa0c1268c?auto=format&fit=crop&w=800&q=80"
+        ],
+        description: "A curated basket of fresh, organic seasonal vegetables.",
+        features: ["100% Organic", "Farm Fresh", "Pesticide Free", "Daily Harvest"],
+        brand: "Organic Farms",
+        inStock: true
+    },
+    {
+        id: 102, // Matches US$4.80 approx ₹400
+        name: "Premium Fruit Selection",
+        category: "fruits-veg",
+        price: 400,
+        mrp: 550,
+        discount: 27,
+        rating: 4.7,
+        ratingCount: 95,
+        image: "https://images.unsplash.com/photo-1610832958506-aa56368176cf?auto=format&fit=crop&w=400&q=80",
+        images: [
+            "https://images.unsplash.com/photo-1610832958506-aa56368176cf?auto=format&fit=crop&w=800&q=80",
+            "https://images.unsplash.com/photo-1519999482648-25049ddd37b1?auto=format&fit=crop&w=800&q=80"
+        ],
+        description: "Assortment of premium quality seasonal fruits.",
+        features: ["Rich in Vitamins", "Handpicked", "Naturally Ripened", "Sweet & Juicy"],
+        brand: "Nature's Best",
+        inStock: true
+    },
+    {
+        id: 103,
+        name: "Exotic Berries Pack",
+        category: "fruits-veg",
+        price: 450,
+        mrp: 600,
+        discount: 25,
+        rating: 4.9,
+        ratingCount: 45,
+        image: "https://images.unsplash.com/photo-1571575173700-afb9492e6a50?auto=format&fit=crop&w=400&q=80",
+        images: [
+            "https://images.unsplash.com/photo-1571575173700-afb9492e6a50?auto=format&fit=crop&w=800&q=80"
+        ],
+        description: "Fresh blueberries, strawberries, and raspberries.",
+        features: ["High Antioxidants", "Imported Quality", "Freshly packed"],
+        brand: "Berry World",
+        inStock: true
+    },
+    {
+        id: 104,
+        name: "Green Leafy Bundle",
+        category: "fruits-veg",
+        price: 300,
+        mrp: 400,
+        discount: 25,
+        rating: 4.6,
+        ratingCount: 88,
+        image: "https://images.unsplash.com/photo-1573246123716-6b1782bfc499?auto=format&fit=crop&w=400&q=80",
+        images: [
+            "https://images.unsplash.com/photo-1573246123716-6b1782bfc499?auto=format&fit=crop&w=800&q=80"
+        ],
+        description: "Fresh spinach, kale, and lettuce bundle.",
+        features: ["Iron Rich", "Farm to Table", "Crisp & Fresh"],
+        brand: "Green Valley",
+        inStock: true
     }
 ];
 

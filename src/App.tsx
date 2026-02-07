@@ -17,6 +17,10 @@ import Resale from './Components/Pages/Resale';
 
 import Freelance from './Components/Pages/Freelance';
 import WholesaleProductDetails from './Components/SpecifiedComponents/WholeSale/Components/WholesaleProductDetails';
+import QCategoryPage from './Components/Pages/QCategoryPage';
+import QAllProducts from './Components/Pages/QAllProducts';
+import QProductDetails from './Components/SpecifiedComponents/Q-Commerces/Components/QProductDetails';
+import ResaleProductDetails from './Components/SpecifiedComponents/Second-hand/Components/ResaleProductDetails';
 import './App.css';
 
 const theme = createTheme({
@@ -42,6 +46,7 @@ function App() {
           <Route path="/wholesale" element={<Wholesale />} />
           <Route path="/quick" element={<QuickCommerce />} />
           <Route path="/resale" element={<Resale />} />
+          <Route path="/resale/product/:id" element={<ResaleProductDetails />} />
           <Route path="/freelance" element={<Freelance />} />
 
           <Route path="/wholesale/product/:id" element={<WholesaleProductDetails />} />
@@ -52,6 +57,9 @@ function App() {
           <Route path="/products/keep-shopping" element={<KeepShopping />} />
           <Route path="/products/categories" element={<ShopByCategory />} />
           <Route path="/category/:categoryName" element={<CategoryPage />} />
+          <Route path="/quick/category/:categoryName" element={<QCategoryPage />} />
+          <Route path="/quick/all" element={<QAllProducts />} />
+          <Route path="/quick/product/:id" element={<QProductDetails />} />
         </Routes>
       </BrowserRouter>
     </ThemeProvider>

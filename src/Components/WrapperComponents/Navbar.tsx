@@ -123,7 +123,7 @@ const Navbar = () => {
                     />
                     <CategoryChip
                         icon={<RocketLaunchIcon />}
-                        label="E-Commerce"
+                        label="Q-Commerce"
                         isActive={activeCategory === 'Q-Commerce'}
                         onClick={() => navigate('/quick')}
                     />

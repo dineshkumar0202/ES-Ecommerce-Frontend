@@ -1,20 +1,24 @@
 import { Box, Typography, Card, CardMedia } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
 
 const categories = [
-    { title: 'FRUITS & VEG', image: 'https://cdn-icons-png.flaticon.com/512/3081/3081840.png' },
-    { title: 'BAKERY', image: 'https://cdn-icons-png.flaticon.com/512/3081/3081903.png' },
-    { title: 'PHARMACY', image: 'https://cdn-icons-png.flaticon.com/512/3081/3081961.png' },
-    { title: 'MEAT & FISH', image: 'https://cdn-icons-png.flaticon.com/512/3081/3081926.png' },
-    { title: 'DAIRY & EGGS', image: 'https://cdn-icons-png.flaticon.com/512/3082/3082008.png' },
-    { title: 'SNACKS', image: 'https://cdn-icons-png.flaticon.com/512/3081/3081820.png' }
+    { title: 'FRUITS & VEG', image: 'https://cdn-icons-png.flaticon.com/512/3081/3081840.png', slug: 'fruits-veg' },
+    { title: 'BAKERY', image: 'https://cdn-icons-png.flaticon.com/512/3081/3081903.png', slug: 'bakery' },
+    { title: 'PHARMACY', image: 'https://cdn-icons-png.flaticon.com/512/883/883407.png', slug: 'pharmacy' },
+    { title: 'MEAT & FISH', image: 'https://cdn-icons-png.flaticon.com/512/10753/10753545.png', slug: 'meat-fish' }, // Updated Meat & Fish Icon
+    { title: 'DAIRY & EGGS', image: 'https://cdn-icons-png.flaticon.com/512/7274/7274128.png', slug: 'dairy-eggs' },
+    { title: 'SNACKS', image: 'https://cdn-icons-png.flaticon.com/512/2673/2673620.png', slug: 'snacks' }
 ];
 
 const QCategories = () => {
+    const navigate = useNavigate();
+
     return (
         <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, mb: 4 }}>
             {categories.map((cat, index) => (
                 <Box
                     key={index}
+                    onClick={() => navigate(`/quick/category/${cat.slug}`)}
                     sx={{
                         width: { xs: 'calc(50% - 8px)', sm: 'calc(33.33% - 11px)', md: 'calc(16.66% - 14px)' },
                         flexGrow: 0,

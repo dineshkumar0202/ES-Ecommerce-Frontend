@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { Box, Container, Dialog, DialogContent, IconButton, Snackbar, Alert } from '@mui/material';
+import { Box, Container, Dialog, DialogContent, IconButton, Snackbar, Alert, Button } from '@mui/material';
 import Navbar from '../WrapperComponents/Navbar';
 import Footer from '../WrapperComponents/Footer';
 import CloseIcon from '@mui/icons-material/Close';
+import AddIcon from '@mui/icons-material/Add';
 
 // Imported SH Components
 import SHCategories from '../SpecifiedComponents/Second-hand/Components/SHCategories';
@@ -34,11 +35,40 @@ const Resale = () => {
         <Box sx={{ minHeight: '100vh', bgcolor: 'white' }}>
             <Navbar />
 
-            <Container maxWidth="xl" sx={{ mt: 4 }}>
+            <Container maxWidth="xl" sx={{ mt: 4, position: 'relative' }}>
                 <SHCategories />
                 <SHHero />
                 <SHPromoStrip />
-                <SHRecentlyListed />
+
+                {/* Sell Button - OLX Style */}
+                <Box sx={{ display: 'flex', justifyContent: 'center', my: 4 }}>
+                    <Button
+                        variant="contained"
+                        size="large"
+                        startIcon={<AddIcon />}
+                        onClick={() => setOpenUpload(true)}
+                        sx={{
+                            borderRadius: 50,
+                            px: 4,
+                            py: 1.5,
+                            fontWeight: 800,
+                            background: 'linear-gradient(45deg, #84cc16 30%, #a3e635 90%)', // Lemon Green Gradient
+                            color: '#1a2e05', // Dark green text for contrast
+                            boxShadow: '0 4px 20px rgba(132, 204, 22, 0.4)',
+                            border: '4px solid white',
+                            fontSize: '1.1rem',
+                            textTransform: 'none',
+                            '&:hover': {
+                                transform: 'translateY(-2px)',
+                                boxShadow: '0 8px 25px rgba(132, 204, 22, 0.5)',
+                            }
+                        }}
+                    >
+                        SELL YOUR ITEM
+                    </Button>
+                </Box>
+
+                <SHRecentlyListed key={refreshToken} />
             </Container>
 
             {/* Hidden functionality for now or triggered elsewhere if needed, kept for data integrity */}

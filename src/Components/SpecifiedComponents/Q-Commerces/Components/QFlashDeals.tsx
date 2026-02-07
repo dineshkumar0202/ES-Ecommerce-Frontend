@@ -1,6 +1,9 @@
 import { Box, Typography, Button, Stack } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
 
 const QFlashDeals = () => {
+    const navigate = useNavigate();
+
     return (
         <Box sx={{
             bgcolor: '#1a1a1a',
@@ -25,6 +28,7 @@ const QFlashDeals = () => {
             </Box>
             <Button
                 variant="contained"
+                onClick={() => navigate('/quick/all')}
                 sx={{
                     bgcolor: 'white',
                     color: 'black',
@@ -35,7 +39,7 @@ const QFlashDeals = () => {
                     '&:hover': { bgcolor: '#e5e5e5' }
                 }}
             >
-                GRAB ALL
+                VIEW ALL
             </Button>
         </Box>
     );
