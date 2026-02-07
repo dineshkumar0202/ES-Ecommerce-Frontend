@@ -238,7 +238,9 @@ const ResaleManagement = () => {
                                         <TableRow key={post.id} hover sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
                                             <TableCell>
                                                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                                                    <Box sx={{ width: 48, height: 48, bgcolor: '#f5f5f5', borderRadius: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem' }}>{post.image}</Box>
+                                                    <Box sx={{ width: 48, height: 48, bgcolor: '#f5f5f5', borderRadius: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem' }}>
+                                                        <Box component="img" src={post.image} alt={post.title} sx={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                                    </Box>
                                                     <Box>
                                                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                                                             <Typography variant="subtitle2" sx={{ fontWeight: 'bold' }}>{post.title}</Typography>

@@ -28,23 +28,57 @@ const FreelancerSidebar = ({ onPost }: FreelancerSidebarProps) => {
         try {
             console.log('Generating image with prompt:', prompt);
 
-            // Use placehold.co - reliable placeholder service
-            const promptText = encodeURIComponent(prompt.substring(0, 30));
+            // Using the provided API key (Freepik)
+            const API_KEY = "FPSX9eeb26f1be1427e9773dfd2d7e3f4447";
 
-            // Using placehold.co - modern, reliable service
-            const imageUrl = `https://placehold.co/300x300/1e1e1e/bef264?text=${promptText}&font=roboto`;
+            console.log('Using Freepik Proxy...');
+            const response = await fetch('/freepik-api/v1/ai/text-to-image', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'x-freepik-api-key': API_KEY,
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({
+                    prompt: prompt,
+                    // Optional parameters for Freepik API
+                    aspect_ratio: "square", // or "portrait", "landscape"
+                    num_images: 1
+                })
+            });
 
-            console.log('Image URL:', imageUrl);
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                console.error('API Error Details:', errorData);
+                throw new Error(`API request failed with status ${response.status}: ${errorData.message || response.statusText}`);
+            }
 
-            // Simulate generation time
-            await new Promise(resolve => setTimeout(resolve, 1500));
+            const data = await response.json();
+            console.log('API Response:', data);
 
-            // Set the generated image
+            // Freepik typically returns base64 or url. Handling common response format:
+            // Expecting { data: [{ base64: "...", url: "..." }] }
+            let imageUrl = null;
+
+            if (data.data && data.data.length > 0) {
+                if (data.data[0].base64) {
+                    imageUrl = `data:image/png;base64,${data.data[0].base64}`;
+                } else if (data.data[0].url) {
+                    imageUrl = data.data[0].url;
+                }
+            }
+
+            if (!imageUrl) {
+                // Fallback if structure is different
+                if (data.url) imageUrl = data.url;
+                else throw new Error('Could not parse image URL from response');
+            }
+
             setGeneratedImage(imageUrl);
 
         } catch (error: any) {
             console.error('Error generating image:', error);
-            alert(`Failed to generate image: ${error.message}\n\nPlease try again.`);
+            alert(`Failed to generate image: ${error.message}\n\nIf you see a CORS error, please RESTART your development server (npm run dev) to apply the proxy settings.`);
         } finally {
             setIsGenerating(false);
         }
