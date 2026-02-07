@@ -1,18 +1,14 @@
 import React, { useState } from 'react';
-import { Box, Container, Typography, Button, Dialog, DialogContent, IconButton, Snackbar, Alert } from '@mui/material';
+import { Box, Container, Dialog, DialogContent, IconButton, Snackbar, Alert } from '@mui/material';
 import Navbar from '../WrapperComponents/Navbar';
 import Footer from '../WrapperComponents/Footer';
-import ResaleSearch from '../SpecifiedComponents/Second-hand/Components/ResaleSearch';
-import ResaleFeed from '../SpecifiedComponents/Second-hand/Components/ResaleFeed';
-import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import CloseIcon from '@mui/icons-material/Close';
-import WholesaleUploadForm from '../SpecifiedComponents/WholeSale/Components/WholesaleUploadForm';
-// Reusing WholesaleUploadForm but adapting it for Resale context via props or direct modification is cleaner.
-// For now, I will create a dedicated ResaleUploadForm based on WholesaleUploadForm to avoid mixing contexts too much, 
-// or I can reuse it if the fields are identical. The user asked to "convert this uploading to resale", 
-// implying the upload functionality should exist on Resale page.
-// I will create a new component `ResaleUploadForm` by copying `WholesaleUploadForm` logic but customized for Resale.
 
+// Imported SH Components
+import SHCategories from '../SpecifiedComponents/Second-hand/Components/SHCategories';
+import SHHero from '../SpecifiedComponents/Second-hand/Components/SHHero';
+import SHPromoStrip from '../SpecifiedComponents/Second-hand/Components/SHPromoStrip';
+import SHRecentlyListed from '../SpecifiedComponents/Second-hand/Components/SHRecentlyListed';
 import ResaleUploadForm from '../SpecifiedComponents/Second-hand/Components/ResaleUploadForm';
 
 const Resale = () => {
@@ -30,49 +26,22 @@ const Resale = () => {
         setSnackbarOpen(false);
     };
 
-    const handleOpenUpload = () => {
-        setOpenUpload(true);
-    };
-
     const handleCloseUpload = () => {
         setOpenUpload(false);
     };
 
     return (
-        <Box sx={{ minHeight: '100vh', bgcolor: '#fcfcfc' }}>
+        <Box sx={{ minHeight: '100vh', bgcolor: 'white' }}>
             <Navbar />
-            <Container maxWidth="xl" sx={{ mt: 3 }}>
 
-                {/* Header with Upload Button */}
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-                    <Box>
-                        <Typography variant="h4" sx={{ fontWeight: 800, color: '#1e293b' }}>Resale Market</Typography>
-                        <Typography variant="body2" color="text.secondary">Buy and sell pre-loved quality items</Typography>
-                    </Box>
-                    <Button
-                        variant="contained"
-                        onClick={handleOpenUpload}
-                        startIcon={<AddCircleOutlineIcon />}
-                        sx={{
-                            bgcolor: '#10b981',
-                            textTransform: 'none',
-                            fontWeight: 700,
-                            px: 3,
-                            py: 1,
-                            borderRadius: 2,
-                            boxShadow: '0 4px 6px -1px rgba(16, 185, 129, 0.1), 0 2px 4px -1px rgba(16, 185, 129, 0.06)',
-                            '&:hover': { bgcolor: '#059669' }
-                        }}
-                    >
-                        Sell Item
-                    </Button>
-                </Box>
-
-                <ResaleSearch />
-                <ResaleFeed key={refreshToken} />
+            <Container maxWidth="xl" sx={{ mt: 4 }}>
+                <SHCategories />
+                <SHHero />
+                <SHPromoStrip />
+                <SHRecentlyListed />
             </Container>
 
-            {/* Upload Dialog */}
+            {/* Hidden functionality for now or triggered elsewhere if needed, kept for data integrity */}
             <Dialog
                 open={openUpload}
                 onClose={handleCloseUpload}
@@ -115,3 +84,4 @@ const Resale = () => {
 };
 
 export default Resale;
+
