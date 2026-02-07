@@ -22,6 +22,13 @@ import QCategoryPage from './Components/Pages/QCategoryPage';
 import QAllProducts from './Components/Pages/QAllProducts';
 import QProductDetails from './Components/SpecifiedComponents/Q-Commerces/Components/QProductDetails';
 import ResaleProductDetails from './Components/SpecifiedComponents/Second-hand/Components/ResaleProductDetails';
+import AdminDashboard from './Components/SpecifiedComponents/Admin/AdminDashboard';
+import RetailManagement from './Components/SpecifiedComponents/Admin/RetailManagement';
+import WholesaleManagement from './Components/SpecifiedComponents/Admin/WholesaleManagement';
+import QCommerceManagement from './Components/SpecifiedComponents/Admin/QCommerceManagement';
+import ResaleManagement from './Components/SpecifiedComponents/Admin/ResaleManagement';
+import FreelanceManagement from './Components/SpecifiedComponents/Admin/FreelanceManagement';
+import ProtectedAdminRoute from './Components/SpecifiedComponents/Admin/ProtectedAdminRoute';
 import './App.css';
 
 const theme = createTheme({
@@ -62,6 +69,16 @@ function App() {
           <Route path="/quick/category/:categoryName" element={<QCategoryPage />} />
           <Route path="/quick/all" element={<QAllProducts />} />
           <Route path="/quick/product/:id" element={<QProductDetails />} />
+
+
+          {/* Admin Routes */}
+          <Route path="/admin/login" element={<Login />} />
+          <Route path="/admin" element={<ProtectedAdminRoute><AdminDashboard /></ProtectedAdminRoute>} />
+          <Route path="/admin/retail" element={<ProtectedAdminRoute><RetailManagement /></ProtectedAdminRoute>} />
+          <Route path="/admin/wholesale" element={<ProtectedAdminRoute><WholesaleManagement /></ProtectedAdminRoute>} />
+          <Route path="/admin/quick" element={<ProtectedAdminRoute><QCommerceManagement /></ProtectedAdminRoute>} />
+          <Route path="/admin/resale" element={<ProtectedAdminRoute><ResaleManagement /></ProtectedAdminRoute>} />
+          <Route path="/admin/freelance" element={<ProtectedAdminRoute><FreelanceManagement /></ProtectedAdminRoute>} />
         </Routes>
       </BrowserRouter>
     </ThemeProvider>

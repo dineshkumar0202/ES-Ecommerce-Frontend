@@ -16,11 +16,17 @@ const Profile = () => {
     const [activeTab, setActiveTab] = useState('Retail');
     const [role, setRole] = useState('Seller');
 
+    const [name, setName] = useState('User');
+    const [avatar, setAvatar] = useState('');
+
     useEffect(() => {
         const savedRole = localStorage.getItem('userRole');
-        if (savedRole) {
-            setRole(savedRole);
-        }
+        const savedName = localStorage.getItem('userName');
+        const savedAvatar = localStorage.getItem('userProfileImage');
+
+        if (savedRole) setRole(savedRole);
+        if (savedName) setName(savedName);
+        if (savedAvatar) setAvatar(savedAvatar);
     }, []);
 
     const tabs = ['Retail', 'Wholesale', 'Q-Commerce', 'Resale', 'Freelance'];
@@ -73,14 +79,14 @@ const Profile = () => {
                                 }}
                             >
                                 <Avatar
-                                    src="https://placehold.co/200x200/ffedd5/333?text=AT"
+                                    src={avatar || "https://placehold.co/200x200/ffedd5/333?text=AT"}
                                     sx={{ width: '100%', height: '100%', bgcolor: '#ffedd5', color: '#fb923c' }}
                                 />
                             </Box>
                         </Box>
 
                         <Typography variant="h6" sx={{ fontWeight: 800, color: '#0a0a0a' }}>
-                            Alex Thompson
+                            {name}
                         </Typography>
                         <Typography variant="body2" sx={{ color: '#64748b', mb: 4 }}>
                             {role} Account

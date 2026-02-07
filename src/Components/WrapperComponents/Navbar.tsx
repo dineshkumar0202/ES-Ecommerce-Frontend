@@ -1,7 +1,6 @@
 import { useState } from 'react';
-import { Box, Container, Stack, Typography, Divider, InputBase, IconButton, Avatar, Badge, Menu, MenuItem } from '@mui/material';
+import { Box, Container, Stack, Typography, Divider, InputBase, IconButton, Avatar, Menu, MenuItem } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
-import NotificationsOutlinedIcon from '@mui/icons-material/NotificationsOutlined';
 import ShoppingCartOutlinedIcon from '@mui/icons-material/ShoppingCartOutlined';
 import HubIcon from '@mui/icons-material/Hub';
 import StorefrontIcon from '@mui/icons-material/Storefront';
@@ -89,50 +88,75 @@ const Navbar = () => {
 
                         {/* Right Actions */}
                         <Stack direction="row" spacing={2} alignItems="center">
-                            <IconButton sx={{ color: 'white', '&:hover': { bgcolor: 'rgba(255,255,255,0.1)' } }}>
-                                <Badge variant="dot" color="primary" overlap="circular" sx={{ '& .MuiBadge-badge': { backgroundColor: '#bef264' } }}>
-                                    <NotificationsOutlinedIcon />
-                                </Badge>
-                            </IconButton>
-                            <IconButton sx={{ color: 'white', '&:hover': { bgcolor: 'rgba(255,255,255,0.1)' } }}>
+                            {/* Notification Icon Removed as per request */}
+
+                            <IconButton sx={{ color: 'white', '&:hover': { bgcolor: 'rgba(255,255,255,0.1)' } }} onClick={() => navigate('/products/categories')}>
                                 <ShoppingCartOutlinedIcon />
                             </IconButton>
 
                             <Divider orientation="vertical" flexItem sx={{ bgcolor: '#334155', height: 24, mx: 1, alignSelf: 'center' }} />
 
-                            <Stack
-                                direction="row"
-                                spacing={2}
-                                alignItems="center"
-                                sx={{ cursor: 'pointer' }}
-                                onClick={handleMenuOpen as any}
-                            >
-                                <Box sx={{ textAlign: 'right', display: { xs: 'none', md: 'block' } }}>
-                                    <Typography variant="subtitle2" sx={{ color: 'white', fontWeight: 600, lineHeight: 1.2, fontSize: '0.9rem' }}>
-                                        Dinesh
-                                    </Typography>
-                                    <Typography variant="caption" sx={{ color: '#94a3b8', display: 'block', fontSize: '0.75rem' }}>
-                                        My Account
-                                    </Typography>
+                            {localStorage.getItem('userName') ? (
+                                <>
+                                    <Stack
+                                        direction="row"
+                                        spacing={2}
+                                        alignItems="center"
+                                        sx={{ cursor: 'pointer' }}
+                                        onClick={handleMenuOpen as any}
+                                    >
+                                        <Box sx={{ textAlign: 'right', display: { xs: 'none', md: 'block' } }}>
+                                            <Typography variant="subtitle2" sx={{ color: 'white', fontWeight: 600, lineHeight: 1.2, fontSize: '0.9rem' }}>
+                                                {localStorage.getItem('userName')}
+                                            </Typography>
+                                            <Typography variant="caption" sx={{ color: '#94a3b8', display: 'block', fontSize: '0.75rem' }}>
+                                                {localStorage.getItem('userRole')} Account
+                                            </Typography>
+                                        </Box>
+                                        <Avatar
+                                            src={localStorage.getItem('userProfileImage') || undefined}
+                                            sx={{ border: '2px solid white', width: 40, height: 40 }}
+                                        />
+                                    </Stack>
+                                    <Menu
+                                        anchorEl={anchorEl}
+                                        open={open}
+                                        onClose={handleMenuClose}
+                                        MenuListProps={{
+                                            'aria-labelledby': 'basic-button',
+                                        }}
+                                        sx={{ mt: 1 }}
+                                    >
+                                        <MenuItem onClick={() => {
+                                            handleMenuClose();
+                                            const role = localStorage.getItem('userRole');
+                                            if (role === 'Admin') navigate('/admin');
+                                            else navigate('/profile');
+                                        }}>
+                                            Profile
+                                        </MenuItem>
+                                        <MenuItem onClick={() => {
+                                            handleMenuClose();
+                                            localStorage.clear();
+                                            navigate('/login');
+                                        }}>
+                                            Logout
+                                        </MenuItem>
+                                    </Menu>
+                                </>
+                            ) : (
+                                <Box
+                                    onClick={() => navigate('/login')}
+                                    sx={{
+                                        cursor: 'pointer',
+                                        color: 'white',
+                                        fontWeight: 600,
+                                        '&:hover': { color: '#bef264' }
+                                    }}
+                                >
+                                    Login
                                 </Box>
-                                <Avatar
-                                    src="https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&w=100&q=80"
-                                    sx={{ border: '2px solid white', width: 40, height: 40 }}
-                                />
-                            </Stack>
-                            <Menu
-                                anchorEl={anchorEl}
-                                open={open}
-                                onClose={handleMenuClose}
-                                MenuListProps={{
-                                    'aria-labelledby': 'basic-button',
-                                }}
-                                sx={{ mt: 1 }}
-                            >
-                                <MenuItem onClick={() => { handleMenuClose(); navigate('/profile'); }}>Profile</MenuItem>
-                                <MenuItem onClick={() => { handleMenuClose(); navigate('/login'); }}>Login</MenuItem>
-                                <MenuItem onClick={() => { handleMenuClose(); navigate('/'); }}>Logout</MenuItem>
-                            </Menu>
+                            )}
                         </Stack>
                     </Box>
 

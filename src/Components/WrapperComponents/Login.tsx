@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { Box, Typography, TextField, Button, Paper, Divider } from '@mui/material';
-import { useNavigate } from 'react-router-dom';
+import { Box, Typography, TextField, Button, Paper, Divider, Alert } from '@mui/material';
+import { useNavigate, useLocation } from 'react-router-dom';
 import GoogleIcon from '@mui/icons-material/Google';
 import AppleIcon from '@mui/icons-material/Apple';
 import StorefrontOutlinedIcon from '@mui/icons-material/StorefrontOutlined';
@@ -11,15 +11,48 @@ import Navbar from './Navbar';
 
 const Login = () => {
     const navigate = useNavigate();
-    const [userType, setUserType] = useState(0); // 0 = Seller, 1 = Buyer, 2 = Admin
+    const location = useLocation();
+    const [userType, setUserType] = useState(location.pathname.includes('/admin') ? 2 : 0); // 0 = Seller, 1 = Buyer, 2 = Admin
 
-    const handleLogin = () => {
-        let role = 'Seller';
-        if (userType === 1) role = 'Buyer';
-        if (userType === 2) role = 'Admin';
+    // Form State
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [name, setName] = useState('');
+    const [error, setError] = useState('');
 
-        localStorage.setItem('userRole', role);
-        navigate('/');
+    const handleLogin = (e?: React.FormEvent) => {
+        if (e) e.preventDefault();
+        setError('');
+
+        if (userType === 2) {
+            // Admin Logic
+            if (email === 'admin@example.com' && password === 'admin123') {
+                localStorage.setItem('userRole', 'Admin');
+                localStorage.setItem('isAdminLoggedIn', 'true');
+                localStorage.setItem('userName', 'Master Admin');
+                localStorage.setItem('userProfileImage', 'https://ui-avatars.com/api/?name=Master+Admin&background=0D8ABC&color=fff');
+                navigate('/admin', { replace: true });
+            } else {
+                setError('Invalid admin credentials');
+            }
+        } else {
+            // Standard User Logic (Seller/Buyer)
+            let role = 'Seller';
+            if (userType === 1) role = 'Buyer';
+
+            // Mock Validation
+            if (!name) {
+                setError('Please enter your name');
+                return;
+            }
+
+            localStorage.setItem('userRole', role);
+            localStorage.setItem('userName', name);
+            localStorage.setItem('userProfileImage', `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=random`);
+
+            // Navigate to profile page
+            navigate('/profile', { replace: true });
+        }
     };
 
     return (
@@ -106,10 +139,10 @@ const Login = () => {
                         {/* Header */}
                         <Box sx={{ mb: 4 }}>
                             <Typography variant="h5" sx={{ fontWeight: 800, color: '#0a0a0a', mb: 1 }}>
-                                Create Account
+                                {userType === 2 ? 'Admin Portal' : 'Create Account'}
                             </Typography>
                             <Typography variant="body2" sx={{ color: '#64748b' }}>
-                                Select your account type and fill in your details to get started.
+                                {userType === 2 ? 'Restricted access for Global Operations' : 'Select your account type and fill in your details to get started.'}
                             </Typography>
                         </Box>
 
@@ -238,8 +271,12 @@ const Login = () => {
                             </Box>
                         </Box>
 
+                        {error && userType === 2 && (
+                            <Alert severity="error" sx={{ mb: 3 }}>{error}</Alert>
+                        )}
+
                         {/* Form Fields */}
-                        <Box component="form" noValidate>
+                        <Box component="form" onSubmit={handleLogin} noValidate>
                             {/* Admin: Email + Password */}
                             {userType === 2 ? (
                                 <>
@@ -252,6 +289,8 @@ const Login = () => {
                                         name="email"
                                         autoComplete="email"
                                         placeholder="admin@example.com"
+                                        value={email}
+                                        onChange={(e) => setEmail(e.target.value)}
                                         sx={{
                                             mb: 2,
                                             '& .MuiOutlinedInput-root': {
@@ -271,6 +310,8 @@ const Login = () => {
                                         id="password"
                                         autoComplete="current-password"
                                         placeholder="••••••••"
+                                        value={password}
+                                        onChange={(e) => setPassword(e.target.value)}
                                         sx={{
                                             mb: 1,
                                             '& .MuiOutlinedInput-root': {
@@ -292,6 +333,8 @@ const Login = () => {
                                         name="name"
                                         autoComplete="name"
                                         placeholder="John Doe"
+                                        value={name}
+                                        onChange={(e) => setName(e.target.value)}
                                         sx={{
                                             mb: 2,
                                             '& .MuiOutlinedInput-root': {
@@ -371,7 +414,7 @@ const Login = () => {
                                     }
                                 }}
                             >
-                                Register Account 🚀
+                                {userType === 2 ? 'Authenticate Admin' : 'Register Account 🚀'}
                             </Button>
 
                             {/* Already have account */}
