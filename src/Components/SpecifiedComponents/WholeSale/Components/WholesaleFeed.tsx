@@ -1,20 +1,26 @@
 import { useEffect, useState, type ChangeEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Stack, Paper, Box, Typography, Button, Pagination, Chip, Avatar } from '@mui/material';
+import { Stack, Paper, Box, Typography, Button, Pagination, Chip } from '@mui/material';
 import PhoneIcon from '@mui/icons-material/Phone';
-import WhatsAppIcon from '@mui/icons-material/WhatsApp';
-import EmailIcon from '@mui/icons-material/Email';
+import ShoppingCartOutlinedIcon from '@mui/icons-material/ShoppingCartOutlined';
+import LocationOnIcon from '@mui/icons-material/LocationOn';
+import BusinessIcon from '@mui/icons-material/Business';
 
-// Mock Data adapted with multiple images, removed price, added phone and email
+// Mock Data adapted with pricePerUnit
 const wholesaleProducts = [
     {
         id: 1,
         title: "Industrial Grade Steel Bolts - Box of 500",
-        description: "High-tensile strength 316 stainless steel bolts. Specifically engineered for extreme load-bearing environments in automotive and heavy-duty structural construction. Each box contains 500 units with matching zinc-plated washers.",
+        description: "High-tensile strength 316 stainless steel bolts. Specifically engineered for extreme load-bearing environments.",
         sku: "WHS-99283-BLT",
         packSize: 500,
+        pricePerUnit: 12, // Added price
         phoneNumber: "+91 98765 43210",
         email: "sales@steelparts.com",
+        location: "Mumbai, Maharashtra",
+        companyName: "Steel Parts India Pvt Ltd",
+        rating: 4.8,
+        reviews: [],
         images: [
             "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=400&q=80",
             "https://images.unsplash.com/photo-1535813547-99c456a41963?auto=format&fit=crop&w=400&q=80",
@@ -26,11 +32,16 @@ const wholesaleProducts = [
     {
         id: 2,
         title: "Precision Ball Bearing Set - Pack of 100",
-        description: "Premium chrome steel bearings with ABEC-7 rating for high-speed applications. Pre-lubricated and sealed for maintenance-free operation in industrial machinery.",
+        description: "Premium chrome steel bearings with ABEC-7 rating for high-speed applications. Pre-lubricated and sealed.",
         sku: "BRG-100-PK",
         packSize: 100,
+        pricePerUnit: 150,
         phoneNumber: "+91 99887 76655",
         email: "contact@bearingspro.com",
+        location: "Pune, Maharashtra",
+        companyName: "Bearings Pro Ltd",
+        rating: 4.5,
+        reviews: [],
         images: [
             "https://images.unsplash.com/photo-1535813547-99c456a41963?auto=format&fit=crop&w=400&q=80",
             "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=400&q=80",
@@ -42,11 +53,16 @@ const wholesaleProducts = [
     {
         id: 3,
         title: "Heavy Duty Hydraulic Pump - Single Unit",
-        description: "Series-X cast iron hydraulic pump designed for industrial presses and lifts. Features high-pressure output and durable aluminum housing for heat dissipation.",
+        description: "Series-X cast iron hydraulic pump designed for industrial presses and lifts. Features high-pressure output.",
         sku: "HYD-552-PMP",
         packSize: 1,
+        pricePerUnit: 15000,
         phoneNumber: "+91 91234 56789",
         email: "support@hydrosystems.com",
+        location: "Chennai, Tamil Nadu",
+        companyName: "Hydro Systems Inc",
+        rating: 4.9,
+        reviews: [],
         images: [
             "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=400&q=80",
             "https://images.unsplash.com/photo-1649232811467-31f415309199?auto=format&fit=crop&w=400&q=80",
@@ -58,11 +74,16 @@ const wholesaleProducts = [
     {
         id: 4,
         title: "Safety Work Gloves - Case of 50 Pairs",
-        description: "Level 5 cut-resistant Kevlar/Latex gloves for maximum hand protection. Breathable fabric back with reinforced grip coating. Ideal for construction and metalworking.",
+        description: "Level 5 cut-resistant Kevlar/Latex gloves for maximum hand protection. Breathable fabric back.",
         sku: "SFT-GLV-50",
         packSize: 50,
+        pricePerUnit: 85,
         phoneNumber: "+91 88990 01122",
         email: "safety@gearmasters.com",
+        location: "Delhi, NCR",
+        companyName: "Gear Masters Safety",
+        rating: 4.2,
+        reviews: [],
         images: [
             "https://images.unsplash.com/photo-1649232811467-31f415309199?auto=format&fit=crop&w=400&q=80",
             "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=400&q=80",
@@ -79,12 +100,12 @@ const WholesaleFeed = () => {
     const itemsPerPage = 10;
 
     useEffect(() => {
-        const storedProducts = localStorage.getItem('wholesaleProducts');
+        const storedProducts = localStorage.getItem('wholesaleProducts_v1.2');
         if (storedProducts) {
             setProducts(JSON.parse(storedProducts));
         } else {
             // Initialize with mock data if empty
-            localStorage.setItem('wholesaleProducts', JSON.stringify(wholesaleProducts));
+            localStorage.setItem('wholesaleProducts_v1.2', JSON.stringify(wholesaleProducts));
             setProducts(wholesaleProducts);
         }
     }, []);
@@ -118,11 +139,24 @@ const WholesaleFeed = () => {
 };
 
 const ProductCard = ({ item }: { item: any }) => {
-    const [activeImage, setActiveImage] = useState(item.images ? item.images[0] : item.image);
+    const [activeImageIndex, setActiveImageIndex] = useState(0);
+    const [isHovered, setIsHovered] = useState(false);
     const navigate = useNavigate();
 
-    // Fallback if images array isn't present in stored/old data
     const imagesList = item.images || [item.image || "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=400&q=80"];
+
+    // Auto-slide functionality (Matching product details)
+    useEffect(() => {
+        if (imagesList.length <= 1 || isHovered) return;
+
+        const interval = setInterval(() => {
+            setActiveImageIndex((prev) => (prev + 1) % imagesList.length);
+        }, 3000);
+
+        return () => clearInterval(interval);
+    }, [imagesList.length, isHovered]);
+
+    const activeImage = imagesList[activeImageIndex];
 
     return (
         <Paper
@@ -133,13 +167,13 @@ const ProductCard = ({ item }: { item: any }) => {
                 display: 'flex',
                 flexDirection: { xs: 'column', md: 'row' },
                 p: 0,
-                borderRadius: 3,
+                borderRadius: 2,
                 border: '1px solid #e2e8f0',
                 overflow: 'hidden',
                 transition: 'all 0.3s ease',
                 '&:hover': {
                     boxShadow: '0 10px 30px -10px rgba(0,0,0,0.1)',
-                    transform: 'translateY(-2px)'
+                    borderColor: '#cbd5e1'
                 }
             }}
         >
@@ -155,16 +189,20 @@ const ProductCard = ({ item }: { item: any }) => {
                     borderBottom: { xs: '1px solid #e2e8f0', md: 'none' }
                 }}
             >
-                {/* Main Image */}
+                {/* Main Image with Auto Slide */}
                 <Box
                     sx={{
                         width: '100%',
                         height: '220px',
                         borderRadius: 2,
                         overflow: 'hidden',
-                        mb: 2,
-                        border: '1px solid #e2e8f0'
+                        mb: 0, // Removed bottom margin since thumbnails are gone
+                        border: '1px solid #e2e8f0',
+                        position: 'relative',
+                        bgcolor: 'white'
                     }}
+                    onMouseEnter={() => setIsHovered(true)}
+                    onMouseLeave={() => setIsHovered(false)}
                 >
                     <Box
                         component="img"
@@ -173,64 +211,41 @@ const ProductCard = ({ item }: { item: any }) => {
                         sx={{
                             width: '100%',
                             height: '100%',
-                            objectFit: 'cover'
+                            objectFit: 'contain',
+                            transition: 'opacity 0.3s'
                         }}
                     />
-                </Box>
-
-                {/* Thumbnails */}
-                <Stack direction="row" spacing={1} sx={{ overflowX: 'auto', pb: 0.5 }}>
-                    {imagesList.slice(0, 4).map((img: string, index: number) => (
-                        <Box
-                            key={index}
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                setActiveImage(img);
-                            }}
-                            sx={{
-                                width: 50,
-                                height: 50,
-                                borderRadius: 1.5,
-                                overflow: 'hidden',
-                                border: activeImage === img ? '2px solid #2563eb' : '1px solid #e2e8f0',
-                                cursor: 'pointer',
-                                flexShrink: 0,
-                                opacity: activeImage === img ? 1 : 0.7,
-                                '&:hover': { opacity: 1 }
-                            }}
-                        >
-                            <Box
-                                component="img"
-                                src={img}
-                                sx={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                            />
-                        </Box>
-                    ))}
-                    {imagesList.length > 4 && (
-                        <Box sx={{
-                            width: 50,
-                            height: 50,
-                            borderRadius: 1.5,
-                            bgcolor: '#f1f5f9',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            fontSize: '0.75rem',
-                            fontWeight: 'bold',
-                            color: '#64748b'
-                        }}>
-                            +{imagesList.length - 4}
+                    {/* Slide Indicators */}
+                    {imagesList.length > 1 && (
+                        <Box sx={{ position: 'absolute', bottom: 10, left: 0, right: 0, display: 'flex', justifyContent: 'center', gap: 0.5 }}>
+                            {imagesList.map((_: any, index: number) => (
+                                <Box
+                                    key={index}
+                                    sx={{
+                                        width: 6,
+                                        height: 6,
+                                        borderRadius: '50%',
+                                        bgcolor: activeImageIndex === index ? '#bef264' : 'rgba(0,0,0,0.2)', // Changed to Lemon Green
+                                        transition: 'background-color 0.3s'
+                                    }}
+                                />
+                            ))}
                         </Box>
                     )}
-                </Stack>
+                </Box>
+
+                {/* Thumbnails REMOVED here */}
             </Box>
 
-            {/* Content Section */}
+            {/* Content Section - Matches ProductDetails UI Style */}
             <Box sx={{ flex: 1, p: 3, display: 'flex', flexDirection: 'column' }}>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
-                    <Typography variant="h6" sx={{ fontWeight: 800, color: '#0f172a', pr: 2 }}>
-                        {item.title}
-                    </Typography>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', items: 'flex-start', mb: 1 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
+                        <BusinessIcon sx={{ color: '#2563eb', fontSize: 18 }} />
+                        <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#2563eb' }}>
+                            {item.companyName || "Verified Seller"}
+                        </Typography>
+                    </Box>
                     {item.inStock && (
                         <Chip
                             label="IN STOCK"
@@ -247,53 +262,59 @@ const ProductCard = ({ item }: { item: any }) => {
                     )}
                 </Box>
 
-                <Typography variant="body2" sx={{ color: '#64748b', mb: 2, lineHeight: 1.6 }}>
+                <Typography variant="h6" sx={{ fontWeight: 800, color: '#0f172a', mb: 1, lineHeight: 1.3 }}>
+                    {item.title}
+                </Typography>
+
+                <Typography variant="body2" sx={{ color: '#64748b', mb: 3, lineHeight: 1.6, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
                     {item.description}
                 </Typography>
 
-                {/* Details Grid: Quantity, Email, Phone */}
-                <Stack direction={{ xs: 'column', sm: 'row' }} spacing={3} sx={{ my: 2, p: 2, bgcolor: '#f8fafc', borderRadius: 2 }}>
+                {/* Details Grid: Price and Pack Size (Matching Details Page) */}
+                <Box sx={{ display: 'flex', gap: 4, mb: 3, p: 2, bgcolor: '#f8fafc', borderRadius: 2 }}>
                     <Box>
-                        <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 600, display: 'block', mb: 0.5 }}>
-                            QUANTITY (PACK SIZE)
+                        <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 700, display: 'block', mb: 0.5 }}>
+                            PRICE PER UNIT
+                        </Typography>
+                        <Typography variant="subtitle1" sx={{ fontWeight: 800, color: '#0f172a' }}>
+                            {item.pricePerUnit ? `?${item.pricePerUnit.toLocaleString('en-IN')}` : 'Contact for Price'}
+                        </Typography>
+                    </Box>
+                    <Box>
+                        <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 700, display: 'block', mb: 0.5 }}>
+                            PACK SIZE
                         </Typography>
                         <Typography variant="subtitle1" sx={{ fontWeight: 800, color: '#0f172a' }}>
                             {item.packSize} Units
                         </Typography>
                     </Box>
+                </Box>
 
-                    <Box>
-                        <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 600, display: 'block', mb: 0.5 }}>
-                            CONTACT INFO
+                {/* Contact Details (Mini) */}
+                <Box sx={{ display: 'flex', gap: 3, mb: 3 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                        <LocationOnIcon sx={{ color: '#94a3b8', fontSize: 16 }} />
+                        <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 600 }}>
+                            {item.location}
                         </Typography>
-                        <Stack spacing={0.5}>
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                <PhoneIcon sx={{ fontSize: 16, color: '#64748b' }} />
-                                <Typography variant="body2" sx={{ fontWeight: 500, color: '#334155' }}>{item.phoneNumber || "+91 98765 43210"}</Typography>
-                            </Box>
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                <EmailIcon sx={{ fontSize: 16, color: '#64748b' }} />
-                                <Typography variant="body2" sx={{ fontWeight: 500, color: '#334155' }}>{item.email || "seller@example.com"}</Typography>
-                            </Box>
-                        </Stack>
                     </Box>
-                </Stack>
+                </Box>
 
                 <Box sx={{ mt: 'auto', display: 'flex', alignItems: 'center', gap: 2 }}>
                     <Button
-                        variant="outlined"
+                        variant="contained"
                         startIcon={<PhoneIcon />}
                         sx={{
                             flex: 1,
                             height: '42px',
-                            borderColor: '#0f172a',
-                            color: '#0f172a',
+                            bgcolor: '#bef264', // Lemon Green
+                            color: 'black', // Black text for contrast
                             textTransform: 'none',
                             fontWeight: 700,
                             borderRadius: 1.5,
+                            boxShadow: 'none',
                             '&:hover': {
-                                bgcolor: '#f1f5f9',
-                                borderColor: '#0f172a'
+                                bgcolor: '#d9f99d'
                             }
                         }}
                         onClick={(e) => {
@@ -305,28 +326,27 @@ const ProductCard = ({ item }: { item: any }) => {
                     </Button>
 
                     <Button
-                        variant="contained"
-                        startIcon={<WhatsAppIcon />}
+                        variant="outlined"
+                        startIcon={<ShoppingCartOutlinedIcon />}
                         sx={{
                             flex: 1,
                             height: '42px',
-                            bgcolor: '#bef264', // Lime Green
-                            color: 'black',
+                            borderColor: '#cbd5e1',
+                            color: '#334155',
                             textTransform: 'none',
                             fontWeight: 700,
                             borderRadius: 1.5,
-                            boxShadow: 'none',
                             '&:hover': {
-                                bgcolor: '#d9f99d',
-                                boxShadow: '0 4px 6px -1px rgba(180, 240, 100, 0.3)'
+                                bgcolor: '#f1f5f9',
+                                borderColor: '#94a3b8'
                             }
                         }}
                         onClick={(e) => {
                             e.stopPropagation();
-                            window.open(`https://wa.me/${(item.phoneNumber || "919876543210").replace(/\D/g, '')}?text=Hi, I'm interested in ${item.title}`, '_blank');
+                            // Add to cart logic if needed
                         }}
                     >
-                        WhatsApp Now
+                        Add to Cart
                     </Button>
                 </Box>
             </Box>

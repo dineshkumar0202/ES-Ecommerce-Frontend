@@ -1,8 +1,9 @@
 import { useState } from 'react';
-import { Box, Container, Typography, Dialog, DialogContent, IconButton, Snackbar, Alert, Button } from '@mui/material';
+import { Box, Container, Typography, Dialog, DialogContent, IconButton, Snackbar, Alert, Button, Paper, InputBase } from '@mui/material';
 import Navbar from '../WrapperComponents/Navbar';
 import Footer from '../WrapperComponents/Footer';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
+import SearchIcon from '@mui/icons-material/Search';
 
 import WholesaleFeed from '../SpecifiedComponents/WholeSale/Components/WholesaleFeed';
 import WholesaleFilterBar from '../SpecifiedComponents/WholeSale/Components/WholesaleFilterBar';
@@ -13,6 +14,7 @@ const Wholesale = () => {
     const [openUpload, setOpenUpload] = useState(false);
     const [snackbarOpen, setSnackbarOpen] = useState(false);
     const [refreshToken, setRefreshToken] = useState(0);
+    const [searchQuery, setSearchQuery] = useState(''); // Added search state
 
     const handleProductPosted = () => {
         setOpenUpload(false);
@@ -28,13 +30,16 @@ const Wholesale = () => {
         setOpenUpload(false);
     };
 
+    // Reverting to the "Old Type" look: Smaller banner, "Explore Products" button
+    // But keeping functionality clean
+
     return (
         <Box sx={{ minHeight: '100vh', bgcolor: '#f8fafc' }}>
             <Navbar />
 
             <Container maxWidth="xl" sx={{ mt: 4, mb: 8 }}>
 
-                {/* Wholesale Hero Banner */}
+                {/* Wholesale Hero Banner - Reverted to "Old Type" Style */}
                 <Box sx={{
                     bgcolor: 'black',
                     borderRadius: 4,
@@ -44,7 +49,7 @@ const Wholesale = () => {
                     overflow: 'hidden',
                     display: 'flex',
                     alignItems: 'center',
-                    minHeight: '200px'
+                    minHeight: '200px' // Back to 200px
                 }}>
                     <Box sx={{ position: 'relative', zIndex: 1, maxWidth: '600px' }}>
                         <Typography variant="overline" sx={{ color: '#bef264', fontWeight: 800, letterSpacing: 2, mb: 0.5, display: 'block' }}>
