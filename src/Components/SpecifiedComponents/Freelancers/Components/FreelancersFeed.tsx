@@ -1,8 +1,5 @@
 // Forces refresh
 import { Box, Typography, Paper, Chip, Stack, Button, IconButton } from '@mui/material';
-import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
-import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
-import AccessTimeOutlinedIcon from '@mui/icons-material/AccessTimeOutlined';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import ViewListIcon from '@mui/icons-material/ViewList';
 import GridViewIcon from '@mui/icons-material/GridView';
@@ -68,77 +65,78 @@ const FreelancersFeed = ({ posts }: FreelancersFeedProps) => {
                         key={item.id}
                         elevation={0}
                         sx={{
-                            p: 2.5,
+                            p: 2,
                             borderRadius: 4,
                             bgcolor: 'white',
                             display: 'flex',
-                            alignItems: 'flex-start',
+                            alignItems: 'flex-start', // Align start to handle description height
                             gap: 3,
+                            border: '1px solid #e2e8f0',
                             transition: 'all 0.2s',
-                            '&:hover': { boxShadow: '0 10px 30px rgba(0,0,0,0.05)' }
+                            '&:hover': { boxShadow: '0 8px 25px rgba(0,0,0,0.05)', borderColor: 'transparent', transform: 'translateY(-2px)' }
                         }}
                     >
-                        {/* Image */}
+                        {/* Image - Slightly larger for 'Product Image' emphasis */}
                         <Box
+                            component="img"
+                            src={item.image}
+                            alt={item.title}
                             sx={{
-                                width: 100,
+                                width: 100, // Increased size
                                 height: 100,
                                 borderRadius: 3,
-                                overflow: 'hidden',
-                                flexShrink: 0,
+                                objectFit: 'cover',
                                 bgcolor: '#f1f5f9'
                             }}
-                        >
-                            <Box component="img" src={item.image} alt={item.title} sx={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        />
+
+                        {/* Middle Content - Product Details */}
+                        <Box sx={{ flexGrow: 1 }}>
+                            <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 0.5 }}>
+                                <Typography variant="h6" sx={{ fontWeight: 800, fontSize: '1rem', color: '#0f172a' }}>
+                                    {item.title}
+                                </Typography>
+                                <Chip
+                                    label={item.status === 'ACTIVE' ? 'CONFIRMED' : item.status}
+                                    size="small"
+                                    sx={{
+                                        height: 20,
+                                        fontSize: '0.65rem',
+                                        fontWeight: 800,
+                                        borderRadius: 1,
+                                        bgcolor: item.status === 'ACTIVE' || item.status === 'CONFIRMED' || item.status === 'NEW' ? '#bef264' : (item.status === 'PENDING' ? '#f1f5f9' : '#fee2e2'),
+                                        color: item.status === 'ACTIVE' || item.status === 'CONFIRMED' || item.status === 'NEW' ? '#1a2e05' : (item.status === 'PENDING' ? '#64748b' : '#991b1b')
+                                    }}
+                                />
+                            </Stack>
+                            
+                            {/* Product Details / Description */}
+                            <Typography variant="body2" sx={{ color: '#64748b', fontSize: '0.85rem', mb: 1, lineHeight: 1.5 }}>
+                                {item.description}
+                            </Typography>
+
+                            <Typography variant="body2" sx={{ color: '#94a3b8', fontSize: '0.75rem', fontWeight: 600 }}>
+                                Posted {item.time} • {item.nameDisplay || 'Service'}
+                            </Typography>
                         </Box>
 
-                        {/* Content */}
-                        <Box sx={{ flexGrow: 1 }}>
-                            <Stack direction="row" justifyContent="space-between" alignItems="flex-start">
-                                <Box>
-                                    <Stack direction="row" alignItems="center" spacing={1.5} sx={{ mb: 1 }}>
-                                        <Typography variant="h6" sx={{ fontWeight: 800, fontSize: '1.1rem' }}>
-                                            {item.title}
-                                        </Typography>
-                                        <Chip
-                                            label={item.status}
-                                            size="small"
-                                            sx={{
-                                                bgcolor: item.tagColor,
-                                                color: item.tagTextColor,
-                                                fontWeight: 800,
-                                                fontSize: '0.65rem',
-                                                height: 22,
-                                                borderRadius: 1
-                                            }}
-                                        />
-                                    </Stack>
-                                    <Typography variant="body2" sx={{ color: '#64748b', mb: 2, maxWidth: '90%' }}>
-                                        {item.description}
-                                    </Typography>
-
-                                    <Stack direction="row" spacing={3} alignItems="center">
-                                        <Stack direction="row" spacing={0.5} alignItems="center">
-                                            <VisibilityOutlinedIcon sx={{ fontSize: 16, color: '#94a3b8' }} />
-                                            <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 600 }}>{item.views}</Typography>
-                                        </Stack>
-                                        <Stack direction="row" spacing={0.5} alignItems="center">
-                                            <AccessTimeOutlinedIcon sx={{ fontSize: 16, color: '#94a3b8' }} />
-                                            <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 600 }}>{item.time}</Typography>
-                                        </Stack>
-                                    </Stack>
-                                </Box>
-
-                                {/* Right Side Price & Action */}
-                                <Stack alignItems="flex-end" justifyContent="space-between" sx={{ height: '100%', minHeight: 100 }}>
-                                    <Typography variant="h6" sx={{ fontWeight: 900 }}>
-                                        {item.currency}{item.price.toFixed(2)}
-                                    </Typography>
-                                    <IconButton size="small" sx={{ color: '#94a3b8' }}>
-                                        <MoreHorizIcon />
-                                    </IconButton>
-                                </Stack>
-                            </Stack>
+                        {/* Right Side - Removed Price, Kept Action */}
+                        <Box sx={{ textAlign: 'right', minWidth: 80 }}>
+                            <Typography 
+                                variant="caption" 
+                                sx={{ 
+                                    color: '#94a3b8', 
+                                    fontSize: '0.7rem', 
+                                    fontWeight: 700, 
+                                    textDecoration: 'underline', 
+                                    cursor: 'pointer',
+                                    display: 'block',
+                                    mt: 0.5,
+                                    '&:hover': { color: '#64748b' }
+                                }}
+                            >
+                                EDIT POST
+                            </Typography>
                         </Box>
                     </Paper>
                 ))}

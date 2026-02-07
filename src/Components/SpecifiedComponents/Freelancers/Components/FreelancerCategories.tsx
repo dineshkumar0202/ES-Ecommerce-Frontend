@@ -1,12 +1,12 @@
 import { Box, Typography, Card, CardMedia } from '@mui/material';
 
 const categories = [
-    { title: 'WEB DEV', image: 'https://cdn-icons-png.flaticon.com/512/1005/1005141.png' },
-    { title: 'MOBILE APP', image: 'https://cdn-icons-png.flaticon.com/512/2906/2906274.png' },
-    { title: 'UI/UX DESIGN', image: 'https://cdn-icons-png.flaticon.com/512/1260/1260206.png' },
-    { title: 'WRITING', image: 'https://cdn-icons-png.flaticon.com/512/2490/2490315.png' },
-    { title: 'MARKETING', image: 'https://cdn-icons-png.flaticon.com/512/1998/1998087.png' },
-    { title: 'SEO', image: 'https://cdn-icons-png.flaticon.com/512/2721/2721291.png' }
+    { title: 'Headphones', image: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=150&q=80' },
+    { title: 'Gaming', image: 'https://images.unsplash.com/photo-1593118943729-22a466c9bb3e?auto=format&fit=crop&w=150&q=80' },
+    { title: 'Cameras', image: 'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=crop&w=150&q=80' },
+    { title: 'Watches', image: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=150&q=80' },
+    { title: 'Sneakers', image: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=150&q=80' },
+    { title: 'Glasses', image: 'https://images.unsplash.com/photo-1572635196237-14b3f281503f?auto=format&fit=crop&w=150&q=80' }
 ];
 
 const FreelancerCategories = () => {
@@ -40,9 +40,15 @@ const FreelancerCategories = () => {
                             component="img"
                             image={cat.image}
                             alt={cat.title}
-                            sx={{ width: 60, height: 60, objectFit: 'contain', mb: 2 }}
+                            sx={{
+                                width: 80,
+                                height: 80,
+                                objectFit: 'cover',
+                                mb: 1.5,
+                                borderRadius: 3
+                            }}
                         />
-                        <Typography variant="caption" sx={{ fontWeight: 800, fontSize: '0.7rem', color: '#1e293b' }}>
+                        <Typography variant="caption" sx={{ fontWeight: 800, fontSize: '0.8rem', color: '#1e293b' }}>
                             {cat.title}
                         </Typography>
                     </Card>
