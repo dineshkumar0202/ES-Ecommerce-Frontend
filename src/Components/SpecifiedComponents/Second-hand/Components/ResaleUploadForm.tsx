@@ -88,27 +88,6 @@ const ResaleUploadForm = ({ onPost }: { onPost?: () => void }) => {
         try {
             localStorage.setItem('resaleProducts', JSON.stringify([newProduct, ...existingProducts]));
 
-            // Add to Wholesale Feed as well (User Request)
-            const wholesaleItem = {
-                id: newProduct.id,
-                title: newProduct.title,
-                description: description,
-                sku: `RESALE-${newProduct.id}`,
-                packSize: 1, // Default for single resale item
-                pricePerUnit: Number(price), // Numeric price
-                phoneNumber: mobile,
-                email: "seller@example.com", // Placeholder
-                location: location,
-                companyName: "Verified Reseller", // Default tag
-                rating: 5.0, // New listing boost
-                reviews: [],
-                images: images,
-                inStock: true
-            };
-
-            const existingWholesale = JSON.parse(localStorage.getItem('wholesaleProducts_v1.2') || '[]');
-            localStorage.setItem('wholesaleProducts_v1.2', JSON.stringify([wholesaleItem, ...existingWholesale]));
-
             if (onPost) {
                 // Reset form
                 setProductName('');

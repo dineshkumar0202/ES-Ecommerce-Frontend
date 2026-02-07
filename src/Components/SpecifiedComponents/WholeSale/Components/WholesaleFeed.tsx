@@ -102,7 +102,10 @@ const WholesaleFeed = () => {
     useEffect(() => {
         const storedProducts = localStorage.getItem('wholesaleProducts_v1.2');
         if (storedProducts) {
-            setProducts(JSON.parse(storedProducts));
+            const parsedProducts = JSON.parse(storedProducts);
+            // Filter out accidentally added Resale items (SKU starts with RESALE-)
+            const cleanProducts = parsedProducts.filter((p: any) => !p.sku || !p.sku.startsWith('RESALE-'));
+            setProducts(cleanProducts);
         } else {
             // Initialize with mock data if empty
             localStorage.setItem('wholesaleProducts_v1.2', JSON.stringify(wholesaleProducts));
