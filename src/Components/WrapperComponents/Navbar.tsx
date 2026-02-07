@@ -16,7 +16,7 @@ const Navbar = () => {
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
     const open = Boolean(anchorEl);
 
-    const handleMenuOpen = (event: React.MouseEvent<HTMLLIElement>) => {
+    const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
         setAnchorEl(event.currentTarget);
     };
 
@@ -103,7 +103,10 @@ const Navbar = () => {
                                         spacing={2}
                                         alignItems="center"
                                         sx={{ cursor: 'pointer' }}
-                                        onClick={handleMenuOpen as any}
+                                        onClick={handleMenuOpen}
+                                        aria-controls={open ? 'account-menu' : undefined}
+                                        aria-haspopup="true"
+                                        aria-expanded={open ? 'true' : undefined}
                                     >
                                         <Box sx={{ textAlign: 'right', display: { xs: 'none', md: 'block' } }}>
                                             <Typography variant="subtitle2" sx={{ color: 'white', fontWeight: 600, lineHeight: 1.2, fontSize: '0.9rem' }}>
@@ -119,9 +122,11 @@ const Navbar = () => {
                                         />
                                     </Stack>
                                     <Menu
+                                        id="account-menu"
                                         anchorEl={anchorEl}
                                         open={open}
                                         onClose={handleMenuClose}
+                                        disableScrollLock={true}
                                         MenuListProps={{
                                             'aria-labelledby': 'basic-button',
                                         }}
@@ -206,7 +211,7 @@ const CategoryChip = ({
     isActive = false,
     onClick
 }: {
-    icon: any,
+    icon: React.ReactNode,
     label: string,
     isActive?: boolean,
     onClick?: () => void

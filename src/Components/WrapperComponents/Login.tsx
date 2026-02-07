@@ -18,6 +18,7 @@ const Login = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [name, setName] = useState('');
+    const [phone, setPhone] = useState('');
     const [error, setError] = useState('');
 
     const handleLogin = (e?: React.FormEvent) => {
@@ -353,6 +354,8 @@ const Login = () => {
                                         name="phone"
                                         autoComplete="tel"
                                         placeholder="+1 (555) 000-0000"
+                                        value={phone}
+                                        onChange={(e) => setPhone(e.target.value)}
                                         sx={{
                                             mb: 2,
                                             '& .MuiOutlinedInput-root': {
@@ -372,6 +375,8 @@ const Login = () => {
                                         id="password"
                                         autoComplete="new-password"
                                         placeholder="••••••••"
+                                        value={password}
+                                        onChange={(e) => setPassword(e.target.value)}
                                         sx={{
                                             mb: 1,
                                             '& .MuiOutlinedInput-root': {
