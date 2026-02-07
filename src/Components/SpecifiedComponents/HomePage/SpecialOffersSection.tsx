@@ -7,6 +7,42 @@ import { allProducts } from '../../../data/productsData';
 const SpecialOffersSection = () => {
     const navigate = useNavigate();
     const [time, setTime] = useState({ hours: 12, minutes: 30, seconds: 12 });
+    const [currentHeroSlide, setCurrentHeroSlide] = useState(0);
+
+    const heroOffers = [
+        {
+            id: 1,
+            tag: 'TopDeal | Apple',
+            title: 'UpTo 60% Off',
+            subtitle: 'Mobiles & Laptops',
+            bg: 'linear-gradient(135deg, #2E3192 0%, #1BFFFF 100%)',
+            img: 'https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=600&h=400&fit=crop&q=80'
+        },
+        {
+            id: 2,
+            tag: 'New Season | Nike',
+            title: 'Min 40% Off',
+            subtitle: 'Premium Sportswear',
+            bg: 'linear-gradient(135deg, #D4145A 0%, #FBB03B 100%)',
+            img: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=600&fit=crop&q=80'
+        },
+        {
+            id: 3,
+            tag: 'Modern Living',
+            title: 'Flat 30% Off',
+            subtitle: 'Furniture & Decor',
+            bg: 'linear-gradient(135deg, #009245 0%, #FCEE21 100%)',
+            img: 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=600&fit=crop&q=80'
+        }
+    ];
+
+    // Carousel Auto-Play
+    useEffect(() => {
+        const slideInterval = setInterval(() => {
+            setCurrentHeroSlide((prev) => (prev + 1) % heroOffers.length);
+        }, 5000);
+        return () => clearInterval(slideInterval);
+    }, []);
 
     useEffect(() => {
         const timer = setInterval(() => {
@@ -58,103 +94,154 @@ const SpecialOffersSection = () => {
 
     return (
         <Box sx={{ width: '100%', my: 3 }}>
-            {/* Top Promotional Banner - UpTo 60% Off */}
-            <Paper
-                elevation={0}
-                sx={{
-                    background: 'linear-gradient(135deg, #2E3192 0%, #1BFFFF 100%)',
-                    borderRadius: 3,
-                    p: { xs: 5, md: 8 },  // Increased padding for more height
-                    mb: 2,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    position: 'relative',
-                    overflow: 'hidden',
-                    minHeight: { xs: '250px', md: '320px' },  // Added minimum height
-                    transition: 'transform 0.3s ease, box-shadow 0.3s ease',
-                    '&:hover': {
-                        transform: 'translateY(-4px)',
-                        boxShadow: '0 12px 32px rgba(46, 49, 146, 0.3)',
-                    },
-                }}
-            >
-                <Box sx={{ flex: 1, zIndex: 1 }}>
-                    <Box
+            {/* Top Promotional Banner - Dynamic Carousel */}
+            <Box sx={{ position: 'relative', mb: 4, borderRadius: 4, overflow: 'hidden', minHeight: { xs: '300px', md: '400px' } }}>
+                {heroOffers.map((offer, index) => (
+                    <Paper
+                        key={offer.id}
+                        elevation={0}
                         sx={{
-                            display: 'inline-block',
-                            bgcolor: 'rgba(255,255,255,0.2)',
-                            backdropFilter: 'blur(10px)',
-                            px: 3,  // Increased padding
-                            py: 1,  // Increased padding
-                            borderRadius: 2,
-                            mb: 2,  // Increased margin
+                            background: offer.bg,
+                            borderRadius: 4,
+                            p: { xs: 4, md: 8 },
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            position: 'absolute',
+                            top: 0,
+                            left: 0,
+                            width: '100%',
+                            height: '100%',
+                            opacity: currentHeroSlide === index ? 1 : 0,
+                            visibility: currentHeroSlide === index ? 'visible' : 'hidden',
+                            transition: 'opacity 0.8s ease-in-out, visibility 0.8s',
+                            zIndex: currentHeroSlide === index ? 2 : 1,
                         }}
                     >
-                        <Typography variant="caption" sx={{ color: 'white', fontWeight: 600, fontSize: '1rem' }}>  {/* Increased font size */}
-                            TopDeal | Apple
-                        </Typography>
-                    </Box>
-                    <Typography
-                        variant="h3"
-                        sx={{
-                            fontWeight: 800,
-                            color: 'white',
-                            mb: 1.5,  // Increased margin
-                            textShadow: '0 2px 8px rgba(0,0,0,0.2)',
-                            fontSize: { xs: '3rem', md: '4.5rem' },  // Significantly increased font size
-                            lineHeight: 1.2,
-                        }}
-                    >
-                        UpTo 60% Off
-                    </Typography>
-                    <Typography
-                        variant="h6"
-                        sx={{
-                            color: 'rgba(255,255,255,0.95)',
-                            mb: 3,  // Increased margin
-                            fontWeight: 500,
-                            fontSize: { xs: '1.25rem', md: '1.75rem' },  // Increased font size
-                        }}
-                    >
-                        Mobiles & LapTop
-                    </Typography>
-                    <Button
-                        variant="contained"
-                        sx={{
-                            bgcolor: 'white',
-                            color: '#2E3192',
-                            fontWeight: 700,
-                            px: 5,  // Increased padding
-                            py: 1.5,  // Increased padding
-                            borderRadius: 2,
-                            textTransform: 'none',
-                            fontSize: '1.1rem',  // Increased font size
-                            '&:hover': {
-                                bgcolor: '#f5f5f5',
-                                transform: 'scale(1.05)',
-                            },
-                            transition: 'all 0.3s ease',
-                        }}
-                    >
-                        Shop Now
-                    </Button>
-                </Box>
+                        <Box sx={{ flex: 1, zIndex: 1, maxWidth: '600px' }}>
+                            <Box
+                                sx={{
+                                    display: 'inline-block',
+                                    bgcolor: 'rgba(255,255,255,0.2)',
+                                    backdropFilter: 'blur(10px)',
+                                    px: 2,
+                                    py: 0.5,
+                                    borderRadius: 50,
+                                    mb: 3,
+                                    border: '1px solid rgba(255,255,255,0.3)'
+                                }}
+                            >
+                                <Typography variant="subtitle2" sx={{ color: 'white', fontWeight: 700, letterSpacing: 1, textTransform: 'uppercase' }}>
+                                    {offer.tag}
+                                </Typography>
+                            </Box>
+                            <Typography
+                                variant="h2"
+                                sx={{
+                                    fontWeight: 900,
+                                    color: 'white',
+                                    mb: 2,
+                                    fontSize: { xs: '2.5rem', md: '4.5rem' },
+                                    lineHeight: 1.1,
+                                    textShadow: '0 4px 20px rgba(0,0,0,0.2)',
+                                    transform: currentHeroSlide === index ? 'translateY(0)' : 'translateY(20px)',
+                                    opacity: currentHeroSlide === index ? 1 : 0,
+                                    transition: 'all 0.8s ease 0.2s'
+                                }}
+                            >
+                                {offer.title}
+                            </Typography>
+                            <Typography
+                                variant="h5"
+                                sx={{
+                                    color: 'rgba(255,255,255,0.9)',
+                                    mb: 4,
+                                    fontWeight: 500,
+                                    transform: currentHeroSlide === index ? 'translateY(0)' : 'translateY(20px)',
+                                    opacity: currentHeroSlide === index ? 1 : 0,
+                                    transition: 'all 0.8s ease 0.4s'
+                                }}
+                            >
+                                {offer.subtitle}
+                            </Typography>
+                            <Button
+                                variant="contained"
+                                onClick={() => navigate('/products/all')}
+                                sx={{
+                                    bgcolor: 'white',
+                                    color: 'text.primary', // Dark text for contrast
+                                    fontWeight: 800,
+                                    px: 5,
+                                    py: 2,
+                                    borderRadius: 50,
+                                    textTransform: 'none',
+                                    fontSize: '1.1rem',
+                                    boxShadow: '0 8px 25px rgba(0,0,0,0.2)',
+                                    transform: currentHeroSlide === index ? 'translateY(0)' : 'translateY(20px)',
+                                    opacity: currentHeroSlide === index ? 1 : 0,
+                                    transition: 'all 0.8s ease 0.6s',
+                                    '&:hover': {
+                                        transform: 'translateY(-3px)',
+                                        boxShadow: '0 12px 30px rgba(0,0,0,0.3)',
+                                        bgcolor: 'white'
+                                    },
+                                }}
+                            >
+                                Shop Now
+                            </Button>
+                        </Box>
+
+                        <Box
+                            component="img"
+                            src={offer.img}
+                            alt={offer.title}
+                            sx={{
+                                height: { xs: 200, md: 350 },
+                                width: 'auto',
+                                maxHeight: '100%',
+                                maxWidth: '100%',
+                                objectFit: 'contain',
+                                zIndex: 1,
+                                filter: 'drop-shadow(0 10px 20px rgba(0,0,0,0.2))',
+                                display: { xs: 'none', md: 'block' },
+                                transform: currentHeroSlide === index ? 'translateY(0) scale(1)' : 'translateY(20px) scale(0.95)',
+                                transition: 'all 0.8s ease-out',
+                                opacity: currentHeroSlide === index ? 1 : 0,
+                            }}
+                        />
+                    </Paper>
+                ))}
+
+                {/* Carousel Indicators */}
                 <Box
-                    component="img"
-                    src="https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=600&h=400&fit=crop&q=80"
-                    alt="Mobiles & Laptops"
                     sx={{
-                        height: { xs: 150, md: 250 },  // Increased height for more impact
-                        width: 'auto',
-                        objectFit: 'contain',
-                        zIndex: 1,
-                        filter: 'drop-shadow(0 8px 24px rgba(0,0,0,0.4))',  // Enhanced shadow
-                        transform: 'perspective(1000px) rotateY(-5deg)',  // Added 3D effect
-                        transition: 'transform 0.3s ease',
+                        position: 'absolute',
+                        bottom: 20,
+                        left: '50%',
+                        transform: 'translateX(-50%)',
+                        display: 'flex',
+                        gap: 1.5,
+                        zIndex: 3
                     }}
-                />
-            </Paper>
+                >
+                    {heroOffers.map((_, index) => (
+                        <Box
+                            key={index}
+                            onClick={() => setCurrentHeroSlide(index)}
+                            sx={{
+                                width: currentHeroSlide === index ? 32 : 10,
+                                height: 10,
+                                borderRadius: 5,
+                                bgcolor: 'white',
+                                opacity: currentHeroSlide === index ? 1 : 0.5,
+                                cursor: 'pointer',
+                                transition: 'all 0.3s ease',
+                                boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
+                            }}
+                        />
+                    ))}
+                </Box>
+            </Box>
 
             {/* Middle Section: Valentine's Banner & Flash Sales side-by-side */}
             <Grid container spacing={3} sx={{ mb: 3 }}>

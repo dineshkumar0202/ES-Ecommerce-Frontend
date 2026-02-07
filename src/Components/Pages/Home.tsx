@@ -6,6 +6,9 @@ import ProductGrids from '../SpecifiedComponents/HomePage/ProductGrids';
 import SpecialOffersSection from '../SpecifiedComponents/HomePage/SpecialOffersSection';
 import ImpressiveOfferGrid from '../SpecifiedComponents/HomePage/ImpressiveOfferGrid';
 import ShopByVibe from '../SpecifiedComponents/HomePage/ShopByVibe';
+import ServiceFeatures from '../SpecifiedComponents/HomePage/ServiceFeatures';
+import NewsletterSection from '../SpecifiedComponents/HomePage/NewsletterSection';
+import TrustedBrands from '../SpecifiedComponents/HomePage/TrustedBrands';
 import { allProducts } from '../../data/productsData';
 
 const Home = () => {
@@ -29,8 +32,8 @@ const Home = () => {
         <Box sx={{ minHeight: '100vh', pb: 4, bgcolor: '#eaeded' }}>
             <Navbar />
 
-            <Container maxWidth="xl" sx={{ mt: 3 }}>
-                <Stack spacing={3}>
+            <Container maxWidth="xl" sx={{ mt: 2 }}>
+                <Stack spacing={2}>
                     <SpecialOffersSection />
 
                     {/* Exclusive Impressive Grid Section */}
@@ -52,6 +55,9 @@ const Home = () => {
                 </Stack>
             </Container>
 
+            <TrustedBrands />
+            <NewsletterSection />
+            <ServiceFeatures />
             <Footer />
         </Box>
     );

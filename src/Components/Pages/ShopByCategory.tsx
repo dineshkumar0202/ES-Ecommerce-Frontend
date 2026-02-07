@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { Box, Container, Typography, Card, CardContent, CardMedia, Rating, IconButton, Grid } from '@mui/material';
+import { Box, Container, Typography, Card, CardContent, CardMedia, Rating, IconButton } from '@mui/material';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import ShoppingCartOutlinedIcon from '@mui/icons-material/ShoppingCartOutlined';
 import Navbar from '../WrapperComponents/Navbar';
@@ -28,9 +28,15 @@ const ShopByCategory = () => {
                     </Typography>
                 </Box>
 
-                <Grid container spacing={3}>
+                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3, justifyContent: 'center' }}>
                     {displayProducts.map((product) => (
-                        <Grid item xs={12} sm={6} md={3} key={product.id}>
+                        <Box
+                            key={product.id}
+                            sx={{
+                                width: { xs: '100%', sm: 'calc(50% - 24px)', md: 'calc(33.33% - 24px)', lg: 'calc(25% - 24px)' },
+                                mb: 2
+                            }}
+                        >
                             <Card
                                 onClick={() => navigate(`/product/${product.id}`)}
                                 sx={{
@@ -43,13 +49,13 @@ const ShopByCategory = () => {
                                     height: '420px', // STRICT 420px
                                     display: 'flex',
                                     flexDirection: 'column',
-                                    transition: 'all 0.3s ease',
+                                    transition: 'transform 0.3s ease',
                                     '&:hover': {
                                         transform: 'translateY(-8px)',
                                         bgcolor: '#f1f3f5',
                                     },
                                     '&:hover .product-image': {
-                                        transform: 'scale(1.05)',
+                                        transform: 'scale(1.02)', // MINIMIZED ZOOM
                                     },
                                 }}
                             >
@@ -111,6 +117,7 @@ const ShopByCategory = () => {
                                         variant="subtitle1"
                                         sx={{
                                             fontWeight: 'bold',
+                                            fontSize: '1.1rem', // INCREASED FONT SIZE
                                             mb: 0.5,
                                             height: '2.6em',
                                             overflow: 'hidden',
@@ -133,7 +140,7 @@ const ShopByCategory = () => {
                                         </Box>
                                         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                                             <Box>
-                                                <Typography variant="h6" sx={{ fontWeight: 800 }}>
+                                                <Typography variant="h6" sx={{ fontWeight: 800, fontSize: '1.3rem' }}> {/* INCREASED FONT SIZE */}
                                                     ₹{product.price.toLocaleString()}
                                                 </Typography>
                                             </Box>
@@ -152,9 +159,9 @@ const ShopByCategory = () => {
                                     </Box>
                                 </CardContent>
                             </Card>
-                        </Grid>
+                        </Box>
                     ))}
-                </Grid>
+                </Box>
 
                 {displayProducts.length === 0 && (
                     <Box sx={{ textAlign: 'center', py: 8 }}>

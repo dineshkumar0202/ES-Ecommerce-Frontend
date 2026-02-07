@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { Box, Container, Typography, Card, CardContent, CardMedia, Rating, IconButton, Grid } from '@mui/material';
+import { Box, Container, Typography, Card, CardContent, CardMedia, Rating, IconButton } from '@mui/material';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import ShoppingCartOutlinedIcon from '@mui/icons-material/ShoppingCartOutlined';
 import Navbar from '../WrapperComponents/Navbar';
@@ -11,7 +11,7 @@ const KeepShopping = () => {
 
     // Show 20 NEW Exclusive Products (IDs 61-80)
     // Includes: Home Decor, Books, Toys & Gaming, Sports & Fitness
-    const keepShoppingProductIds = Array.from({ length: 20 }, (_, i) => 61 + i); // 61 to 80
+    const keepShoppingProductIds = Array.from({ length: 8 }, (_, i) => 61 + i); // 61 to 68
 
     const displayProducts = allProducts.filter(p => keepShoppingProductIds.includes(p.id));
 
@@ -29,36 +29,49 @@ const KeepShopping = () => {
                     </Typography>
                 </Box>
 
-                <Grid container spacing={3}>
+                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3, justifyContent: 'center' }}>
                     {displayProducts.map((product) => (
-                        <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }} key={product.id}>
+                        <Box
+                            key={product.id}
+                            sx={{
+                                width: { xs: '100%', sm: 'calc(50% - 24px)', md: 'calc(33.33% - 24px)', lg: 'calc(25% - 24px)' },
+                                mb: 2
+                            }}
+                        >
                             <Card
                                 onClick={() => navigate(`/product/${product.id}`)}
                                 sx={{
                                     border: 'none',
-                                    boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                                    boxShadow: 'none',
+                                    bgcolor: '#f8f9fa',
+                                    borderRadius: 4,
+                                    p: 2,
                                     cursor: 'pointer',
-                                    height: '100%',
+                                    height: '420px', // STRICT 420px HEIGHT
                                     display: 'flex',
                                     flexDirection: 'column',
-                                    transition: 'all 0.3s ease',
+                                    transition: 'transform 0.3s ease',
                                     '&:hover': {
                                         transform: 'translateY(-8px)',
-                                        boxShadow: '0 8px 24px rgba(0,0,0,0.15)',
+                                        bgcolor: '#f1f3f5',
                                     },
                                     '&:hover .product-image': {
-                                        transform: 'scale(1.05)',
+                                        transform: 'scale(1.02)', // MINIMIZED ZOOM
                                     },
                                 }}
                             >
-                                <Box sx={{ position: 'relative', borderRadius: 2, overflow: 'hidden' }}>
+                                <Box sx={{ position: 'relative', borderRadius: 4, overflow: 'hidden', mb: 2, pt: '100%', width: '100%' }}>
                                     <CardMedia
                                         component="img"
-                                        height="280"
                                         image={product.image}
                                         alt={product.name}
                                         className="product-image"
                                         sx={{
+                                            position: 'absolute',
+                                            top: 0,
+                                            left: 0,
+                                            width: '100%',
+                                            height: '100%',
                                             transition: 'transform 0.5s ease',
                                             bgcolor: '#f5f5f5',
                                             objectFit: 'cover',
@@ -99,34 +112,46 @@ const KeepShopping = () => {
                                     )}
                                 </Box>
 
-                                <CardContent sx={{ p: 2, flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
-                                    <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block', mb: 0.5, textTransform: 'uppercase', fontWeight: 600 }}>
+                                <CardContent sx={{ p: 1, flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
+                                    <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block', mb: 0.5, textTransform: 'uppercase' }}>
                                         {product.category}
                                     </Typography>
-                                    <Typography variant="subtitle1" sx={{ fontWeight: 700, mb: 1, overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', minHeight: '3em' }}>
+                                    <Typography
+                                        variant="subtitle1"
+                                        sx={{
+                                            fontWeight: 'bold',
+                                            fontSize: '1.1rem', // INCREASED FONT SIZE
+                                            mb: 0.5,
+                                            height: '2.6em',
+                                            overflow: 'hidden',
+                                            textOverflow: 'ellipsis',
+                                            display: '-webkit-box',
+                                            WebkitLineClamp: 2,
+                                            WebkitBoxOrient: 'vertical',
+                                            lineHeight: '1.3em'
+                                        }}
+                                    >
                                         {product.name}
                                     </Typography>
-                                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                                        <Rating value={product.rating} readOnly size="small" precision={0.1} sx={{ color: '#ffb400', mr: 0.5 }} />
-                                        <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-                                            ({product.ratingCount.toLocaleString()})
-                                        </Typography>
-                                    </Box>
+
                                     <Box sx={{ mt: 'auto' }}>
-                                        <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 1, mb: 0.5 }}>
-                                            <Typography variant="h6" sx={{ fontWeight: 800, color: '#212121' }}>
-                                                ₹{product.price.toLocaleString()}
+                                        <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                                            <Rating value={product.rating} readOnly size="small" sx={{ color: '#ffb400', mr: 0.5 }} />
+                                            <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+                                                ({product.ratingCount})
                                             </Typography>
-                                            {product.mrp > product.price && (
-                                                <Typography variant="body2" sx={{ color: '#878787', textDecoration: 'line-through' }}>
-                                                    ₹{product.mrp.toLocaleString()}
-                                                </Typography>
-                                            )}
                                         </Box>
                                         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                                            <Typography variant="caption" sx={{ color: '#388e3c', fontWeight: 700 }}>
-                                                Save ₹{(product.mrp - product.price).toLocaleString()}
-                                            </Typography>
+                                            <Box>
+                                                <Typography variant="h6" sx={{ fontWeight: 800, fontSize: '1.3rem' }}> {/* INCREASED FONT SIZE */}
+                                                    ₹{product.price.toLocaleString()}
+                                                </Typography>
+                                                {product.mrp > product.price && (
+                                                    <Typography variant="caption" sx={{ textDecoration: 'line-through', color: '#b2bec3' }}>
+                                                        ₹{product.mrp.toLocaleString()}
+                                                    </Typography>
+                                                )}
+                                            </Box>
                                             <IconButton
                                                 sx={{
                                                     bgcolor: '#212121',
@@ -144,9 +169,9 @@ const KeepShopping = () => {
                                     </Box>
                                 </CardContent>
                             </Card>
-                        </Grid>
+                        </Box>
                     ))}
-                </Grid>
+                </Box>
 
                 {displayProducts.length === 0 && (
                     <Box sx={{ textAlign: 'center', py: 8 }}>

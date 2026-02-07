@@ -1,4 +1,3 @@
-import React from 'react';
 import { Box, Typography, Paper, keyframes } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 
@@ -105,9 +104,7 @@ const ShopByVibe = () => {
                     variant="h5"
                     sx={{
                         fontWeight: 800,
-                        background: 'linear-gradient(45deg, #FF9A9E 0%, #FECFEF 99%, #FECFEF 100%)',
-                        WebkitBackgroundClip: 'text',
-                        WebkitTextFillColor: 'transparent',
+                        color: '#2d3436', // Dark solid color
                         width: 'fit-content'
                     }}
                 >
