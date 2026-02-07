@@ -9,11 +9,12 @@ import TShirts from './Components/Pages/TShirts';
 import KeepShopping from './Components/Pages/KeepShopping';
 import ShopByCategory from './Components/Pages/ShopByCategory';
 import CategoryPage from './Components/Pages/CategoryPage';
-import Login from './Components/Pages/Login';
+import Login from './Components/WrapperComponents/Login';
 import Register from './Components/Pages/Register';
 import Wholesale from './Components/Pages/Wholesale';
 import QuickCommerce from './Components/Pages/QuickCommerce';
 import Resale from './Components/Pages/Resale';
+import Profile from './Components/Pages/Profile';
 
 import Freelance from './Components/Pages/Freelance';
 import WholesaleProductDetails from './Components/SpecifiedComponents/WholeSale/Components/WholesaleProductDetails';
@@ -48,6 +49,7 @@ function App() {
           <Route path="/resale" element={<Resale />} />
           <Route path="/resale/product/:id" element={<ResaleProductDetails />} />
           <Route path="/freelance" element={<Freelance />} />
+          <Route path="/profile" element={<Profile />} />
 
           <Route path="/wholesale/product/:id" element={<WholesaleProductDetails />} />
           <Route path="/product/:id" element={<ProductDetails />} />

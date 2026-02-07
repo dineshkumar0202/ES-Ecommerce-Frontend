@@ -1,4 +1,5 @@
-import { Box, Container, Stack, Typography, Divider, InputBase, IconButton, Avatar, Badge } from '@mui/material';
+import { useState } from 'react';
+import { Box, Container, Stack, Typography, Divider, InputBase, IconButton, Avatar, Badge, Menu, MenuItem } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import NotificationsOutlinedIcon from '@mui/icons-material/NotificationsOutlined';
 import ShoppingCartOutlinedIcon from '@mui/icons-material/ShoppingCartOutlined';
@@ -13,6 +14,16 @@ import { useNavigate, useLocation } from 'react-router-dom';
 const Navbar = () => {
     const navigate = useNavigate();
     const location = useLocation();
+    const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+    const open = Boolean(anchorEl);
+
+    const handleMenuOpen = (event: React.MouseEvent<HTMLLIElement>) => {
+        setAnchorEl(event.currentTarget);
+    };
+
+    const handleMenuClose = () => {
+        setAnchorEl(null);
+    };
 
     // Mapping active path to category label for highlight
     const getActiveCategory = () => {
@@ -26,23 +37,22 @@ const Navbar = () => {
     const activeCategory = getActiveCategory();
 
     return (
-        <Box sx={{ bgcolor: 'white', py: 2 }}>
-            <Container maxWidth="xl">
-                {/* Header Row - Black Pill */}
-                <Box sx={{
-                    bgcolor: 'black',
-                    borderRadius: 50,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    mb: 3,
-                    px: 3,
-                    py: 1.5,
-                    boxShadow: '0 4px 20px rgba(0,0,0,0.1)'
-                }}>
+        <>
+            <Box sx={{ bgcolor: 'white', py: 2, position: 'fixed', top: 0, left: 0, right: 0, zIndex: 1200 }}>
+                <Container maxWidth="xl">
+                    {/* Header Row - Black Pill */}
+                    <Box sx={{
+                        bgcolor: 'black',
+                        borderRadius: 50,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        mb: 3,
+                        px: 3,
+                        py: 1.5,
+                        boxShadow: '0 4px 20px rgba(0,0,0,0.1)'
+                    }}>
 
-                    {/* Logo & Search Area */}
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                         {/* Logo */}
                         <Stack direction="row" spacing={2} alignItems="center" onClick={() => navigate('/')} sx={{ cursor: 'pointer' }}>
                             <Box sx={{ bgcolor: '#bef264', borderRadius: '50%', width: 40, height: 40, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -55,93 +65,114 @@ const Navbar = () => {
                             </Box>
                         </Stack>
 
-                        {/* Search Bar - Darker Black/Grey */}
+                        {/* Search Bar - White Background, Black Text, Centered */}
                         <Box sx={{
-                            bgcolor: '#111827',
+                            bgcolor: 'white',
                             borderRadius: 50,
                             display: { xs: 'none', md: 'flex' },
                             alignItems: 'center',
                             px: 2.5,
                             py: 0.8,
                             width: '450px',
-                            border: '1px solid #334155'
+                            mx: 'auto', // Auto margin for centering
+                            boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
                         }}>
-                            <SearchIcon sx={{ color: '#64748b', mr: 1.5, fontSize: 20 }} />
+                            <SearchIcon sx={{ color: '#0a0a0a', mr: 1.5, fontSize: 20 }} />
                             <InputBase
                                 placeholder="Search products, services..."
-                                sx={{ color: '#94a3b8', flex: 1, fontSize: '0.9rem', fontWeight: 500 }}
+                                sx={{ color: '#0a0a0a', flex: 1, fontSize: '0.9rem', fontWeight: 500 }}
                             />
-                            <Box sx={{ border: '1px solid #334155', borderRadius: 1.5, px: 0.8, py: 0.1, color: '#475569', fontSize: '0.7rem', fontWeight: 600, bgcolor: '#1f2937' }}>
+                            <Box sx={{ border: '1px solid #e2e8f0', borderRadius: 1.5, px: 0.8, py: 0.1, color: '#64748b', fontSize: '0.7rem', fontWeight: 600, bgcolor: '#f1f5f9' }}>
                                 ⌘K
                             </Box>
                         </Box>
+
+                        {/* Right Actions */}
+                        <Stack direction="row" spacing={2} alignItems="center">
+                            <IconButton sx={{ color: 'white', '&:hover': { bgcolor: 'rgba(255,255,255,0.1)' } }}>
+                                <Badge variant="dot" color="primary" overlap="circular" sx={{ '& .MuiBadge-badge': { backgroundColor: '#bef264' } }}>
+                                    <NotificationsOutlinedIcon />
+                                </Badge>
+                            </IconButton>
+                            <IconButton sx={{ color: 'white', '&:hover': { bgcolor: 'rgba(255,255,255,0.1)' } }}>
+                                <ShoppingCartOutlinedIcon />
+                            </IconButton>
+
+                            <Divider orientation="vertical" flexItem sx={{ bgcolor: '#334155', height: 24, mx: 1, alignSelf: 'center' }} />
+
+                            <Stack
+                                direction="row"
+                                spacing={2}
+                                alignItems="center"
+                                sx={{ cursor: 'pointer' }}
+                                onClick={handleMenuOpen as any}
+                            >
+                                <Box sx={{ textAlign: 'right', display: { xs: 'none', md: 'block' } }}>
+                                    <Typography variant="subtitle2" sx={{ color: 'white', fontWeight: 600, lineHeight: 1.2, fontSize: '0.9rem' }}>
+                                        Dinesh
+                                    </Typography>
+                                    <Typography variant="caption" sx={{ color: '#94a3b8', display: 'block', fontSize: '0.75rem' }}>
+                                        My Account
+                                    </Typography>
+                                </Box>
+                                <Avatar
+                                    src="https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&w=100&q=80"
+                                    sx={{ border: '2px solid white', width: 40, height: 40 }}
+                                />
+                            </Stack>
+                            <Menu
+                                anchorEl={anchorEl}
+                                open={open}
+                                onClose={handleMenuClose}
+                                MenuListProps={{
+                                    'aria-labelledby': 'basic-button',
+                                }}
+                                sx={{ mt: 1 }}
+                            >
+                                <MenuItem onClick={() => { handleMenuClose(); navigate('/profile'); }}>Profile</MenuItem>
+                                <MenuItem onClick={() => { handleMenuClose(); navigate('/login'); }}>Login</MenuItem>
+                                <MenuItem onClick={() => { handleMenuClose(); navigate('/'); }}>Logout</MenuItem>
+                            </Menu>
+                        </Stack>
                     </Box>
 
-                    {/* Right Actions */}
-                    <Stack direction="row" spacing={2} alignItems="center">
-                        <IconButton sx={{ color: 'white', '&:hover': { bgcolor: 'rgba(255,255,255,0.1)' } }}>
-                            <Badge variant="dot" color="primary" overlap="circular" sx={{ '& .MuiBadge-badge': { backgroundColor: '#bef264' } }}>
-                                <NotificationsOutlinedIcon />
-                            </Badge>
-                        </IconButton>
-                        <IconButton sx={{ color: 'white', '&:hover': { bgcolor: 'rgba(255,255,255,0.1)' } }}>
-                            <ShoppingCartOutlinedIcon />
-                        </IconButton>
-
-                        <Divider orientation="vertical" flexItem sx={{ bgcolor: '#334155', height: 24, mx: 1, alignSelf: 'center' }} />
-
-                        <Stack direction="row" spacing={2} alignItems="center" sx={{ cursor: 'pointer' }} onClick={() => navigate('/login')}>
-                            <Box sx={{ textAlign: 'right', display: { xs: 'none', md: 'block' } }}>
-                                <Typography variant="subtitle2" sx={{ color: 'white', fontWeight: 600, lineHeight: 1.2, fontSize: '0.9rem' }}>
-                                    Dinesh
-                                </Typography>
-                                <Typography variant="caption" sx={{ color: '#94a3b8', display: 'block', fontSize: '0.75rem' }}>
-                                    My Account
-                                </Typography>
-                            </Box>
-                            <Avatar
-                                src="https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&w=100&q=80"
-                                sx={{ border: '2px solid white', width: 40, height: 40 }}
-                            />
-                        </Stack>
+                    {/* Categories Row (Modules) - Light Background, Active Black */}
+                    <Stack direction="row" spacing={1.5} justifyContent="center" sx={{ overflowX: 'auto', pb: 0, position: 'relative', zIndex: 2, '::-webkit-scrollbar': { display: 'none' } }}>
+                        <CategoryChip
+                            icon={<StorefrontIcon />}
+                            label="Retail"
+                            isActive={activeCategory === 'Retail'}
+                            onClick={() => navigate('/')}
+                        />
+                        <CategoryChip
+                            icon={<FactoryIcon />}
+                            label="Wholesale"
+                            isActive={activeCategory === 'Wholesale'}
+                            onClick={() => navigate('/wholesale')}
+                        />
+                        <CategoryChip
+                            icon={<RocketLaunchIcon />}
+                            label="Q-Commerce"
+                            isActive={activeCategory === 'Q-Commerce'}
+                            onClick={() => navigate('/quick')}
+                        />
+                        <CategoryChip
+                            icon={<AutorenewIcon />}
+                            label="Resale"
+                            isActive={activeCategory === 'Resale'}
+                            onClick={() => navigate('/resale')}
+                        />
+                        <CategoryChip
+                            icon={<WorkIcon />}
+                            label="Freelance"
+                            isActive={activeCategory === 'Freelance'}
+                            onClick={() => navigate('/freelance')}
+                        />
                     </Stack>
-                </Box>
-
-                {/* Categories Row (Modules) - Light Background, Active Black */}
-                <Stack direction="row" spacing={1.5} justifyContent="center" sx={{ overflowX: 'auto', pb: 0, position: 'relative', zIndex: 2, '::-webkit-scrollbar': { display: 'none' } }}>
-                    <CategoryChip
-                        icon={<StorefrontIcon />}
-                        label="Retail"
-                        isActive={activeCategory === 'Retail'}
-                        onClick={() => navigate('/')}
-                    />
-                    <CategoryChip
-                        icon={<FactoryIcon />}
-                        label="Wholesale"
-                        isActive={activeCategory === 'Wholesale'}
-                        onClick={() => navigate('/wholesale')}
-                    />
-                    <CategoryChip
-                        icon={<RocketLaunchIcon />}
-                        label="Q-Commerce"
-                        isActive={activeCategory === 'Q-Commerce'}
-                        onClick={() => navigate('/quick')}
-                    />
-                    <CategoryChip
-                        icon={<AutorenewIcon />}
-                        label="Resale"
-                        isActive={activeCategory === 'Resale'}
-                        onClick={() => navigate('/resale')}
-                    />
-                    <CategoryChip
-                        icon={<WorkIcon />}
-                        label="Freelance"
-                        isActive={activeCategory === 'Freelance'}
-                        onClick={() => navigate('/freelance')}
-                    />
-                </Stack>
-            </Container>
-        </Box>
+                </Container>
+            </Box>
+            <Box sx={{ height: '180px' }} />
+        </>
     );
 };
 
