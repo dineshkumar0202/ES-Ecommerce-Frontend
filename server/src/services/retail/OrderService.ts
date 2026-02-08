@@ -1,0 +1,81 @@
+import Order from '../../models/retail/OrderModel';
+
+class OrderService {
+    async createOrder(userId: string, orderData: any) {
+        const {
+            orderItems,
+            shippingAddress,
+            paymentMethod,
+            itemsPrice,
+            taxPrice,
+            shippingPrice,
+            totalPrice,
+        } = orderData;
+
+        if (orderItems && orderItems.length === 0) {
+            throw new Error("No order items");
+        }
+
+        const order = new Order({
+            orderItems,
+            user: userId,
+            shippingAddress,
+            paymentMethod,
+            itemsPrice,
+            taxPrice,
+            shippingPrice,
+            totalPrice,
+        });
+
+        return await order.save();
+    }
+
+    async getOrderById(orderId: string, userId: string, role: string) {
+        const order = await Order.findById(orderId).populate("user", "username email");
+        if (order) {
+            if (order.user._id.toString() !== userId && role !== 'admin') {
+                return null;
+            }
+            return order;
+        }
+        return null;
+    }
+
+    async updateOrderToPaid(orderId: string, paymentResult: any) {
+        const order = await Order.findById(orderId);
+        if (order) {
+            order.isPaid = true;
+            // @ts-ignore
+            order.paidAt = Date.now();
+            order.paymentResult = {
+                id: paymentResult.id,
+                status: paymentResult.status,
+                update_time: paymentResult.update_time,
+                email_address: paymentResult.email_address,
+            };
+            return await order.save();
+        }
+        return null;
+    }
+
+    async updateOrderToDelivered(orderId: string) {
+        const order = await Order.findById(orderId);
+        if (order) {
+            order.isDelivered = true;
+            // @ts-ignore
+            order.deliveredAt = Date.now();
+            return await order.save();
+        }
+        return null;
+    }
+
+    async getMyOrders(userId: string) {
+        return await Order.find({ user: userId });
+    }
+
+    async getAllOrders() {
+        return await Order.find({}).populate("user", "id username");
+    }
+}
+
+export default new OrderService();

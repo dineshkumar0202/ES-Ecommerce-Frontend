@@ -28,22 +28,13 @@ const FreelancerSidebar = ({ onPost }: FreelancerSidebarProps) => {
         try {
             console.log('Generating image with prompt:', prompt);
 
-            // Using the provided API key (Freepik)
-            const API_KEY = "FPSX9eeb26f1be1427e9773dfd2d7e3f4447";
-
-            console.log('Using Freepik Proxy...');
-            const response = await fetch('/freepik-api/v1/ai/text-to-image', {
+            const response = await fetch('/api/posts/generate-image', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'x-freepik-api-key': API_KEY,
-                    'Accept': 'application/json'
                 },
                 body: JSON.stringify({
                     prompt: prompt,
-                    // Optional parameters for Freepik API
-                    aspect_ratio: "square", // or "portrait", "landscape"
-                    num_images: 1
                 })
             });
 
@@ -56,29 +47,15 @@ const FreelancerSidebar = ({ onPost }: FreelancerSidebarProps) => {
             const data = await response.json();
             console.log('API Response:', data);
 
-            // Freepik typically returns base64 or url. Handling common response format:
-            // Expecting { data: [{ base64: "...", url: "..." }] }
-            let imageUrl = null;
-
-            if (data.data && data.data.length > 0) {
-                if (data.data[0].base64) {
-                    imageUrl = `data:image/png;base64,${data.data[0].base64}`;
-                } else if (data.data[0].url) {
-                    imageUrl = data.data[0].url;
-                }
+            if (data.imageUrl) {
+                setGeneratedImage(data.imageUrl);
+            } else {
+                throw new Error('No image URL returned from server');
             }
-
-            if (!imageUrl) {
-                // Fallback if structure is different
-                if (data.url) imageUrl = data.url;
-                else throw new Error('Could not parse image URL from response');
-            }
-
-            setGeneratedImage(imageUrl);
 
         } catch (error: any) {
             console.error('Error generating image:', error);
-            alert(`Failed to generate image: ${error.message}\n\nIf you see a CORS error, please RESTART your development server (npm run dev) to apply the proxy settings.`);
+            alert(`Failed to generate image: ${error.message}`);
         } finally {
             setIsGenerating(false);
         }
@@ -90,9 +67,8 @@ const FreelancerSidebar = ({ onPost }: FreelancerSidebarProps) => {
         setFormData({ ...formData, productName: prompt.substring(0, 30) });
     };
 
-    const handleConfirmPost = () => {
-        const newPost = {
-            id: Date.now(),
+    const handleConfirmPost = async () => {
+        const postPayload = {
             title: formData.productName || "New Service",
             description: `${formData.name} is offering services in ${formData.location}. Contact: ${formData.contact}.`,
             price: Math.floor(Math.random() * 200) + 50,
@@ -107,13 +83,31 @@ const FreelancerSidebar = ({ onPost }: FreelancerSidebarProps) => {
             nameDisplay: formData.name
         };
 
-        onPost(newPost);
-        setOpenPostDialog(false);
+        try {
+            const response = await fetch('/api/posts', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(postPayload)
+            });
 
-        // Reset
-        setPrompt('');
-        setGeneratedImage(null);
-        setFormData({ name: '', productName: '', contact: '', location: '' });
+            if (!response.ok) {
+                throw new Error('Failed to create post');
+            }
+
+            const newPost = await response.json();
+            onPost(newPost);
+            setOpenPostDialog(false);
+
+            // Reset
+            setPrompt('');
+            setGeneratedImage(null);
+            setFormData({ name: '', productName: '', contact: '', location: '' });
+        } catch (error) {
+            console.error('Error creating post:', error);
+            alert('Failed to creates post. Please try again.');
+        }
     };
 
     return (

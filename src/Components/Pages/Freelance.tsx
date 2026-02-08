@@ -5,7 +5,7 @@ import FreelancersFeed from '../SpecifiedComponents/Freelancers/Components/Freel
 import FreelancerSidebar from '../SpecifiedComponents/Freelancers/Components/FreelancerSidebar';
 import FreelancerHeroBanner from '../SpecifiedComponents/Freelancers/Components/FreelancerHeroBanner';
 import FreelancerCategories from '../SpecifiedComponents/Freelancers/Components/FreelancerCategories';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 // Define interface locally to avoid 'export not found' issues
 interface Post {
@@ -82,8 +82,34 @@ const initialPosts: Post[] = [
 const Freelance = () => {
     const [posts, setPosts] = useState<Post[]>(initialPosts);
 
+    useEffect(() => {
+        const fetchPosts = async () => {
+            try {
+                const res = await fetch('/api/posts');
+                if (res.ok) {
+                    const data = await res.json();
+                    // Map _id to id for frontend compatibility
+                    const mappedData = data.map((post: any) => ({
+                        ...post,
+                        id: post._id || post.id
+                    }));
+                    // Only override initial posts if we have data from backend
+                    if (mappedData.length > 0) {
+                        setPosts(mappedData);
+                    }
+                }
+            } catch (err) {
+                console.error("Failed to fetch posts", err);
+            }
+        };
+
+        fetchPosts();
+    }, []);
+
     const handlePost = (newPost: Post) => {
-        setPosts([newPost, ...posts]);
+        // Ensure id is present (mapping _id if needed)
+        const postWithId = { ...newPost, id: newPost.id || (newPost as any)._id };
+        setPosts([postWithId, ...posts]);
     };
 
     return (
