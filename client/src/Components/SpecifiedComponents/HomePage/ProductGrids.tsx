@@ -1,28 +1,41 @@
 import { useNavigate } from 'react-router-dom';
-import { Box, Typography, Card, CardContent, CardMedia, Rating, IconButton, Button } from '@mui/material';
+import { Box, Typography, Card, CardContent, CardMedia, Rating, IconButton, Button, CircularProgress } from '@mui/material';
+import { useEffect, useState } from 'react';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import ShoppingCartOutlinedIcon from '@mui/icons-material/ShoppingCartOutlined';
-import { allProducts } from '../../../data/productsData';
+import { ProductService } from '../../../services/api';
 
 const ProductGrids = () => {
     const navigate = useNavigate();
+    const [products, setProducts] = useState<any[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
 
-    // Get unique products for "Just For You" section (not used in other sections)
-    // Show 8 products initially (excluded IDs from other sections: 1, 2, 3, 4, 5, 6, 7, 9, 11, 12, 14, 15)
-    const justForYouProducts = [
-        allProducts.find(p => p.id === 8),   // Adidas Shoes
-        allProducts.find(p => p.id === 10),  // Women's Graphic T-Shirt
-        allProducts.find(p => p.id === 13),  // Women's V-Neck T-Shirt
-        allProducts.find(p => p.id === 16),  // Bose Headphones
-        allProducts.find(p => p.id === 17),  // MacBook Pro
-        allProducts.find(p => p.id === 19),  // iPad Air
-        allProducts.find(p => p.id === 21),  // Samsung Galaxy Watch
-        allProducts.find(p => p.id === 23),  // AirPods Pro
-    ].filter((p): p is NonNullable<typeof p> => p !== undefined);
+    useEffect(() => {
+        const fetchProducts = async () => {
+            try {
+                const { data } = await ProductService.getAll();
+                // Take first 8 for home page grid
+                setProducts(data.slice(0, 8));
+            } catch (error) {
+                console.error("Error fetching products:", error);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        fetchProducts();
+    }, []);
 
     const handleViewAll = () => {
         navigate('/products/all');
     };
+
+    if (isLoading) {
+        return (
+            <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
+                <CircularProgress sx={{ color: '#212121' }} />
+            </Box>
+        );
+    }
 
     return (
         <Box sx={{ mt: 8, mb: 4 }}>
@@ -36,16 +49,16 @@ const ProductGrids = () => {
             </Box>
 
             <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3, justifyContent: 'center' }}>
-                {justForYouProducts.map((product) => (
+                {products.map((product) => (
                     <Box
-                        key={product.id}
+                        key={product._id}
                         sx={{
-                            width: { xs: '100%', sm: 'calc(50% - 24px)', md: 'calc(33.33% - 24px)', lg: 'calc(25% - 24px)' }, // 4 per row on Large
+                            width: { xs: '100%', sm: 'calc(50% - 24px)', md: 'calc(33.33% - 24px)', lg: 'calc(25% - 24px)' },
                             mb: 2
                         }}
                     >
                         <Card
-                            onClick={() => navigate(`/product/${product.id}`)}
+                            onClick={() => navigate(`/product/${product._id}`)}
                             sx={{
                                 border: 'none',
                                 boxShadow: 'none',
@@ -53,7 +66,7 @@ const ProductGrids = () => {
                                 borderRadius: 4,
                                 p: 2,
                                 cursor: 'pointer',
-                                height: '420px', // STRICT 420px HEIGHT
+                                height: '420px',
                                 display: 'flex',
                                 flexDirection: 'column',
                                 transition: 'transform 0.3s ease',
@@ -69,8 +82,8 @@ const ProductGrids = () => {
                             <Box sx={{ position: 'relative', borderRadius: 4, overflow: 'hidden', mb: 2, pt: '100%', width: '100%' }}>
                                 <CardMedia
                                     component="img"
-                                    image={product.image}
-                                    alt={product.name}
+                                    image={product.images?.[0] || 'https://via.placeholder.com/400'}
+                                    alt={product.title}
                                     className="product-image"
                                     sx={{
                                         position: 'absolute',
@@ -80,7 +93,7 @@ const ProductGrids = () => {
                                         height: '100%',
                                         transition: 'transform 0.5s ease',
                                         bgcolor: '#f5f5f5',
-                                        objectFit: 'cover', // COVER
+                                        objectFit: 'cover',
                                     }}
                                 />
                                 <IconButton
@@ -115,14 +128,14 @@ const ProductGrids = () => {
                                         lineHeight: '1.3em'
                                     }}
                                 >
-                                    {product.name}
+                                    {product.title}
                                 </Typography>
 
                                 <Box sx={{ mt: 'auto' }}>
                                     <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                                        <Rating value={product.rating} readOnly size="small" sx={{ color: '#ffb400', mr: 0.5 }} />
+                                        <Rating value={product.rating || 0} readOnly size="small" sx={{ color: '#ffb400', mr: 0.5 }} />
                                         <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-                                            ({product.ratingCount})
+                                            ({product.numReviews || 0})
                                         </Typography>
                                     </Box>
                                     <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -149,7 +162,6 @@ const ProductGrids = () => {
                 ))}
             </Box>
 
-            {/* View All Button */}
             <Box sx={{ textAlign: 'center', mt: 4 }}>
                 <Button
                     onClick={handleViewAll}

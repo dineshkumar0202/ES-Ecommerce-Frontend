@@ -6,9 +6,9 @@ interface ProtectedAdminRouteProps {
 }
 
 const ProtectedAdminRoute = ({ children }: ProtectedAdminRouteProps) => {
-    const isAdminLoggedIn = localStorage.getItem('isAdminLoggedIn');
+    const userRole = localStorage.getItem('userRole');
 
-    if (!isAdminLoggedIn) {
+    if (userRole !== 'Admin') {
         return <Navigate to="/admin/login" replace />;
     }
 

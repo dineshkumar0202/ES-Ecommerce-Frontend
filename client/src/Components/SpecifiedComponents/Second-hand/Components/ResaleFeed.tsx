@@ -1,6 +1,6 @@
 import { Box, Grid, Card, CardMedia, CardContent, Typography, Chip, Avatar } from '@mui/material';
 
-const items = [
+const items: any[] = [
     {
         title: 'iPhone 13 Pro',
         price: '$650',
@@ -57,7 +57,7 @@ const ResaleFeed = () => {
             <Typography variant="h5" sx={{ fontWeight: 800, mb: 3, color: '#1e293b' }}>Fresh Finds</Typography>
             <Grid container spacing={3}>
                 {items.map((item, index) => (
-                    <Grid item xs={12} sm={6} md={3} key={index}>
+                    <Grid size={{ xs: 12, sm: 6, md: 3 }} key={index}>
                         <Card
                             sx={{
                                 borderRadius: 4,
@@ -100,10 +100,13 @@ const ResaleFeed = () => {
                                 <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mt: 2 }}>
                                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
                                         <Avatar sx={{ width: 24, height: 24, mr: 1, bgcolor: '#e2e8f0', color: '#64748b', fontSize: '0.75rem', fontWeight: 'bold' }}>
-                                            {item.seller[0]}
+                                            {typeof item.seller === 'object' ? (item.seller.username?.[0] || 'S') : (item.seller?.[0] || 'S')}
                                         </Avatar>
-                                        <Typography variant="caption" color="text.secondary" fontWeight="500">{item.seller}</Typography>
+                                        <Typography variant="caption" color="text.secondary" fontWeight="500">
+                                            {typeof item.seller === 'object' ? item.seller.username : (item.seller || "Seller")}
+                                        </Typography>
                                     </Box>
+
                                     <Typography variant="caption" color="text.disabled">{item.time}</Typography>
                                 </Box>
                             </CardContent>

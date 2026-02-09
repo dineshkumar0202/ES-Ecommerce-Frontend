@@ -6,6 +6,7 @@ import ShoppingCartOutlinedIcon from '@mui/icons-material/ShoppingCartOutlined';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import BusinessIcon from '@mui/icons-material/Business';
 import EmailIcon from '@mui/icons-material/Email';
+import { WholesaleService } from '../../../../services/api';
 
 // Mock Data adapted with pricePerUnit
 const wholesaleProducts = [
@@ -101,17 +102,20 @@ const WholesaleFeed = () => {
     const itemsPerPage = 10;
 
     useEffect(() => {
-        const storedProducts = localStorage.getItem('wholesaleProducts_v1.2');
-        if (storedProducts) {
-            const parsedProducts = JSON.parse(storedProducts);
-            // Filter out accidentally added Resale items (SKU starts with RESALE-)
-            const cleanProducts = parsedProducts.filter((p: any) => !p.sku || !p.sku.startsWith('RESALE-'));
-            setProducts(cleanProducts);
-        } else {
-            // Initialize with mock data if empty
-            localStorage.setItem('wholesaleProducts_v1.2', JSON.stringify(wholesaleProducts));
-            setProducts(wholesaleProducts);
-        }
+        const fetchProducts = async () => {
+            try {
+                const { data } = await WholesaleService.getAll();
+                // Normalize data if needed
+                const formatted = data.map((p: any) => ({
+                    ...p,
+                    id: p._id // Map _id to id for compatibility
+                }));
+                setProducts(formatted);
+            } catch (error) {
+                console.error("Failed to fetch wholesale products", error);
+            }
+        };
+        fetchProducts();
     }, []);
 
     const handleChange = (event: ChangeEvent<unknown>, value: number) => {
@@ -165,7 +169,7 @@ const ProductCard = ({ item }: { item: any }) => {
     return (
         <Paper
             elevation={0}
-            onClick={() => navigate(`/wholesale/product/${item.id}`)}
+            onClick={() => navigate(`/wholesale/product/${item._id || item.id}`)}
             sx={{
                 cursor: 'pointer',
                 display: 'flex',

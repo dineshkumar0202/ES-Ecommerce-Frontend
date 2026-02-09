@@ -9,37 +9,110 @@ import cartRoutes from "./src/routers/retail/CartRouter";
 import userRoutes from "./src/routers/users/UserRouter";
 import wishlistRoutes from "./src/routers/retail/WishlistRouter";
 import orderRoutes from "./src/routers/retail/OrderRouter";
+import qProductRoutes from "./src/routers/q-commerce/QProductRouter";
+import resaleRoutes from "./src/routers/Resale/ResaleProductRouter";
+import wholesaleRoutes from "./src/routers/Wholesale/WholesaleProductRouter";
+import adminRoutes from "./src/routers/admin/AdminRouter";
+import uploadRoutes from "./src/routers/uploadRouter";
+import paymentRoutes from "./src/routers/paymentRouter";
+import notificationRoutes from "./src/routers/users/NotificationRouter";
+import testEmailRoutes from "./src/routers/testEmailRouter";
+import User from "./src/models/users/UserModel";
 
+
+import { Server } from "socket.io";
+import http from "http";
 
 dotenv.config();
 
 const app = express();
+const server = http.createServer(app);
+const io = new Server(server, {
+    cors: {
+        origin: "*", // In production, specify the client URL
+        methods: ["GET", "POST"]
+    }
+});
+
 const PORT = process.env.PORT || 5000;
+
+// Socket connection
+io.on("connection", (socket) => {
+    console.log("New client connected:", socket.id);
+
+    socket.on("join", (userId) => {
+        socket.join(userId);
+        console.log(`User ${userId} joined room`);
+    });
+
+    socket.on("disconnect", () => {
+        console.log("Client disconnected");
+    });
+});
+
+// Attach io to request object for use in controllers
+app.use((req: any, res, next) => {
+    req.io = io;
+    next();
+});
 
 // Middleware
 app.use(cors());
-app.use(express.json());
-
-// Database Connection
-mongoose
-    .connect(process.env.MONGO_URI as string)
-    .then(() => console.log("MongoDB Connected"))
-    .catch((err) => console.log(err));
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
 // Routes
 app.use("/api/auth", authRoutes);
+app.use("/api/admin", adminRoutes);
 app.use("/api/posts", postRoutes); // Freelancer posts
 app.use("/api/products", productRoutes);
 app.use("/api/cart", cartRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/wishlist", wishlistRoutes);
 app.use("/api/orders", orderRoutes);
-
+app.use("/api/q-commerce", qProductRoutes);
+app.use("/api/resale", resaleRoutes);
+app.use("/api/wholesale", wholesaleRoutes);
+app.use("/api/upload", uploadRoutes);
+app.use("/api/payments", paymentRoutes);
+app.use("/api/notifications", notificationRoutes);
+app.use("/api/test", testEmailRoutes);
 
 app.get("/", (req: Request, res: Response) => {
     res.send("API is running...");
 });
 
-app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-});
+// Database Connection and Server Startup
+const startServer = async () => {
+    try {
+        await mongoose.connect(process.env.MONGO_URI as string);
+        console.log("MongoDB Connected 🌱");
+
+        // Sync indexes to ensure 'sparse' option is applied to email index
+        try {
+            await User.syncIndexes();
+            console.log("User Indexes Synced ✅");
+        } catch (idxError) {
+            console.error("Warning: User Indexes Sync failed (server continuing):", idxError);
+        }
+
+        const serverInstance = server.listen(PORT, () => {
+            console.log(`Server running on port ${PORT} ✅🚀`);
+        });
+
+        // Handle server errors
+        serverInstance.on('error', (error: any) => {
+            if (error.code === 'EADDRINUSE') {
+                console.error(`Error: Port ${PORT} is already in use.`);
+            } else {
+                console.error('Server error:', error);
+            }
+        });
+
+    } catch (error) {
+        console.error("Error starting server:", error);
+        process.exit(1);
+    }
+};
+
+startServer();

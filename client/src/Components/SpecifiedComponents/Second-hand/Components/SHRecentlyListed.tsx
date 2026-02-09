@@ -5,6 +5,7 @@ import WhatsAppIcon from '@mui/icons-material/WhatsApp';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import TuneIcon from '@mui/icons-material/Tune';
+import { ResaleService } from '../../../../services/api';
 
 const defaultProducts = [
     {
@@ -160,22 +161,25 @@ const moreProducts = [
 
 const SHRecentlyListed = () => {
     const navigate = useNavigate();
-    const [displayProducts, setDisplayProducts] = React.useState<any[]>(defaultProducts);
+    const [displayProducts, setDisplayProducts] = React.useState<any[]>([]);
     const [hasMore, setHasMore] = React.useState(true);
 
     React.useEffect(() => {
-        const storedProducts = JSON.parse(localStorage.getItem('resaleProducts') || '[]');
-        if (storedProducts.length > 0) {
-            // Map stored products to match the display format if needed
-            const formattedStored = storedProducts.map((p: any) => ({
-                ...p,
-                tagColor: p.tagColor || "#bef264", // Default color for user listed items
-                price: p.price.toString().replace('₹', '') // Normalize price for display logic
-            }));
-
-            // Combine stored products with default ones - Defaults first, then user items
-            setDisplayProducts([...defaultProducts, ...formattedStored]);
-        }
+        const fetchProducts = async () => {
+            try {
+                const { data } = await ResaleService.getAll();
+                // Normalize data if needed
+                const formatted = data.map((p: any) => ({
+                    ...p,
+                    id: p._id, // Map _id to id for compatibility
+                    tagColor: p.tagColor || "#bef264"
+                }));
+                setDisplayProducts(formatted);
+            } catch (error) {
+                console.error("Failed to fetch resale products", error);
+            }
+        };
+        fetchProducts();
     }, []);
 
     const handleLoadMore = () => {

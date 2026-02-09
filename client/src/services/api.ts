@@ -1,0 +1,133 @@
+import axios from 'axios';
+
+// Base API URL - pointing to your backend
+const API_URL = 'http://localhost:5000/api';
+
+const api = axios.create({
+    baseURL: API_URL,
+    headers: {
+        'Content-Type': 'application/json'
+    }
+});
+
+// Add interceptor to include token from localStorage if available
+api.interceptors.request.use((config) => {
+    const token = localStorage.getItem('token');
+    if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+});
+
+export const QProductService = {
+    getAll: () => api.get('/q-commerce'),
+    getById: (id: string) => api.get(`/q-commerce/${id}`),
+    create: (data: any) => api.post('/q-commerce', data),
+    update: (id: string, data: any) => api.put(`/q-commerce/${id}`, data),
+    delete: (id: string) => api.delete(`/q-commerce/${id}`)
+};
+
+export const ResaleService = {
+    getAll: () => api.get('/resale'),
+    getById: (id: string) => api.get(`/resale/${id}`),
+    create: (data: any) => api.post('/resale', data),
+    update: (id: string, data: any) => api.put(`/resale/${id}`, data),
+    delete: (id: string) => api.delete(`/resale/${id}`)
+};
+
+export const WholesaleService = {
+    getAll: () => api.get('/wholesale'),
+    getById: (id: string) => api.get(`/wholesale/${id}`),
+    create: (data: any) => api.post('/wholesale', data),
+    update: (id: string, data: any) => api.put(`/wholesale/${id}`, data),
+    delete: (id: string) => api.delete(`/wholesale/${id}`)
+};
+
+export const ProductService = { // Retail
+    getAll: (params?: any) => api.get('/products', { params }),
+    getCategories: () => api.get('/products/categories'),
+    getBrands: () => api.get('/products/brands'),
+    getTopRated: () => api.get('/products/top'),
+    getById: (id: string) => api.get(`/products/${id}`),
+    createReview: (id: string, data: any) => api.post(`/products/${id}/reviews`, data),
+    create: (data: any) => api.post('/products', data),
+    update: (id: string, data: any) => api.put(`/products/${id}`, data),
+    delete: (id: string) => api.delete(`/products/${id}`)
+};
+
+export const FreelanceService = {
+    getAll: () => api.get('/posts'),
+    getById: (id: string) => api.get(`/posts/${id}`),
+    create: (data: any) => api.post('/posts', data),
+    update: (id: string, data: any) => api.put(`/posts/${id}`, data),
+    updateStatus: (id: string, status: string) => api.put(`/posts/${id}/status`, { status }),
+    delete: (id: string) => api.delete(`/posts/${id}`)
+};
+
+export const OrderService = {
+    getMyOrders: () => api.get('/orders/myorders'),
+    getAll: () => api.get('/orders'),
+    getOrderById: (id: string) => api.get(`/orders/${id}`),
+    create: (data: any) => api.post('/orders', data),
+    updatePaid: (id: string, data: any) => api.put(`/orders/${id}/pay`, data),
+    updateDelivered: (id: string) => api.put(`/orders/${id}/deliver`),
+    updateStatus: (id: string, status: string) => api.put(`/orders/${id}/status`, { status })
+};
+
+export const NotificationService = {
+    getNotifications: () => api.get('/notifications'),
+    markAsRead: (id: string) => api.put(`/notifications/${id}/read`),
+    markAllAsRead: () => api.put('/notifications/read-all')
+};
+
+export const UserService = {
+    getAll: () => api.get('/users'),
+    getById: (id: string) => api.get(`/users/${id}`),
+    delete: (id: string) => api.delete(`/users/${id}`),
+    registerFreelancer: (data: any) => api.put('/users/freelancer/register', data)
+};
+
+export const AdminService = {
+    getStats: () => api.get('/admin/stats'),
+    getActivities: () => api.get('/admin/activities'),
+    getPendingFreelancers: () => api.get('/admin/freelancers/pending'),
+    updateFreelancerStatus: (id: string, status: string, rejectionReason?: string) => api.put(`/admin/freelancers/${id}/status`, { status, rejectionReason })
+};
+
+export const CartService = {
+    getCart: () => api.get('/cart'),
+    addToCart: (data: any) => api.post('/cart', data),
+    removeFromCart: (productId: string) => api.delete(`/cart/${productId}`),
+    updateQuantity: (productId: string, quantity: number) => api.put(`/cart/${productId}`, { quantity })
+};
+
+export const WishlistService = {
+    getWishlist: () => api.get('/wishlist'),
+    addToWishlist: (data: any) => api.post('/wishlist', data),
+    removeFromWishlist: (id: string) => api.delete(`/wishlist/${id}`)
+};
+
+export const UploadService = {
+    uploadImage: (file: File) => {
+        const formData = new FormData();
+        formData.append('image', file);
+        return api.post('/upload', formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data'
+            }
+        });
+    }
+};
+
+export const PaymentService = {
+    getConfig: () => api.get('/payments/config'),
+    createPaymentIntent: (amount: number) => api.post('/payments/create-payment-intent', { amount })
+};
+
+export const AuthService = {
+    login: (data: any) => api.post('/auth/login', data),
+    register: (data: any) => api.post('/auth/register', data),
+    getMe: () => api.get('/auth/me')
+};
+
+export default api;

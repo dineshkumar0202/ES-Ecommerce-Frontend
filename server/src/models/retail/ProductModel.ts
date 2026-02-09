@@ -10,6 +10,9 @@ export interface IProduct extends Document {
     images: string[];
     thumbnail?: string;
     stock: number;
+    lowStockThreshold?: number;
+    sku?: string;
+    brand?: string;
     seller: mongoose.Types.ObjectId;
     rating: number;
     numReviews: number;
@@ -18,6 +21,15 @@ export interface IProduct extends Document {
         name: string;
         rating: number;
         comment: string;
+        createdAt: Date;
+    }[];
+    inventoryHistory?: {
+        action: 'restock' | 'sale' | 'return' | 'adjustment';
+        quantity: number;
+        previousStock: number;
+        newStock: number;
+        reason?: string;
+        performedBy?: mongoose.Types.ObjectId;
         createdAt: Date;
     }[];
     createdAt: Date;
@@ -48,6 +60,16 @@ const productSchema: Schema = new mongoose.Schema({
         type: Number,
         default: 0,
     },
+    lowStockThreshold: {
+        type: Number,
+        default: 10,
+    },
+    sku: {
+        type: String,
+        unique: true,
+        sparse: true,
+    },
+    brand: String,
     seller: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "User",
@@ -70,6 +92,30 @@ const productSchema: Schema = new mongoose.Schema({
             name: String,
             rating: Number,
             comment: String,
+            createdAt: {
+                type: Date,
+                default: Date.now,
+            },
+        },
+    ],
+    inventoryHistory: [
+        {
+            action: {
+                type: String,
+                enum: ['restock', 'sale', 'return', 'adjustment'],
+                required: true,
+            },
+            quantity: {
+                type: Number,
+                required: true,
+            },
+            previousStock: Number,
+            newStock: Number,
+            reason: String,
+            performedBy: {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: "User",
+            },
             createdAt: {
                 type: Date,
                 default: Date.now,

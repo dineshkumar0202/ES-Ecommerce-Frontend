@@ -10,7 +10,8 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { UserService, AuthService, UploadService } from '../../../../services/api';
 
 interface FreelancerSidebarProps {
     onPost: (newPost: any) => void;
@@ -63,6 +64,22 @@ const FreelancerSidebar = ({ onPost }: FreelancerSidebarProps) => {
     // Register State
     const [openRegisterDialog, setOpenRegisterDialog] = useState(false);
     const [isRegistered, setIsRegistered] = useState(false);
+    const [status, setStatus] = useState<string>('Pending');
+
+    useEffect(() => {
+        const fetchUserStatus = async () => {
+            try {
+                const { data: user } = await AuthService.getMe();
+                if (user?.freelancer?.isRegistered) {
+                    setIsRegistered(true);
+                    setStatus(user.freelancer.status || 'Pending');
+                }
+            } catch (error) {
+                console.error("Failed to fetch user status", error);
+            }
+        };
+        fetchUserStatus();
+    }, []);
     const [step, setStep] = useState(1);
     const [panError, setPanError] = useState(false);
     const [freelancerIdError, setFreelancerIdError] = useState(false);
@@ -207,12 +224,13 @@ const FreelancerSidebar = ({ onPost }: FreelancerSidebarProps) => {
 
                         <Chip
                             icon={<CheckCircleIcon sx={{ fontSize: '1rem !important' }} />}
-                            label="Verification Pending"
-                            color="success"
+                            label={status === 'Approved' ? "Verified Freelancer" : (status === 'Rejected' ? "Application Rejected" : "Verification Pending")}
+                            color={status === 'Approved' ? "success" : (status === 'Rejected' ? "error" : "warning")}
                             variant="outlined"
                             size="small"
                             sx={{ alignSelf: 'flex-start', mb: 3, fontWeight: 600 }}
                         />
+
 
                         <Stack spacing={2}>
                             <Button
@@ -700,7 +718,7 @@ const FreelancerSidebar = ({ onPost }: FreelancerSidebarProps) => {
                     <Button
                         variant="contained"
                         endIcon={<ArrowForwardIcon />}
-                        onClick={() => {
+                        onClick={async () => {
                             if (step === 1) {
                                 setStep(2);
                             } else {
@@ -731,15 +749,48 @@ const FreelancerSidebar = ({ onPost }: FreelancerSidebarProps) => {
                                     }
                                 }
 
-                                alert("Registration Successful! Your verification is pending.");
-                                setIsRegistered(true);
-                                setOpenRegisterDialog(false);
-                                setStep(1); // Reset
-                                setRegisterData({
-                                    name: '', email: '', phone: '', password: '', category: '', portfolio: '',
-                                    panNumber: '', panFile: null, freelancerId: '', freelancerIdFile: null,
-                                    taskLink: '', taskFile: null, answers: ['', '', '', '', '']
-                                });
+                                try {
+                                    let panUrl = '';
+                                    if (registerData.panFile) {
+                                        const res = await UploadService.uploadImage(registerData.panFile);
+                                        panUrl = res.data.url;
+                                    }
+                                    let idUrl = '';
+                                    if (registerData.freelancerIdFile) {
+                                        const res = await UploadService.uploadImage(registerData.freelancerIdFile);
+                                        idUrl = res.data.url;
+                                    }
+                                    let taskUrl = '';
+                                    if (registerData.taskFile) {
+                                        const res = await UploadService.uploadImage(registerData.taskFile);
+                                        taskUrl = res.data.url;
+                                    }
+
+                                    await UserService.registerFreelancer({
+                                        panNumber: registerData.panNumber,
+                                        panFile: panUrl,
+                                        freelancerId: registerData.freelancerId,
+                                        freelancerIdFile: idUrl,
+                                        category: registerData.category,
+                                        portfolio: registerData.portfolio,
+                                        taskLink: registerData.taskLink,
+                                        taskFile: taskUrl,
+                                        answers: registerData.answers
+                                    });
+
+                                    alert("Registration Successful! Your verification is pending.");
+                                    setIsRegistered(true);
+                                    setStatus('Pending');
+                                    setOpenRegisterDialog(false);
+                                    setStep(1);
+                                    setRegisterData({
+                                        name: '', email: '', phone: '', password: '', category: '', portfolio: '',
+                                        panNumber: '', panFile: null, freelancerId: '', freelancerIdFile: null,
+                                        taskLink: '', taskFile: null, answers: ['', '', '', '', '']
+                                    });
+                                } catch (err: any) {
+                                    alert(err.response?.data?.message || err.message || "Registration failed");
+                                }
                             }
                         }}
                         sx={{

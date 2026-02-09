@@ -1,5 +1,6 @@
 // Forces refresh
 import { Box, Typography, Paper, Stack, Button, IconButton } from '@mui/material';
+import Chip from '@mui/material/Chip';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import ViewListIcon from '@mui/icons-material/ViewList';
 import GridViewIcon from '@mui/icons-material/GridView';
@@ -126,24 +127,17 @@ const FreelancersFeed = ({ posts }: FreelancersFeedProps) => {
 
                         {/* Right Side - Removed Price, Kept Action */}
                         <Box sx={{ textAlign: 'right', minWidth: 80 }}>
-                            <Button
-                                variant="contained"
-                                size="small"
+                            <Chip
+                                label={item.status === 'APPROVED' ? 'Approved' : item.status === 'REJECTED' ? 'Rejected' : 'Pending'}
                                 sx={{
-                                    bgcolor: '#0f172a',
-                                    color: 'white',
-                                    textTransform: 'none',
+                                    bgcolor: item.status === 'APPROVED' ? '#dcfce7' : item.status === 'REJECTED' ? '#fee2e2' : '#f1f5f9',
+                                    color: item.status === 'APPROVED' ? '#166534' : item.status === 'REJECTED' ? '#991b1b' : '#64748b',
                                     fontWeight: 700,
-                                    fontSize: '0.8rem',
                                     borderRadius: 2,
-                                    px: 2,
-                                    py: 0.8,
-                                    boxShadow: 'none',
-                                    '&:hover': { bgcolor: '#334155', boxShadow: 'none' }
+                                    px: 1,
+                                    height: 32
                                 }}
-                            >
-                                Interested
-                            </Button>
+                            />
                         </Box>
                     </Paper>
                 ))}

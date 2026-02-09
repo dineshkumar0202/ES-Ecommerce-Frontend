@@ -48,7 +48,7 @@ const protect = async (req: IAuthRequest, res: Response, next: NextFunction) => 
 };
 
 const admin = (req: IAuthRequest, res: Response, next: NextFunction) => {
-    if (req.user && req.user.role === "admin") {
+    if (req.user && req.user.role === "Admin") {
         next();
     } else {
         res.status(401).json({ message: "Not authorized as an admin" });

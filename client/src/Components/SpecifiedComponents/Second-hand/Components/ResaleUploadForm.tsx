@@ -4,6 +4,7 @@ import CloudUploadOutlinedIcon from '@mui/icons-material/CloudUploadOutlined';
 import ArticleOutlinedIcon from '@mui/icons-material/ArticleOutlined';
 import SellIcon from '@mui/icons-material/Sell';
 import SaveIcon from '@mui/icons-material/Save';
+import { ResaleService } from '../../../../services/api';
 
 const ResaleUploadForm = ({ onPost }: { onPost?: () => void }) => {
     const [productName, setProductName] = React.useState('');
@@ -67,26 +68,21 @@ const ResaleUploadForm = ({ onPost }: { onPost?: () => void }) => {
 
         setIsSubmitting(true);
 
-        // Simulate network delay for better UX
-        await new Promise(resolve => setTimeout(resolve, 1000));
-
         const newProduct = {
-            id: Date.now(),
             title: productName,
-            price: `₹${price}`,
+            price: parseFloat(price), // Send as number
             image: images[0],
             images: images,
             condition: condition,
-            seller: 'You',
+            // seller: 'You', // Backend handles seller via token
             location: location,
             mobile: mobile,
-            time: 'Just now'
+            description: description,
+            tagColor: "#bef264" // Default or selectable
         };
 
-        const existingProducts = JSON.parse(localStorage.getItem('resaleProducts') || '[]');
-
         try {
-            localStorage.setItem('resaleProducts', JSON.stringify([newProduct, ...existingProducts]));
+            await ResaleService.create(newProduct);
 
             if (onPost) {
                 // Reset form
@@ -102,19 +98,8 @@ const ResaleUploadForm = ({ onPost }: { onPost?: () => void }) => {
                 onPost();
             }
         } catch (error) {
-            console.error("Storage limit reached:", error);
-            alert("Storage limit reached! We will save your listing with only the first image."); // Keep alert for critical system failure
-
-            // Fallback: Save with only the first image
-            const reducedImages = images.slice(0, 1);
-            const reducedProduct = { ...newProduct, images: reducedImages, image: reducedImages[0] };
-
-            try {
-                localStorage.setItem('resaleProducts', JSON.stringify([reducedProduct, ...existingProducts]));
-                if (onPost) onPost();
-            } catch (retryError) {
-                alert("Unable to save listing. Storage is completely full. Please clear some data.");
-            }
+            console.error("Failed to post resale product:", error);
+            alert("Failed to post product. Please try again.");
         } finally {
             setIsSubmitting(false);
         }

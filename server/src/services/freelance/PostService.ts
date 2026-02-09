@@ -7,9 +7,21 @@ class PostService {
         return await Post.find().sort({ createdAt: -1 });
     }
 
-    async createPost(postData: CreatePostDto) {
+    async createPost(postData: any) { // Changed to any or Partial<IPost> for flexibility
         const newPost = new Post(postData);
         return await newPost.save();
+    }
+
+    async updatePost(id: string, postData: any) {
+        return await Post.findByIdAndUpdate(id, postData, { new: true });
+    }
+
+    async deletePost(id: string) {
+        return await Post.findByIdAndDelete(id);
+    }
+
+    async getPostById(id: string) {
+        return await Post.findById(id).populate('user', 'username email');
     }
 
     async generateImage(prompt: string) {

@@ -1,7 +1,8 @@
-import { useState } from 'react';
-import { Box, Container, Stack, Typography, Divider, InputBase, IconButton, Avatar, Menu, MenuItem } from '@mui/material';
+import { useState, useEffect } from 'react';
+import { Box, Container, Stack, Typography, Divider, InputBase, IconButton, Avatar, Menu, MenuItem, Badge } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import ShoppingCartOutlinedIcon from '@mui/icons-material/ShoppingCartOutlined';
+
 import HubIcon from '@mui/icons-material/Hub';
 import StorefrontIcon from '@mui/icons-material/Storefront';
 import FactoryIcon from '@mui/icons-material/Factory';
@@ -9,12 +10,58 @@ import RocketLaunchIcon from '@mui/icons-material/RocketLaunch';
 import AutorenewIcon from '@mui/icons-material/Autorenew';
 import WorkIcon from '@mui/icons-material/Work';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { CartService } from '../../services/api';
+import { useSocket } from '../../hooks/useSocket';
+import { Snackbar, Alert } from '@mui/material';
 
 const Navbar = () => {
     const navigate = useNavigate();
     const location = useLocation();
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+    const [cartCount, setCartCount] = useState(0);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [notification, setNotification] = useState<{ message: string; type: 'success' | 'info' | 'error' } | null>(null);
+
     const open = Boolean(anchorEl);
+
+    const user = JSON.parse(localStorage.getItem('user') || 'null');
+    const socket = useSocket(user?._id || null);
+
+
+    useEffect(() => {
+        // Only set up fetching if user is authenticated
+        const token = localStorage.getItem('token');
+        if (!token) {
+            setCartCount(0);
+            return; // Exit early - don't set up any API calls or intervals
+        }
+
+        const fetchCartCount = async () => {
+            try {
+                const { data } = await CartService.getCart();
+                const count = data?.cartItems?.reduce((acc: number, item: any) => acc + item.quantity, 0) || 0;
+                setCartCount(count);
+            } catch (error: any) {
+                // Silently handle 401 errors (user not authenticated)
+                if (error.response?.status !== 401) {
+                    console.error("Error fetching cart count:", error);
+                }
+                setCartCount(0);
+            }
+        };
+
+
+
+        // Initial fetch
+        fetchCartCount();
+
+        // Set up interval - only runs if we have a token
+        const interval = setInterval(() => {
+            fetchCartCount();
+        }, 10000);
+
+        return () => clearInterval(interval);
+    }, []);
 
     const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
         setAnchorEl(event.currentTarget);
@@ -22,6 +69,12 @@ const Navbar = () => {
 
     const handleMenuClose = () => {
         setAnchorEl(null);
+    };
+
+    const handleSearch = (e: React.KeyboardEvent) => {
+        if (e.key === 'Enter' && searchTerm.trim()) {
+            navigate(`/retail?search=${encodeURIComponent(searchTerm)}`);
+        }
     };
 
     // Mapping active path to category label for highlight
@@ -79,19 +132,26 @@ const Navbar = () => {
                             <SearchIcon sx={{ color: '#0a0a0a', mr: 1.5, fontSize: 20 }} />
                             <InputBase
                                 placeholder="Search products, services..."
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                onKeyDown={handleSearch}
                                 sx={{ color: '#0a0a0a', flex: 1, fontSize: '0.9rem', fontWeight: 500 }}
                             />
                             <Box sx={{ border: '1px solid #e2e8f0', borderRadius: 1.5, px: 0.8, py: 0.1, color: '#64748b', fontSize: '0.7rem', fontWeight: 600, bgcolor: '#f1f5f9' }}>
-                                ⌘K
+                                ↵
                             </Box>
                         </Box>
 
                         {/* Right Actions */}
                         <Stack direction="row" spacing={2} alignItems="center">
-                            {/* Notification Icon Removed as per request */}
 
-                            <IconButton sx={{ color: 'white', '&:hover': { bgcolor: 'rgba(255,255,255,0.1)' } }} onClick={() => navigate('/products/categories')}>
-                                <ShoppingCartOutlinedIcon />
+                            <IconButton
+                                sx={{ color: 'white', '&:hover': { bgcolor: 'rgba(255,255,255,0.1)' } }}
+                                onClick={() => navigate('/profile')}
+                            >
+                                <Badge badgeContent={cartCount} color="error" sx={{ '& .MuiBadge-badge': { bgcolor: '#bef264', color: 'black', fontWeight: 800 } }}>
+                                    <ShoppingCartOutlinedIcon />
+                                </Badge>
                             </IconButton>
 
                             <Divider orientation="vertical" flexItem sx={{ bgcolor: '#334155', height: 24, mx: 1, alignSelf: 'center' }} />
@@ -104,9 +164,6 @@ const Navbar = () => {
                                         alignItems="center"
                                         sx={{ cursor: 'pointer' }}
                                         onClick={handleMenuOpen}
-                                        aria-controls={open ? 'account-menu' : undefined}
-                                        aria-haspopup="true"
-                                        aria-expanded={open ? 'true' : undefined}
                                     >
                                         <Box sx={{ textAlign: 'right', display: { xs: 'none', md: 'block' } }}>
                                             <Typography variant="subtitle2" sx={{ color: 'white', fontWeight: 600, lineHeight: 1.2, fontSize: '0.9rem' }}>
@@ -127,18 +184,16 @@ const Navbar = () => {
                                         open={open}
                                         onClose={handleMenuClose}
                                         disableScrollLock={true}
-                                        MenuListProps={{
-                                            'aria-labelledby': 'basic-button',
-                                        }}
                                         sx={{ mt: 1 }}
                                     >
                                         <MenuItem onClick={() => {
                                             handleMenuClose();
                                             const role = localStorage.getItem('userRole');
                                             if (role === 'Admin') navigate('/admin');
+                                            else if (role === 'Seller') navigate('/seller/profile');
                                             else navigate('/profile');
                                         }}>
-                                            Profile
+                                            Profile / Dashboard
                                         </MenuItem>
                                         <MenuItem onClick={() => {
                                             handleMenuClose();
@@ -171,7 +226,7 @@ const Navbar = () => {
                             icon={<StorefrontIcon />}
                             label="Retail"
                             isActive={activeCategory === 'Retail'}
-                            onClick={() => navigate('/')}
+                            onClick={() => navigate('/retail')}
                         />
                         <CategoryChip
                             icon={<FactoryIcon />}
@@ -201,6 +256,19 @@ const Navbar = () => {
                 </Container>
             </Box>
             <Box sx={{ height: '180px' }} />
+            {/* Notification Snackbar */}
+            <Snackbar
+                open={Boolean(notification)}
+                autoHideDuration={6000}
+                onClose={() => setNotification(null)}
+                anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+            >
+                {notification ? (
+                    <Alert onClose={() => setNotification(null)} severity={notification.type} variant="filled" sx={{ width: '100%' }}>
+                        {notification.message}
+                    </Alert>
+                ) : undefined}
+            </Snackbar>
         </>
     );
 };

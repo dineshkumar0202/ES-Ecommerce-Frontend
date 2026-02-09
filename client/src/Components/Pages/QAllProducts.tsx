@@ -5,27 +5,24 @@ import Footer from '../WrapperComponents/Footer';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import AddIcon from '@mui/icons-material/Add';
 
-// Generate all unique products from different Q-Commerce categories
-const getAllQProducts = () => {
-
-    // Curated selection of 4 unique products from different categories
-    const diverseSelection = [
-        // 1. Meat & Fish
-        { id: 402, name: "Premium Salmon Fillet", brand: "Sea Catch", price: 850, mrp: 1200, image: "https://images.unsplash.com/photo-1599084993091-1cb5c0721cc6?auto=format&fit=crop&w=400&q=80", discount: 30 },
-        // 2. Pharmacy
-        { id: 303, name: "First Aid Kit - Compact", brand: "SafetyFirst", price: 450, mrp: 600, image: "https://images.unsplash.com/photo-1603398938378-e54eab446dde?auto=format&fit=crop&w=400&q=80", discount: 25 },
-        // 3. Dairy & Eggs
-        { id: 502, name: "Free Range Eggs (Pack of 6)", brand: "Happy Hens", price: 90, mrp: 120, image: "https://images.unsplash.com/photo-1569254994521-dd684b67fa9d?auto=format&fit=crop&w=400&q=80", discount: 25 },
-        // 4. Snacks
-        { id: 602, name: "Mixed Nuts Pack (200g)", brand: "Nature's Best", price: 350, mrp: 500, image: "https://images.unsplash.com/photo-1606756672323-af3c3ec52bf8?auto=format&fit=crop&w=400&q=80", discount: 30 }
-    ];
-
-    return diverseSelection;
-};
+import { useEffect, useState } from 'react';
+import { QProductService } from '../../services/api';
 
 const QAllProducts = () => {
     const navigate = useNavigate();
-    const products = getAllQProducts();
+    const [products, setProducts] = useState<any[]>([]);
+
+    useEffect(() => {
+        const fetchProducts = async () => {
+            try {
+                const { data } = await QProductService.getAll();
+                setProducts(data);
+            } catch (error) {
+                console.error("Failed to fetch products", error);
+            }
+        };
+        fetchProducts();
+    }, []);
 
     return (
         <Box sx={{ minHeight: '100vh', bgcolor: '#f8fafc' }}>
@@ -51,7 +48,7 @@ const QAllProducts = () => {
                 <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3 }}>
                     {products.map((item: any) => (
                         <Box
-                            key={item.id}
+                            key={item._id || item.id}
                             sx={{
                                 width: { xs: '100%', sm: 'calc(50% - 12px)', md: 'calc(25% - 18px)' },
                                 flexGrow: 0,
@@ -86,7 +83,7 @@ const QAllProducts = () => {
                                     borderBottom: '1px solid #f1f5f9',
                                     cursor: 'pointer' // Add visual cue
                                 }}
-                                    onClick={() => navigate(`/quick/product/${item.id}`)}
+                                    onClick={() => navigate(`/quick/product/${item._id || item.id}`)}
                                 >
                                     {item.discount > 0 && (
                                         <Chip

@@ -1,142 +1,92 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Box, Container, Typography, Card, CardContent, CardMedia, Button, Rating, IconButton } from '@mui/material';
+import { Box, Container, Typography, Card, CardContent, CardMedia, Rating, IconButton, CircularProgress, Stack, Button } from '@mui/material';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import ShoppingCartOutlinedIcon from '@mui/icons-material/ShoppingCartOutlined';
 import Navbar from '../WrapperComponents/Navbar';
 import Footer from '../WrapperComponents/Footer';
-import { allProducts } from '../../data/productsData';
+import { ProductService, CartService } from '../../services/api';
 
 const CategoryPage = () => {
     const { categoryName } = useParams<{ categoryName: string }>();
     const navigate = useNavigate();
+    const [products, setProducts] = useState<any[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
 
-    // Logic to filter products based on the category name from URL
-    const filterProducts = () => {
-        if (!categoryName) return [];
-        const term = categoryName.toLowerCase();
+    useEffect(() => {
+        const fetchCategoryProducts = async () => {
+            setIsLoading(true);
+            try {
+                const { data } = await ProductService.getAll({ category: categoryName });
 
-        let filtered = allProducts.filter(product => {
-            const cat = product.category.toLowerCase();
-            const name = product.name.toLowerCase();
+                // If the backend doesn't filter by query, filter here
+                const filtered = data.filter((p: any) =>
+                    p.category.toLowerCase() === categoryName?.toLowerCase().replace(/-/g, ' ') ||
+                    p.category.toLowerCase().includes(categoryName?.toLowerCase() || '')
+                );
 
-            // Map specific UI terms to data categories
-            if (term === 'home appliances' && cat === 'home') return true;
-            if (term === 'stationary' && (cat === 'stationary' || name.includes('pen') || name.includes('book'))) return true;
-            if (term === 'makeup' && (cat === 'beauty' || name.includes('lipstick'))) return true;
-            if (term === 'bag' && (cat === 'bag' || name.includes('bag') || name.includes('luggage'))) return true;
-
-
-            return cat.includes(term) || name.includes(term) || cat === term;
-        });
-
-        // Special handling for Fruits & Veg: Exact 4 items, no mocks
-        if (term === 'fruits-veg' || term === 'fruits & veg') {
-            return filtered.slice(0, 4);
-        }
-
-        // ENFORCE EXACTLY 8 PRODUCTS (Fill with mocks if needed)
-        const targetCount = 8;
-
-        if (filtered.length < targetCount) {
-            const needed = targetCount - filtered.length;
-            const mocks = Array.from({ length: needed }).map((_, i) => ({
-                id: 99000 + i, // Unique IDs for mocks
-                name: `${categoryName} Best Seller ${i + 1}`,
-                category: categoryName || 'Generic',
-                price: Math.floor(Math.random() * 5000) + 999,
-                mrp: Math.floor(Math.random() * 8000) + 6000,
-                discount: Math.floor(Math.random() * 40) + 10,
-                rating: 4.0 + (Math.random() * 1),
-                ratingCount: Math.floor(Math.random() * 500) + 50, // More realistic count
-                description: `High quality ${categoryName} for your needs.`,
-                features: [],
-                brand: "Premium Selection",
-                inStock: true,
-                image: getCategoryMockImage(term, i),
-                images: []
-            }));
-            filtered = [...filtered, ...mocks];
-        } else if (filtered.length > targetCount) {
-            filtered = filtered.slice(0, targetCount);
-        }
-
-        return filtered;
-    };
-
-    // Helper to get consistent attractive mock images
-    const getCategoryMockImage = (term: string, index: number) => {
-        // ... (Helper remains same, but verifying access)
-        const keywords: Record<string, string> = {
-            'fitness': 'gym',
-            'watches': 'wrist-watch',
-            'sneakers': 'sneakers',
-            'toys': 'toys',
-            'kitchen': 'cookware',
-            'makeup': 'cosmetics',
-            'stationary': 'stationery',
-            'bag': 'handbag',
-            'electronics': 'gadget',
-            'home': 'furniture' // Better keyword
+                setProducts(filtered);
+            } catch (error) {
+                console.error("Error fetching category products:", error);
+            } finally {
+                setIsLoading(false);
+            }
         };
-        const keyword = Object.keys(keywords).find(k => term.includes(k)) || term;
-        // Use unsplash source with sig to ensure variety
-        return `https://source.unsplash.com/400x400/?${keywords[keyword] || keyword}&sig=${index + Date.now()}`;
-    };
-
-    const relatedProducts = filterProducts();
+        fetchCategoryProducts();
+    }, [categoryName]);
 
     return (
-        <Box sx={{ minHeight: '100vh', bgcolor: '#f5f5f5', display: 'flex', flexDirection: 'column' }}>
+        <Box sx={{ minHeight: '100vh', bgcolor: '#f8fafc', display: 'flex', flexDirection: 'column' }}>
             <Navbar />
 
-            <Container maxWidth="xl" sx={{ flex: 1, py: 4 }}>
-                <Box sx={{ mb: 4, textAlign: 'center' }}>
-                    <Typography variant="h3" sx={{ fontWeight: 800, color: '#2d3436', mb: 1 }}>
-                        {categoryName?.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())} Collection
+            <Container maxWidth="xl" sx={{ flex: 1, py: 6 }}>
+                <Box sx={{ mb: 6, textAlign: 'center' }}>
+                    <Typography variant="overline" sx={{ color: '#64748b', fontWeight: 800, letterSpacing: 2 }}>
+                        COLLECTION
                     </Typography>
-                    <Typography variant="body1" sx={{ color: '#636e72' }}>
-                        Hand-picked products just for you
+                    <Typography variant="h2" sx={{ fontWeight: 900, color: '#0f172a', mb: 2, textTransform: 'capitalize' }}>
+                        {categoryName?.replace(/-/g, ' ')}
                     </Typography>
                 </Box>
 
-                {relatedProducts.length > 0 ? (
+                {isLoading ? (
+                    <Box sx={{ display: 'flex', justifyContent: 'center', py: 10 }}>
+                        <CircularProgress color="inherit" />
+                    </Box>
+                ) : products.length > 0 ? (
                     <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3, justifyContent: 'center' }}>
-                        {relatedProducts.map((product) => (
+                        {products.map((product) => (
                             <Box
-                                key={product.id}
+                                key={product._id}
                                 sx={{
                                     width: { xs: '100%', sm: 'calc(50% - 24px)', md: 'calc(33.33% - 24px)', lg: 'calc(25% - 24px)' },
                                     mb: 2
                                 }}
                             >
                                 <Card
-                                    onClick={() => navigate(`/product/${product.id}`)}
+                                    onClick={() => navigate(`/product/${product._id}`)}
                                     sx={{
                                         border: 'none',
                                         boxShadow: 'none',
-                                        bgcolor: '#f8f9fa',
-                                        borderRadius: 4,
+                                        bgcolor: 'white',
+                                        borderRadius: 5,
                                         p: 2,
                                         cursor: 'pointer',
-                                        height: '420px', // STRICT 420px HEIGHT
-                                        display: 'flex',
-                                        flexDirection: 'column',
-                                        transition: 'transform 0.3s ease',
+                                        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                                         '&:hover': {
-                                            transform: 'translateY(-8px)',
-                                            bgcolor: '#f1f3f5',
+                                            transform: 'translateY(-10px)',
+                                            boxShadow: '0 20px 40px rgba(0,0,0,0.05)'
                                         },
                                         '&:hover .product-image': {
-                                            transform: 'scale(1.02)', // MINIMIZED ZOOM
+                                            transform: 'scale(1.05)',
                                         },
                                     }}
                                 >
                                     <Box sx={{ position: 'relative', borderRadius: 4, overflow: 'hidden', mb: 2, pt: '100%', width: '100%' }}>
                                         <CardMedia
                                             component="img"
-                                            image={product.image}
-                                            alt={product.name}
+                                            image={product.images?.[0] || 'https://via.placeholder.com/400'}
+                                            alt={product.title}
                                             className="product-image"
                                             sx={{
                                                 position: 'absolute',
@@ -144,86 +94,90 @@ const CategoryPage = () => {
                                                 left: 0,
                                                 width: '100%',
                                                 height: '100%',
-                                                transition: 'transform 0.5s ease',
-                                                bgcolor: '#f5f5f5',
+                                                transition: 'transform 0.6s ease',
+                                                bgcolor: '#f1f5f9',
                                                 objectFit: 'cover',
                                             }}
                                         />
                                         <IconButton
                                             sx={{
                                                 position: 'absolute',
-                                                top: 10,
-                                                right: 10,
+                                                top: 15,
+                                                right: 15,
                                                 bgcolor: 'white',
-                                                '&:hover': { bgcolor: 'white', color: '#e91e63' },
+                                                boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                                                '&:hover': { bgcolor: 'white', color: '#ef4444' },
                                             }}
                                             size="small"
+                                            onClick={(e) => e.stopPropagation()}
                                         >
                                             <FavoriteBorderIcon fontSize="small" />
                                         </IconButton>
                                     </Box>
 
-                                    <CardContent sx={{ p: 1, flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
-                                        <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block', mb: 0.5, textTransform: 'uppercase' }}>
+                                    <CardContent sx={{ p: 1 }}>
+                                        <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase' }}>
                                             {product.category}
                                         </Typography>
                                         <Typography
-                                            variant="subtitle1"
+                                            variant="h6"
                                             sx={{
-                                                fontWeight: 'bold',
-                                                fontSize: '1.1rem', // INCREASED FONT SIZE
-                                                mb: 0.5,
-                                                height: '2.6em',
+                                                fontWeight: 800,
+                                                mt: 0.5,
+                                                mb: 1,
+                                                height: '2.8rem',
                                                 overflow: 'hidden',
-                                                textOverflow: 'ellipsis',
                                                 display: '-webkit-box',
                                                 WebkitLineClamp: 2,
                                                 WebkitBoxOrient: 'vertical',
-                                                lineHeight: '1.3em'
+                                                lineHeight: 1.2
                                             }}
                                         >
-                                            {product.name}
+                                            {product.title}
                                         </Typography>
 
-                                        <Box sx={{ mt: 'auto' }}>
-                                            <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                                                <Rating value={product.rating} readOnly size="small" sx={{ color: '#ffb400', mr: 0.5 }} />
-                                                <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-                                                    ({product.ratingCount})
-                                                </Typography>
-                                            </Box>
-                                            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                                                <Box>
-                                                    <Typography variant="h6" sx={{ fontWeight: 800, fontSize: '1.3rem' }}> {/* INCREASED FONT SIZE */}
-                                                        ₹{product.price.toLocaleString()}
-                                                    </Typography>
-                                                    {product.mrp > product.price && (
-                                                        <Typography variant="caption" sx={{ textDecoration: 'line-through', color: '#b2bec3' }}>
-                                                            ₹{product.mrp.toLocaleString()}
-                                                        </Typography>
-                                                    )}
-                                                </Box>
-                                                <IconButton
-                                                    sx={{
-                                                        bgcolor: '#212121',
-                                                        color: 'white',
-                                                        '&:hover': { bgcolor: '#424242' },
-                                                    }}
-                                                    size="small"
-                                                >
-                                                    <ShoppingCartOutlinedIcon fontSize="small" />
-                                                </IconButton>
-                                            </Box>
-                                        </Box>
+                                        <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 2 }}>
+                                            <Rating value={product.rating || 0} readOnly size="small" precision={0.5} />
+                                            <Typography variant="caption" sx={{ fontWeight: 600, color: '#64748b' }}>
+                                                ({product.numReviews || 0})
+                                            </Typography>
+                                        </Stack>
+
+                                        <Stack direction="row" alignItems="center" justifyContent="space-between">
+                                            <Typography variant="h5" sx={{ fontWeight: 900 }}>
+                                                ₹{product.price?.toLocaleString()}
+                                            </Typography>
+                                            <IconButton
+                                                sx={{
+                                                    bgcolor: '#212121',
+                                                    color: 'white',
+                                                    '&:hover': { bgcolor: 'black' },
+                                                    borderRadius: 2
+                                                }}
+                                                size="small"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    CartService.addToCart({ productId: product._id, quantity: 1 });
+                                                }}
+                                            >
+                                                <ShoppingCartOutlinedIcon fontSize="small" />
+                                            </IconButton>
+                                        </Stack>
                                     </CardContent>
                                 </Card>
                             </Box>
                         ))}
                     </Box>
                 ) : (
-                    <Box sx={{ textAlign: 'center', py: 8 }}>
-                        <Typography variant="h5" sx={{ color: '#b2bec3', mb: 2 }}>No products found in this category.</Typography>
-                        <Button variant="contained" onClick={() => navigate('/')}>Back to Home</Button>
+                    <Box sx={{ textAlign: 'center', py: 10, bgcolor: 'white', borderRadius: 6 }}>
+                        <Typography variant="h5" sx={{ color: '#94a3b8', mb: 3, fontWeight: 700 }}>No products found in this category.</Typography>
+                        <Button
+                            variant="contained"
+                            onClick={() => navigate('/retail')}
+                            sx={{ bgcolor: 'black', color: 'white', px: 4, py: 1.5, borderRadius: 3, fontWeight: 700 }}
+                        >
+                            Back to Retail
+                        </Button>
                     </Box>
                 )}
             </Container>

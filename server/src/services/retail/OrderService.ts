@@ -33,7 +33,7 @@ class OrderService {
     async getOrderById(orderId: string, userId: string, role: string) {
         const order = await Order.findById(orderId).populate("user", "username email");
         if (order) {
-            if (order.user._id.toString() !== userId && role !== 'admin') {
+            if (order.user._id.toString() !== userId && role !== 'Admin') {
                 return null;
             }
             return order;

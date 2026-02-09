@@ -5,6 +5,8 @@ import ArticleOutlinedIcon from '@mui/icons-material/ArticleOutlined';
 import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined';
 import SaveIcon from '@mui/icons-material/Save';
 
+import { WholesaleService } from '../../../../services/api';
+
 const WholesaleUploadForm = ({ onPost }: { onPost?: () => void }) => {
     // const navigate = useNavigate(); // Navigation handled by parent/onPost now
 
@@ -35,18 +37,25 @@ const WholesaleUploadForm = ({ onPost }: { onPost?: () => void }) => {
         }
     };
 
-    const handlePost = () => {
-        if (!productName || !quantity || !companyName || !location || !phoneNumber || !email || images.length === 0) {
-            alert('Please fill in all required fields and upload at least one image.');
+    const [price, setPrice] = React.useState('');
+    const [isSubmitting, setIsSubmitting] = React.useState(false);
+
+    // ... (rest of states remain same if not modified here, but ensure they are captured by context or previous lines)
+
+    const handlePost = async () => {
+        if (!productName || !quantity || !price || !companyName || !location || !phoneNumber || !email || images.length === 0) {
+            alert('Please fill in all required fields (inc. Price) and upload at least one image.');
             return;
         }
 
+        setIsSubmitting(true);
+
         const newProduct = {
-            id: Date.now(),
             title: productName,
             description: description || "No description provided.",
-            sku: `SKU-${Date.now()}`,
+            sku: `SKU-${Date.now()}`, // Optional, backend might generate but good to have
             packSize: parseInt(quantity),
+            pricePerUnit: parseFloat(price),
             images: images,
             image: images[0], // Fallback
             companyName,
@@ -56,11 +65,16 @@ const WholesaleUploadForm = ({ onPost }: { onPost?: () => void }) => {
             inStock: true
         };
 
-        const existingProducts = JSON.parse(localStorage.getItem('wholesaleProducts_v1.2') || '[]');
-        localStorage.setItem('wholesaleProducts_v1.2', JSON.stringify([...existingProducts, newProduct]));
-
-        if (onPost) {
-            onPost();
+        try {
+            await WholesaleService.create(newProduct);
+            if (onPost) {
+                onPost();
+            }
+        } catch (error) {
+            console.error("Failed to post wholesale product:", error);
+            alert("Failed to post product. Please try again.");
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
@@ -296,18 +310,33 @@ const WholesaleUploadForm = ({ onPost }: { onPost?: () => void }) => {
                             </Box>
 
                             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-                                <Box>
-                                    <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600, color: '#334155' }}>Fixed Quantity (Bulk)</Typography>
-                                    <TextField
-                                        fullWidth
-                                        type="number"
-                                        InputProps={{
-                                            sx: { borderRadius: 2 },
-                                            endAdornment: <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 600 }}>UNITS</Typography>
-                                        }}
-                                        value={quantity}
-                                        onChange={(e) => setQuantity(e.target.value)}
-                                    />
+                                <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 3 }}>
+                                    <Box sx={{ flex: 1 }}>
+                                        <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600, color: '#334155' }}>Fixed Quantity (Bulk)</Typography>
+                                        <TextField
+                                            fullWidth
+                                            type="number"
+                                            InputProps={{
+                                                sx: { borderRadius: 2 },
+                                                endAdornment: <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 600 }}>UNITS</Typography>
+                                            }}
+                                            value={quantity}
+                                            onChange={(e) => setQuantity(e.target.value)}
+                                        />
+                                    </Box>
+                                    <Box sx={{ flex: 1 }}>
+                                        <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600, color: '#334155' }}>Price Per Unit</Typography>
+                                        <TextField
+                                            fullWidth
+                                            type="number"
+                                            InputProps={{
+                                                sx: { borderRadius: 2 },
+                                                startAdornment: <Typography variant="caption" sx={{ mr: 1, color: '#64748b', fontWeight: 600 }}>₹</Typography>
+                                            }}
+                                            value={price}
+                                            onChange={(e) => setPrice(e.target.value)}
+                                        />
+                                    </Box>
                                 </Box>
 
                                 <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 3 }}>
@@ -385,7 +414,7 @@ const WholesaleUploadForm = ({ onPost }: { onPost?: () => void }) => {
                         '&:hover': { bgcolor: '#1d4ed8' }
                     }}
                 >
-                    Post
+                    {isSubmitting ? 'Posting...' : 'Post'}
                 </Button>
             </Box>
 

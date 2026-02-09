@@ -14,9 +14,15 @@ export interface IPost extends Document {
     nameDisplay?: string;
     unit: string;
     createdAt: Date;
+    user: mongoose.Types.ObjectId;
 }
 
 const postSchema: Schema = new mongoose.Schema({
+    user: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        required: false // Optional for older posts, but new ones should have it
+    },
     title: {
         type: String,
         required: true,

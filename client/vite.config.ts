@@ -6,6 +6,10 @@ export default defineConfig({
   plugins: [react()],
   server: {
     proxy: {
+      '/api': {
+        target: 'http://localhost:5000',
+        changeOrigin: true,
+      },
       '/freepik-api': {
         target: 'https://api.freepik.com',
         changeOrigin: true,

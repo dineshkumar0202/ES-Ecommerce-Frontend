@@ -5,6 +5,25 @@ class UserService {
         return await User.findById(userId).select('-password');
     }
 
+    async registerFreelancer(userId: string, freelancerData: any) {
+        const user = await User.findById(userId);
+        if (user) {
+            user.freelancer = {
+                ...freelancerData,
+                isRegistered: true,
+                status: 'Pending'
+            };
+
+            // Update role to Seller if they are a Buyer
+            if (user.role === 'Buyer') {
+                user.role = 'Seller';
+            }
+
+            return await user.save();
+        }
+        return null;
+    }
+
     async updateUserProfile(userId: string, updateData: any) {
         const user = await User.findById(userId);
 

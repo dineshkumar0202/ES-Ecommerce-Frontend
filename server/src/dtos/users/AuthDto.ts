@@ -1,10 +1,13 @@
 export interface RegisterUserDto {
-    username: string;
-    email: string;
+    username: string; // Name
+    mobile: string;
     password: string;
+    role?: 'Buyer' | 'Seller' | 'Admin';
+    email?: string;
 }
 
 export interface LoginUserDto {
-    email: string;
+    mobile?: string;
+    email?: string;
     password: string;
 }

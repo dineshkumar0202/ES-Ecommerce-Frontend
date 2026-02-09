@@ -1,4 +1,5 @@
-import { Box, Typography, Paper, Stack, IconButton, List, ListItemButton, ListItemIcon, ListItemText, Chip } from '@mui/material';
+import { useEffect, useState } from 'react';
+import { Box, Typography, Paper, Stack, IconButton, List, ListItemButton, ListItemIcon, ListItemText, Chip, CircularProgress, Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField, MenuItem } from '@mui/material';
 import {
     Dashboard as DashboardIcon,
     Store as StoreIcon,
@@ -6,13 +7,88 @@ import {
     FlashOn as FlashOnIcon,
     Autorenew as AutorenewIcon,
     WorkOutline as WorkOutlineIcon,
-    MoreVert as MoreVertIcon,
-    ExitToApp as ExitToAppIcon
+    ExitToApp as ExitToAppIcon,
+    Delete as DeleteIcon,
+    Add as AddIcon
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
+import { QProductService, UploadService } from '../../../services/api';
+import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 
 const QCommerceManagement = () => {
     const navigate = useNavigate();
+    const [products, setProducts] = useState<any[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+
+    // Modal State
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [newProduct, setNewProduct] = useState({
+        title: '', price: '', unit: '', discount: '0', category: '', stock: '', image: '', description: ''
+    });
+    const [isUploading, setIsUploading] = useState(false);
+
+    useEffect(() => {
+        fetchProducts();
+    }, []);
+
+    const fetchProducts = async () => {
+        try {
+            const { data } = await QProductService.getAll();
+            setProducts(data);
+        } catch (error) {
+            console.error("Failed to fetch Q-products", error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        setIsUploading(true);
+        try {
+            const { data } = await UploadService.uploadImage(file);
+            setNewProduct(prev => ({
+                ...prev,
+                image: data.url
+            }));
+            alert('Image uploaded successfully!');
+        } catch (error) {
+            console.error("Upload failed", error);
+            alert('Upload failed');
+        } finally {
+            setIsUploading(false);
+        }
+    };
+
+    const handleAddProduct = async () => {
+        try {
+            const productData = {
+                ...newProduct,
+                price: Number(newProduct.price),
+                discount: Number(newProduct.discount),
+                stock: Number(newProduct.stock)
+            };
+            const { data } = await QProductService.create(productData);
+            setProducts([data, ...products]);
+            setIsModalOpen(false);
+            setNewProduct({ title: '', price: '', unit: '', discount: '0', category: '', stock: '', image: '', description: '' });
+        } catch (error) {
+            alert("Failed to create Q-commerce product");
+        }
+    };
+
+    const handleDelete = async (id: string) => {
+        if (window.confirm("Delete this Q-commerce product?")) {
+            try {
+                await QProductService.delete(id);
+                setProducts(products.filter(p => p._id !== id));
+            } catch (error) {
+                alert("Failed to delete product");
+            }
+        }
+    };
 
     const menuItems = [
         { name: 'Overview', icon: <DashboardIcon />, path: '/admin/dashboard' },
@@ -23,19 +99,8 @@ const QCommerceManagement = () => {
         { name: 'Freelance', icon: <WorkOutlineIcon />, path: '/admin/freelance' },
     ];
 
-    const orderList = [
-        { id: '#ORD-8829', name: 'Wireless Headphones Max', price: '$299.00', status: 'PENDING' },
-        { id: '#ORD-8830', name: 'Ergonomic Office Chair', price: '$145.50', status: 'PENDING' },
-    ];
-
-    const completedOrders = [
-        { id: '#ORD-8812', name: 'Mechanical Keyboard G-Pro', price: '$129.00', status: 'COMPLETED' },
-        { id: '#ORD-8805', name: 'USB-C Fast Charging Hub', price: '$45.00', status: 'COMPLETED' },
-        { id: '#ORD-8799', name: 'Curved UltraWide Monitor', price: '$799.99', status: 'COMPLETED' },
-    ];
-
     return (
-        <Box sx={{ display: 'flex', height: '100vh', bgcolor: 'white' }}>
+        <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: 'white' }}>
             {/* Sidebar */}
             <Box sx={{ width: 260, bgcolor: 'white', borderRight: '1px solid #e2e8f0', p: 3, display: 'flex', flexDirection: 'column', height: '100vh', position: 'sticky', top: 0 }}>
                 <Stack direction="row" alignItems="center" spacing={1.5} sx={{ mb: 5, px: 2 }}>
@@ -71,7 +136,7 @@ const QCommerceManagement = () => {
                 </List>
 
                 <Box sx={{ mt: 'auto' }}>
-                    <Stack onClick={() => { localStorage.removeItem('isAdminLoggedIn'); navigate('/admin/login'); }} direction="row" alignItems="center" spacing={2} sx={{ px: 2, cursor: 'pointer', color: '#ef4444' }}>
+                    <Stack onClick={() => { localStorage.removeItem('token'); localStorage.removeItem('userRole'); navigate('/admin/login'); }} direction="row" alignItems="center" spacing={2} sx={{ px: 2, cursor: 'pointer', color: '#ef4444' }}>
                         <ExitToAppIcon fontSize="small" />
                         <Typography variant="body2" fontWeight={600}>Leave</Typography>
                     </Stack>
@@ -80,117 +145,105 @@ const QCommerceManagement = () => {
 
             {/* Main Content */}
             <Box sx={{ flexGrow: 1, p: 4, overflow: 'auto', bgcolor: 'white' }}>
-
-                {/* Order List Header */}
-                <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 3 }}>
-                    <Stack direction="row" alignItems="center" spacing={2}>
-                        <Typography variant="h6" sx={{ fontWeight: 800, fontSize: '1.25rem' }}>Order List</Typography>
-                        <Chip label="3 Pending" size="small" sx={{ bgcolor: '#f1f5f9', color: '#64748b', fontWeight: 700, borderRadius: 1.5 }} />
-                    </Stack>
-                    <Typography variant="body2" sx={{ color: '#64748b', fontWeight: 600, cursor: 'pointer' }}>View all</Typography>
+                <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 4 }}>
+                    <Typography variant="h4" sx={{ fontWeight: 800 }}>Q-Commerce Management</Typography>
+                    <Button variant="contained" onClick={() => setIsModalOpen(true)} startIcon={<AddIcon />} sx={{ bgcolor: 'black', color: 'white', borderRadius: 2, '&:hover': { bgcolor: '#333' } }}>
+                        Quick Add
+                    </Button>
                 </Stack>
 
-                {/* Pending Orders */}
-                <Box sx={{ mb: 5 }}>
-                    {orderList.map((order) => (
-                        <Paper
-                            key={order.id}
-                            elevation={0}
-                            sx={{
-                                p: 2,
-                                mb: 2,
-                                borderRadius: 3,
-                                border: '1px solid #f1f5f9',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'space-between',
-                                transition: 'all 0.2s',
-                                '&:hover': { boxShadow: '0 4px 12px rgba(0,0,0,0.03)', borderColor: '#e2e8f0' }
-                            }}
-                        >
-                            <Stack direction="row" alignItems="center" spacing={2}>
-                                <Box sx={{ width: 48, height: 48, bgcolor: '#f1f5f9', borderRadius: 2, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                    <Box sx={{ width: 24, height: 24, bgcolor: '#cbd5e1', borderRadius: 0.5 }} />
-                                </Box>
-                                <Box>
-                                    <Typography variant="subtitle2" sx={{ fontWeight: 700, fontSize: '0.95rem' }}>{order.name}</Typography>
-                                    <Typography variant="caption" sx={{ color: '#94a3b8', fontSize: '0.75rem', fontWeight: 500 }}>Order {order.id}</Typography>
-                                </Box>
-                            </Stack>
-                            <Stack direction="row" alignItems="center" spacing={3}>
-                                <Typography variant="subtitle2" sx={{ fontWeight: 800 }}>{order.price}</Typography>
-                                <Chip
-                                    label={order.status}
-                                    size="small"
-                                    sx={{
-                                        bgcolor: '#bef264',
-                                        color: 'black',
-                                        fontWeight: 800,
-                                        fontSize: '0.65rem',
-                                        height: 24,
-                                        borderRadius: 1.5,
-                                        minWidth: 70
-                                    }}
-                                />
-                                <IconButton size="small"><MoreVertIcon sx={{ color: '#94a3b8', fontSize: 20 }} /></IconButton>
-                            </Stack>
-                        </Paper>
-                    ))}
-                </Box>
+                {isLoading ? (
+                    <Box sx={{ display: 'flex', justifyContent: 'center', p: 5 }}><CircularProgress sx={{ color: '#bef264' }} /></Box>
+                ) : (
+                    <Box>
+                        <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 3 }}>
+                            <Typography variant="caption" sx={{ fontWeight: 700, color: '#94a3b8', letterSpacing: 1, display: 'block' }}>INVENTORY STATUS ({products.length} Items)</Typography>
+                        </Stack>
 
-                {/* Completed Orders Header */}
-                <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 3 }}>
-                    <Typography variant="h6" sx={{ fontWeight: 800, fontSize: '1.25rem' }}>Completed Orders</Typography>
-                    <Chip label="24 Total" size="small" sx={{ bgcolor: '#f1f5f9', color: '#64748b', fontWeight: 700, borderRadius: 1.5 }} />
-                </Stack>
+                        <Stack direction="row" flexWrap="wrap" spacing={3}>
+                            {products.map((product) => (
+                                <Box key={product._id} sx={{ width: { xs: '100%', md: 'calc(50% - 12px)' } }}>
+                                    <Paper
+                                        elevation={0}
+                                        sx={{
+                                            p: 2,
+                                            borderRadius: 3,
+                                            border: '1px solid #f1f5f9',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'space-between',
+                                            bgcolor: '#f8fafc'
+                                        }}
+                                    >
+                                        <Stack direction="row" alignItems="center" spacing={2}>
+                                            <Box
+                                                component="img"
+                                                src={product.image}
+                                                alt={product.title}
+                                                sx={{ width: 64, height: 64, borderRadius: 2, objectFit: 'cover', bgcolor: '#f1f5f9' }}
+                                            />
+                                            <Box>
+                                                <Typography variant="subtitle2" sx={{ fontWeight: 800 }}>{product.title}</Typography>
+                                                <Typography variant="caption" sx={{ color: '#64748b', display: 'block' }}>{product.category} • {product.unit}</Typography>
+                                            </Box>
+                                        </Stack>
+                                        <Stack direction="row" alignItems="center" spacing={3}>
+                                            <Box sx={{ textAlign: 'right' }}>
+                                                <Typography variant="subtitle1" sx={{ fontWeight: 900 }}>₹{product.price}</Typography>
+                                                {product.discount > 0 && (
+                                                    <Chip label={`-${product.discount}%`} size="small" sx={{ height: 18, fontSize: '0.6rem', bgcolor: '#fecaca', color: '#b91c1c', fontWeight: 800 }} />
+                                                )}
+                                            </Box>
+                                            <IconButton size="small" onClick={() => handleDelete(product._id)} sx={{ color: '#ef4444' }}>
+                                                <DeleteIcon fontSize="small" />
+                                            </IconButton>
+                                        </Stack>
+                                    </Paper>
+                                </Box>
+                            ))}
+                            {products.length === 0 && <Typography sx={{ m: 2 }}>No quick commerce products found.</Typography>}
+                        </Stack>
+                    </Box>
+                )}
 
-                {/* Completed Orders */}
-                <Box>
-                    {completedOrders.map((order) => (
-                        <Paper
-                            key={order.id}
-                            elevation={0}
-                            sx={{
-                                p: 2,
-                                mb: 2,
-                                borderRadius: 3,
-                                border: '1px solid #f1f5f9', // subtle border
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'space-between',
-                                transition: 'all 0.2s',
-                                '&:hover': { boxShadow: '0 4px 12px rgba(0,0,0,0.03)', borderColor: '#e2e8f0' }
-                            }}
-                        >
-                            <Stack direction="row" alignItems="center" spacing={2}>
-                                <Box sx={{ width: 48, height: 48, bgcolor: '#f8fafc', borderRadius: 2, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                    <Box sx={{ width: 24, height: 24, bgcolor: '#94a3b8', borderRadius: 0.5, opacity: 0.5 }} />
-                                </Box>
-                                <Box>
-                                    <Typography variant="subtitle2" sx={{ fontWeight: 700, fontSize: '0.95rem' }}>{order.name}</Typography>
-                                    <Typography variant="caption" sx={{ color: '#94a3b8', fontSize: '0.75rem', fontWeight: 500 }}>Order {order.id}</Typography>
-                                </Box>
+                {/* Add Product Modal */}
+                <Dialog open={isModalOpen} onClose={() => setIsModalOpen(false)} maxWidth="sm" fullWidth>
+                    <DialogTitle sx={{ fontWeight: 800 }}>Quick Add Item</DialogTitle>
+                    <DialogContent dividers>
+                        <Stack spacing={2.5} sx={{ py: 1 }}>
+                            <TextField fullWidth label="Product Title" value={newProduct.title} onChange={(e) => setNewProduct({ ...newProduct, title: e.target.value })} />
+
+                            <Stack direction="row" spacing={2}>
+                                <TextField fullWidth type="number" label="Price" value={newProduct.price} onChange={(e) => setNewProduct({ ...newProduct, price: e.target.value })} />
+                                <TextField fullWidth label="Unit (e.g. 500g, 1L)" value={newProduct.unit} onChange={(e) => setNewProduct({ ...newProduct, unit: e.target.value })} />
                             </Stack>
-                            <Stack direction="row" alignItems="center" spacing={3}>
-                                <Typography variant="subtitle2" sx={{ fontWeight: 800 }}>{order.price}</Typography>
-                                <Chip
-                                    label={order.status}
-                                    size="small"
-                                    sx={{
-                                        bgcolor: '#f1f5f9',
-                                        color: '#64748b',
-                                        fontWeight: 700,
-                                        fontSize: '0.65rem',
-                                        height: 24,
-                                        borderRadius: 1.5,
-                                        minWidth: 80 // slightly wider for "COMPLETED"
-                                    }}
-                                />
-                                <IconButton size="small"><MoreVertIcon sx={{ color: '#94a3b8', fontSize: 20 }} /></IconButton>
+
+                            <Stack direction="row" spacing={2}>
+                                <TextField fullWidth type="number" label="Discount %" value={newProduct.discount} onChange={(e) => setNewProduct({ ...newProduct, discount: e.target.value })} />
+                                <TextField fullWidth type="number" label="Stock" value={newProduct.stock} onChange={(e) => setNewProduct({ ...newProduct, stock: e.target.value })} />
                             </Stack>
-                        </Paper>
-                    ))}
-                </Box>
+                            <TextField fullWidth select label="Category" value={newProduct.category} onChange={(e) => setNewProduct({ ...newProduct, category: e.target.value })}>
+                                {['Fruits & Veg', 'Dairy & Eggs', 'Bakery', 'Snacks', 'Beverages', 'Instant Food'].map(cat => <MenuItem key={cat} value={cat}>{cat}</MenuItem>)}
+                            </TextField>
+                            <TextField fullWidth label="Image URL" value={newProduct.image} onChange={(e) => setNewProduct({ ...newProduct, image: e.target.value })} />
+                            <Button
+                                variant="outlined"
+                                component="label"
+                                startIcon={isUploading ? <CircularProgress size={20} /> : <CloudUploadIcon />}
+                                disabled={isUploading}
+                                sx={{ borderRadius: 2, textTransform: 'none', py: 1 }}
+                            >
+                                {isUploading ? 'Uploading...' : 'Upload Image to Cloud'}
+                                <input type="file" hidden accept="image/*" onChange={handleFileUpload} />
+                            </Button>
+                            <TextField fullWidth multiline rows={2} label="Short Description" value={newProduct.description} onChange={(e) => setNewProduct({ ...newProduct, description: e.target.value })} />
+                        </Stack>
+                    </DialogContent>
+                    <DialogActions sx={{ p: 2.5 }}>
+                        <Button onClick={() => setIsModalOpen(false)} sx={{ color: '#64748b' }}>Cancel</Button>
+                        <Button variant="contained" onClick={handleAddProduct} sx={{ bgcolor: 'black', color: 'white', borderRadius: 2 }}>Confirm Add</Button>
+                    </DialogActions>
+                </Dialog>
             </Box>
         </Box>
     );

@@ -251,11 +251,11 @@ const ResaleProductDetails = () => {
                                 <Typography variant="subtitle2" sx={{ color: '#64748b', mb: 1 }}>Seller</Typography>
                                 <Stack direction="row" alignItems="center" spacing={2}>
                                     <Avatar sx={{ bgcolor: '#2563eb', width: 48, height: 48 }}>
-                                        {product.seller ? product.seller.charAt(0) : 'S'}
+                                        {product.seller && typeof product.seller === 'object' ? (product.seller.username?.[0] || 'S') : (product.seller?.[0] || product.sellerName?.[0] || 'S')}
                                     </Avatar>
                                     <Box>
                                         <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>
-                                            {product.seller || "Verified Seller"}
+                                            {product.seller && typeof product.seller === 'object' ? product.seller.username : (product.seller || product.sellerName || "Verified Seller")}
                                         </Typography>
                                         <Stack direction="row" alignItems="center" spacing={0.5}>
                                             <VerifiedUserIcon sx={{ fontSize: 16, color: '#10b981' }} />
@@ -266,6 +266,7 @@ const ResaleProductDetails = () => {
                                     </Box>
                                 </Stack>
                             </Box>
+
 
                             <Stack spacing={2}>
                                 <Button

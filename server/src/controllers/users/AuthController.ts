@@ -7,6 +7,17 @@ class AuthController {
     async registerUser(req: Request, res: Response) {
         try {
             const userData: RegisterUserDto = req.body;
+
+            // Remove empty email to avoid duplicate key error (sparse index needs missing field, not empty string)
+            if (!userData.email || userData.email.trim() === '') {
+                delete userData.email;
+            }
+
+            // Name (username), Mobile, Password are required
+            if (!userData.username || !userData.mobile || !userData.password) {
+                res.status(400).json({ message: "Name, Mobile, and Password are required" });
+                return;
+            }
             const user = await AuthService.registerUser(userData);
             res.status(201).json(user);
         } catch (error: any) {
@@ -17,6 +28,10 @@ class AuthController {
     async loginUser(req: Request, res: Response) {
         try {
             const loginData: LoginUserDto = req.body;
+            if ((!loginData.mobile && !loginData.email) || !loginData.password) {
+                res.status(400).json({ message: "Mobile/Email and Password are required" });
+                return;
+            }
             const user = await AuthService.loginUser(loginData);
             res.json(user);
         } catch (error: any) {
