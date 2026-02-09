@@ -38,6 +38,7 @@ class AuthController {
             res.status(401).json({ message: error.message });
         }
     }
+    
 
     async getMe(req: any, res: Response) {
         try {
