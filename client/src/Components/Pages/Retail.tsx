@@ -6,6 +6,7 @@ import ShoppingCartOutlinedIcon from '@mui/icons-material/ShoppingCartOutlined';
 import SearchIcon from '@mui/icons-material/Search';
 import Navbar from '../WrapperComponents/Navbar';
 import Footer from '../WrapperComponents/Footer';
+import RetailOffers from '../SpecifiedComponents/Retail/RetailOffers';
 import { ProductService } from '../../services/api';
 
 const Retail = () => {
@@ -71,24 +72,7 @@ const Retail = () => {
             <Navbar />
 
             <Container maxWidth="xl" sx={{ mt: 4, mb: 8 }}>
-                {/* Retail Hero */}
-                <Box sx={{
-                    bgcolor: '#212121',
-                    borderRadius: 4,
-                    p: { xs: 4, md: 6 },
-                    mb: 5,
-                    position: 'relative',
-                    overflow: 'hidden',
-                    color: 'white'
-                }}>
-                    <Stack spacing={2} sx={{ position: 'relative', zIndex: 1, maxWidth: 600 }}>
-                        <Chip label="B2C Marketplace" sx={{ bgcolor: '#bef264', color: 'black', fontWeight: 800, width: 'fit-content' }} />
-                        <Typography variant="h3" sx={{ fontWeight: 900 }}>Retail Excellence</Typography>
-                        <Typography variant="h6" sx={{ color: '#94a3b8', fontWeight: 400 }}>
-                            Explore our premium collection of products delivered right to your doorstep.
-                        </Typography>
-                    </Stack>
-                </Box>
+                <RetailOffers />
 
                 {/* Filters Row */}
                 <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} sx={{ mb: 5 }} alignItems="center" justifyContent="space-between">

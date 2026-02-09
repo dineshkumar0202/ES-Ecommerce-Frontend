@@ -1,4 +1,4 @@
-import ResaleProduct, { IResaleProduct } from '../../models/resale/ResaleProductModel';
+import ResaleProduct, { IResaleProduct } from '../../models/Resale/ResaleProductModel';
 
 const getAllResaleProducts = async (): Promise<IResaleProduct[]> => {
     return await ResaleProduct.find().populate('seller', 'username email');
