@@ -2,7 +2,8 @@ import { Box, Container } from '@mui/material';
 import Navbar from '../WrapperComponents/Navbar';
 import Footer from '../WrapperComponents/Footer';
 import FreelancersFeed from '../SpecifiedComponents/Freelancers/Components/FreelancersFeed';
-import FreelancerSidebar from '../SpecifiedComponents/Freelancers/Components/FreelancerSidebarBuyer';
+import FreelancerSidebar from '../SpecifiedComponents/Freelancers/Components/FreelancerSidebar';
+import FreelancerSidebarBuyer from '../SpecifiedComponents/Freelancers/Components/FreelancerSidebarBuyer';
 import { useState, useEffect } from 'react';
 import { FreelanceService } from '../../services/api';
 
@@ -26,6 +27,8 @@ interface Post {
 }
 
 const Freelance = () => {
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    const isBuyer = user?.role === 'Buyer';
     const [posts, setPosts] = useState<Post[]>([]);
 
     const fetchPosts = async () => {
@@ -77,7 +80,11 @@ const Freelance = () => {
                         <FreelancersFeed posts={posts} />
                     </Box>
                     <Box sx={{ width: { xs: '100%', md: 340, lg: 380 }, flexShrink: 0, position: { md: 'sticky' }, top: 20 }}>
-                        <FreelancerSidebar onPost={handlePost} />
+                        {isBuyer ? (
+                            <FreelancerSidebarBuyer onPost={handlePost} />
+                        ) : (
+                            <FreelancerSidebar onPost={handlePost} />
+                        )}
                     </Box>
                 </Box>
             </Container>

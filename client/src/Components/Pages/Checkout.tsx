@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { Box, Container, Typography, TextField, Button, Paper, Stack, Divider, CircularProgress, IconButton, Radio, RadioGroup, FormControlLabel, FormControl } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import ShoppingBagOutlinedIcon from '@mui/icons-material/ShoppingBagOutlined';
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements } from '@stripe/react-stripe-js';
 import Navbar from '../WrapperComponents/Navbar';

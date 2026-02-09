@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Box, Container, Typography, Button, Paper, Chip, Divider, Stack, Dialog, Rating, Avatar, IconButton, TextField } from '@mui/material';
+import { Box, Container, Typography, Button, Paper, Divider, Stack, Dialog, Rating, Avatar, IconButton, TextField } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import ShoppingCartOutlinedIcon from '@mui/icons-material/ShoppingCartOutlined';
 import PhoneIcon from '@mui/icons-material/Phone';
@@ -224,7 +224,7 @@ const WholesaleProductDetails = () => {
                                             <Rating
                                                 name="simple-controlled"
                                                 value={reviewRating}
-                                                onChange={(event, newValue) => {
+                                                onChange={(_event, newValue) => {
                                                     setReviewRating(newValue);
                                                 }}
                                             />

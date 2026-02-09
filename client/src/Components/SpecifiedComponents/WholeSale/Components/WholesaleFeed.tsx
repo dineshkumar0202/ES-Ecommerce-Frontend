@@ -8,93 +8,11 @@ import BusinessIcon from '@mui/icons-material/Business';
 import EmailIcon from '@mui/icons-material/Email';
 import { WholesaleService } from '../../../../services/api';
 
-// Mock Data adapted with pricePerUnit
+/* Mock Data - kept for reference but fetching from API now
 const wholesaleProducts = [
-    {
-        id: 1,
-        title: "Industrial Grade Steel Bolts - Box of 500",
-        description: "High-tensile strength 316 stainless steel bolts. Specifically engineered for extreme load-bearing environments.",
-        sku: "WHS-99283-BLT",
-        packSize: 500,
-        pricePerUnit: 12, // Added price
-        phoneNumber: "+91 98765 43210",
-        email: "sales@steelparts.com",
-        location: "Mumbai, Maharashtra",
-        companyName: "Steel Parts India Pvt Ltd",
-        rating: 4.8,
-        reviews: [],
-        images: [
-            "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=400&q=80",
-            "https://images.unsplash.com/photo-1535813547-99c456a41963?auto=format&fit=crop&w=400&q=80",
-            "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=400&q=80",
-            "https://images.unsplash.com/photo-1649232811467-31f415309199?auto=format&fit=crop&w=400&q=80"
-        ],
-        inStock: true
-    },
-    {
-        id: 2,
-        title: "Precision Ball Bearing Set - Pack of 100",
-        description: "Premium chrome steel bearings with ABEC-7 rating for high-speed applications. Pre-lubricated and sealed.",
-        sku: "BRG-100-PK",
-        packSize: 100,
-        pricePerUnit: 150,
-        phoneNumber: "+91 99887 76655",
-        email: "contact@bearingspro.com",
-        location: "Pune, Maharashtra",
-        companyName: "Bearings Pro Ltd",
-        rating: 4.5,
-        reviews: [],
-        images: [
-            "https://images.unsplash.com/photo-1535813547-99c456a41963?auto=format&fit=crop&w=400&q=80",
-            "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=400&q=80",
-            "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=400&q=80",
-            "https://images.unsplash.com/photo-1649232811467-31f415309199?auto=format&fit=crop&w=400&q=80"
-        ],
-        inStock: true
-    },
-    {
-        id: 3,
-        title: "Heavy Duty Hydraulic Pump - Single Unit",
-        description: "Series-X cast iron hydraulic pump designed for industrial presses and lifts. Features high-pressure output.",
-        sku: "HYD-552-PMP",
-        packSize: 1,
-        pricePerUnit: 15000,
-        phoneNumber: "+91 91234 56789",
-        email: "support@hydrosystems.com",
-        location: "Chennai, Tamil Nadu",
-        companyName: "Hydro Systems Inc",
-        rating: 4.9,
-        reviews: [],
-        images: [
-            "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=400&q=80",
-            "https://images.unsplash.com/photo-1649232811467-31f415309199?auto=format&fit=crop&w=400&q=80",
-            "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=400&q=80",
-            "https://images.unsplash.com/photo-1535813547-99c456a41963?auto=format&fit=crop&w=400&q=80"
-        ],
-        inStock: true
-    },
-    {
-        id: 4,
-        title: "Safety Work Gloves - Case of 50 Pairs",
-        description: "Level 5 cut-resistant Kevlar/Latex gloves for maximum hand protection. Breathable fabric back.",
-        sku: "SFT-GLV-50",
-        packSize: 50,
-        pricePerUnit: 85,
-        phoneNumber: "+91 88990 01122",
-        email: "safety@gearmasters.com",
-        location: "Delhi, NCR",
-        companyName: "Gear Masters Safety",
-        rating: 4.2,
-        reviews: [],
-        images: [
-            "https://images.unsplash.com/photo-1649232811467-31f415309199?auto=format&fit=crop&w=400&q=80",
-            "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=400&q=80",
-            "https://images.unsplash.com/photo-1535813547-99c456a41963?auto=format&fit=crop&w=400&q=80",
-            "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=400&q=80"
-        ],
-        inStock: true
-    }
+    // ... commented out to fix noUnusedLocals error
 ];
+*/
 
 const WholesaleFeed = () => {
     const [products, setProducts] = useState<any[]>([]);
@@ -118,7 +36,7 @@ const WholesaleFeed = () => {
         fetchProducts();
     }, []);
 
-    const handleChange = (event: ChangeEvent<unknown>, value: number) => {
+    const handleChange = (_event: ChangeEvent<unknown>, value: number) => {
         setPage(value);
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };

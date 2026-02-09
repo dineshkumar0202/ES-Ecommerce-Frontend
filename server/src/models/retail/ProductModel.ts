@@ -72,7 +72,7 @@ const productSchema: Schema = new mongoose.Schema({
     brand: String,
     seller: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "User",
+        ref: "Seller",
         required: true,
     },
     rating: {
@@ -87,7 +87,7 @@ const productSchema: Schema = new mongoose.Schema({
         {
             user: {
                 type: mongoose.Schema.Types.ObjectId,
-                ref: "User",
+                ref: "Buyer",
             },
             name: String,
             rating: Number,
@@ -114,7 +114,7 @@ const productSchema: Schema = new mongoose.Schema({
             reason: String,
             performedBy: {
                 type: mongoose.Schema.Types.ObjectId,
-                ref: "User",
+                ref: "Seller",
             },
             createdAt: {
                 type: Date,

@@ -127,7 +127,18 @@ export const PaymentService = {
 export const AuthService = {
     login: (data: any) => api.post('/auth/login', data),
     register: (data: any) => api.post('/auth/register', data),
-    getMe: () => api.get('/auth/me')
+    getMe: () => api.get('/auth/me'),
+
+    // New specific methods
+    loginBuyer: (data: any) => api.post('/auth/login/buyer', data),
+    loginSeller: (data: any) => api.post('/auth/login/seller', data),
+    loginAdmin: (data: any) => api.post('/auth/login/admin', data),
+    registerBuyer: (data: any) => api.post('/auth/register/buyer', data),
+    registerSeller: (data: any) => api.post('/auth/register/seller', data),
+
+    // OTP
+    sendOtp: (data: { mobile?: string, email?: string }) => api.post('/auth/send-otp', data),
+    verifyOtp: (data: { mobile?: string, email?: string, otp: string }) => api.post('/auth/verify-otp', data)
 };
 
 export default api;

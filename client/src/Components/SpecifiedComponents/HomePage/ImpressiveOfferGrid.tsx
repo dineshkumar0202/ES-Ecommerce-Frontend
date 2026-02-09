@@ -1,4 +1,3 @@
-import React from 'react';
 import { Box, Paper, Typography, Button, Grid, Rating } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Box, Typography, TextField, Button, Paper, Divider, Alert } from '@mui/material';
 import { useNavigate, useLocation } from 'react-router-dom';
 import GoogleIcon from '@mui/icons-material/Google';
@@ -6,9 +6,7 @@ import AppleIcon from '@mui/icons-material/Apple';
 import StorefrontOutlinedIcon from '@mui/icons-material/StorefrontOutlined';
 import ShoppingCartOutlinedIcon from '@mui/icons-material/ShoppingCartOutlined';
 import AdminPanelSettingsOutlinedIcon from '@mui/icons-material/AdminPanelSettingsOutlined';
-
 import Navbar from './Navbar';
-
 import { AuthService } from '../../services/api';
 
 const Login = () => {
@@ -32,16 +30,10 @@ const Login = () => {
         setError('');
         setIsLoading(true);
 
-        // Determine Role String
-        let role = 'Buyer';
-        if (userType === 0) role = 'Seller';
-        if (userType === 2) role = 'Admin';
-
         try {
             const trimmedName = name.trim();
             const trimmedMobile = mobile.trim();
             const trimmedEmail = email.trim();
-            const trimmedPassword = password; // Passwords might have intentional spaces, keep as is? Or trim? Usually trim spaces at ends is safe but technically password logic allows spaces. I'll keep password as is, or trim? Standard practice suggests trimming unless explicit space is allowed. I'll stick to trimming ONLY user IDs.
 
             let response;
             if (isLogin) {
@@ -52,36 +44,48 @@ const Login = () => {
                         setIsLoading(false);
                         return;
                     }
-                    response = await AuthService.login({ email: trimmedEmail, password });
+                    response = await AuthService.loginAdmin({ email: trimmedEmail, password });
+                } else if (userType === 0) {
+                    if (!trimmedMobile || !password) {
+                        setError('Mobile and Password are required');
+                        setIsLoading(false);
+                        return;
+                    }
+                    response = await AuthService.loginSeller({ mobile: trimmedMobile, password });
                 } else {
                     if (!trimmedMobile || !password) {
                         setError('Mobile and Password are required');
                         setIsLoading(false);
                         return;
                     }
-                    response = await AuthService.login({ mobile: trimmedMobile, password });
+                    response = await AuthService.loginBuyer({ mobile: trimmedMobile, password });
                 }
             } else {
                 // Register API
+                if (userType === 2) {
+                    setError('Admin registration is not allowed');
+                    setIsLoading(false);
+                    return;
+                }
+
                 if (!trimmedName || !trimmedMobile || !password) {
                     setError('Name, Mobile, and Password are required');
                     setIsLoading(false);
                     return;
                 }
-                // Backend expects 'username' as Name and 'mobile' as unique ID
+
                 const registerPayload: any = {
                     username: trimmedName,
                     mobile: trimmedMobile,
                     password,
-                    role
+                    email: trimmedEmail || undefined
                 };
 
-                // Only include email if it has a value (to avoid unique constraint issues)
-                if (trimmedEmail && trimmedEmail !== '') {
-                    registerPayload.email = trimmedEmail;
+                if (userType === 0) {
+                    response = await AuthService.registerSeller(registerPayload);
+                } else {
+                    response = await AuthService.registerBuyer(registerPayload);
                 }
-
-                response = await AuthService.register(registerPayload);
             }
 
             const { token, username, role: userRole } = response.data;
@@ -159,7 +163,7 @@ const Login = () => {
                             </Typography>
                         </Box>
 
-                        {/* Role Selection (Only show in Register mode or if user wants to switch context? For login, role is determined by backend usually, but here we can keep it to toggle UI state maybe? Actually Login doesn't need Role, but Register does. Let's keep it visible for both to be safe or clarify context) */}
+                        {/* Role Selection */}
                         <Box sx={{ mb: 3 }}>
                             <Typography variant="caption" sx={{ display: 'block', mb: 1.5, fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: 0.5 }}>
                                 Select User Type
@@ -169,10 +173,10 @@ const Login = () => {
                                     { id: 1, label: 'Buyer', icon: <ShoppingCartOutlinedIcon /> },
                                     { id: 0, label: 'Seller', icon: <StorefrontOutlinedIcon /> },
                                     { id: 2, label: 'Admin', icon: <AdminPanelSettingsOutlinedIcon /> }
-                                ].map((type) => (
+                                ].filter(type => isLogin || type.id !== 2).map((type) => (
                                     <Box
                                         key={type.id}
-                                        onClick={() => setUserType(type.id)}
+                                        onClick={() => { setUserType(type.id); setError(''); }}
                                         sx={{
                                             flex: 1,
                                             border: userType === type.id ? '2px solid #bef264' : '1px solid #e5e7eb',
@@ -194,6 +198,7 @@ const Login = () => {
 
                         {error && (<Alert severity="error" sx={{ mb: 3 }}>{error}</Alert>)}
 
+                        {/* Standard Login/Register for Buyer/Seller/Admin */}
                         <Box component="form" onSubmit={handleAuth} noValidate>
                             {/* Name - Only for Register */}
                             {!isLogin && (
@@ -223,6 +228,7 @@ const Login = () => {
                                 onChange={(e) => userType === 2 ? setEmail(e.target.value) : setMobile(e.target.value)}
                                 sx={{ mb: 2, '& .MuiOutlinedInput-root': { borderRadius: 2, bgcolor: '#f9fafb' } }}
                             />
+
 
                             {/* Password */}
                             <TextField

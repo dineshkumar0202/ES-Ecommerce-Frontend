@@ -4,24 +4,128 @@ import { Request, Response } from 'express';
 import AuthService from "../../services/users/AuthService";
 
 class AuthController {
-    async registerUser(req: Request, res: Response) {
+    async sendOtp(req: Request, res: Response) {
         try {
-            const userData: RegisterUserDto = req.body;
+            const { mobile, email } = req.body;
+            const identifier = mobile || email;
 
-            // Remove empty email to avoid duplicate key error (sparse index needs missing field, not empty string)
-            if (!userData.email || userData.email.trim() === '') {
-                delete userData.email;
+            if (!identifier) {
+                res.status(400).json({ message: "Mobile number or Email is required" });
+                return;
             }
 
-            // Name (username), Mobile, Password are required
+            const result = await AuthService.generateAndSendOtp(identifier);
+            res.json(result);
+        } catch (error: any) {
+            res.status(500).json({ message: error.message });
+        }
+    }
+
+    async verifyOtp(req: Request, res: Response) {
+        try {
+            const { mobile, email, otp } = req.body;
+            const identifier = mobile || email;
+
+            if (!identifier || !otp) {
+                res.status(400).json({ message: "Identifier (Mobile/Email) and OTP are required" });
+                return;
+            }
+
+            const result = await AuthService.verifyOtp(identifier, otp);
+            res.json(result);
+        } catch (error: any) {
+            res.status(400).json({ message: error.message });
+        }
+    }
+
+    async registerUser(req: Request, res: Response) {
+        // ... (legacy)
+        try {
+            const userData: RegisterUserDto = req.body;
+            // ... (validation logic from original)
+            if (!userData.email || userData.email.trim() === '') delete userData.email;
             if (!userData.username || !userData.mobile || !userData.password) {
                 res.status(400).json({ message: "Name, Mobile, and Password are required" });
                 return;
             }
+
+            // Route based on role if provided, else default
             const user = await AuthService.registerUser(userData);
             res.status(201).json(user);
         } catch (error: any) {
             res.status(400).json({ message: error.message });
+        }
+    }
+
+    async registerBuyer(req: Request, res: Response) {
+        try {
+            const userData = req.body;
+            if (!userData.email || userData.email.trim() === '') delete userData.email;
+            if (!userData.username || !userData.mobile || !userData.password) {
+                res.status(400).json({ message: "Name, Mobile, and Password are required" });
+                return;
+            }
+            const user = await AuthService.registerBuyer(userData);
+            res.status(201).json(user);
+        } catch (error: any) {
+            res.status(400).json({ message: error.message });
+        }
+    }
+
+    async registerSeller(req: Request, res: Response) {
+        try {
+            const userData = req.body;
+            if (!userData.email || userData.email.trim() === '') delete userData.email;
+            if (!userData.username || !userData.mobile || !userData.password) {
+                res.status(400).json({ message: "Name, Mobile, and Password are required" });
+                return;
+            }
+            const user = await AuthService.registerSeller(userData);
+            res.status(201).json(user);
+        } catch (error: any) {
+            res.status(400).json({ message: error.message });
+        }
+    }
+
+    async loginBuyer(req: Request, res: Response) {
+        try {
+            const loginData = req.body;
+            if ((!loginData.mobile && !loginData.email) || !loginData.password) {
+                res.status(400).json({ message: "Mobile/Email and Password are required" });
+                return;
+            }
+            const user = await AuthService.loginBuyer(loginData);
+            res.json(user);
+        } catch (error: any) {
+            res.status(401).json({ message: error.message });
+        }
+    }
+
+    async loginSeller(req: Request, res: Response) {
+        try {
+            const loginData = req.body;
+            if ((!loginData.mobile && !loginData.email) || !loginData.password) {
+                res.status(400).json({ message: "Mobile/Email and Password are required" });
+                return;
+            }
+            const user = await AuthService.loginSeller(loginData);
+            res.json(user);
+        } catch (error: any) {
+            res.status(401).json({ message: error.message });
+        }
+    }
+
+    async loginAdmin(req: Request, res: Response) {
+        try {
+            const loginData = req.body;
+            if (!loginData.email || !loginData.password) {
+                res.status(400).json({ message: "Email and Password are required" });
+                return;
+            }
+            const user = await AuthService.loginAdmin(loginData);
+            res.json(user);
+        } catch (error: any) {
+            res.status(401).json({ message: error.message });
         }
     }
 
@@ -38,7 +142,7 @@ class AuthController {
             res.status(401).json({ message: error.message });
         }
     }
-    
+
 
     async getMe(req: any, res: Response) {
         try {

@@ -1,4 +1,4 @@
-import React from 'react';
+import { useState, useEffect } from 'react';
 import { Box, Typography, Button, Paper, Chip, IconButton, Stack } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import WhatsAppIcon from '@mui/icons-material/WhatsApp';
@@ -7,74 +7,12 @@ import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import TuneIcon from '@mui/icons-material/Tune';
 import { ResaleService } from '../../../../services/api';
 
+/* Default products - kept for reference
 const defaultProducts = [
-    {
-        id: 1,
-        title: "iPhone 13 Pro, 256GB",
-        price: "599",
-        condition: "CERTIFIED REFURBISHED",
-        location: "San Francisco, CA",
-        image: "https://images.unsplash.com/photo-1592750475338-74b7b21085ab?auto=format&fit=crop&w=400&q=80",
-        images: [
-            "https://images.unsplash.com/photo-1592750475338-74b7b21085ab?auto=format&fit=crop&w=800&q=80",
-            "https://images.unsplash.com/photo-1510557880182-3d4d3cba35a5?auto=format&fit=crop&w=800&q=80",
-            "https://images.unsplash.com/photo-1695048133142-1a20484d2569?auto=format&fit=crop&w=800&q=80"
-        ],
-        description: "Pristine condition iPhone 13 Pro. Battery health 98%. Comes with original box and cable. No scratches or dents. Unlocked for all carriers.",
-        seller: "TechResale Pro",
-        mobile: "+1 555-0123",
-        tagColor: "#bef264" // Lime
-    },
-    {
-        id: 2,
-        title: "Herman Miller Aeron",
-        price: "850",
-        condition: "LIKE NEW",
-        location: "Austin, TX",
-        image: "https://images.unsplash.com/photo-1505843490538-5133c6c7d0e1?auto=format&fit=crop&w=400&q=80",
-        images: [
-            "https://images.unsplash.com/photo-1505843490538-5133c6c7d0e1?auto=format&fit=crop&w=800&q=80",
-            "https://images.unsplash.com/photo-1688578713636-234b4c65e884?auto=format&fit=crop&w=800&q=80"
-        ],
-        description: "Fully loaded Herman Miller Aeron size B. PostureFit SL, tilt limiter, fully adjustable arms. Manufactured 2023. Barely used in a home office environment.",
-        seller: "Office Furniture Outlet",
-        mobile: "+1 555-0124",
-        tagColor: "#f1f5f9" // White/Grey
-    },
-    {
-        id: 3,
-        title: "Nike Air Max 270",
-        price: "120",
-        condition: "GREAT VALUE",
-        location: "Brooklyn, NY",
-        image: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=400&q=80",
-        images: [
-            "https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=800&q=80",
-            "https://images.unsplash.com/photo-1606107557195-0e29a4b5b4aa?auto=format&fit=crop&w=800&q=80"
-        ],
-        description: "Only worn twice. Great value for the price. Size 10 US. Original box included. No signs of wear on the sole.",
-        seller: "SneakerHead NYC",
-        mobile: "+1 555-0125",
-        tagColor: "#bef264"
-    },
-    {
-        id: 4,
-        title: "MacBook Pro M1 13\"",
-        price: "950",
-        condition: "CERTIFIED REFURBISHED",
-        location: "Seattle, WA",
-        image: "https://images.unsplash.com/photo-1611186871348-b1ce696e52c9?auto=format&fit=crop&w=400&q=80",
-        images: [
-            "https://images.unsplash.com/photo-1611186871348-b1ce696e52c9?auto=format&fit=crop&w=800&q=80",
-            "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&w=800&q=80"
-        ],
-        description: "Factory refurbished M1 MacBook Pro with 1 year warranty. 8GB RAM, 256GB SSD. Cycle count: 12. Looks brand new.",
-        seller: "Apple Certified Refurb",
-        mobile: "+1 555-0126",
-        tagColor: "#bef264"
-    },
-
+    // ... commented out to fix noUnusedLocals error
 ];
+*/
+
 
 const moreProducts = [
     {
@@ -161,10 +99,10 @@ const moreProducts = [
 
 const SHRecentlyListed = () => {
     const navigate = useNavigate();
-    const [displayProducts, setDisplayProducts] = React.useState<any[]>([]);
-    const [hasMore, setHasMore] = React.useState(true);
+    const [displayProducts, setDisplayProducts] = useState<any[]>([]);
+    const [hasMore, setHasMore] = useState(true);
 
-    React.useEffect(() => {
+    useEffect(() => {
         const fetchProducts = async () => {
             try {
                 const { data } = await ResaleService.getAll();

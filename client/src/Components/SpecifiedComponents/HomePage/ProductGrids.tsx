@@ -14,8 +14,9 @@ const ProductGrids = () => {
         const fetchProducts = async () => {
             try {
                 const { data } = await ProductService.getAll();
+                const productsArray = Array.isArray(data) ? data : (data?.products || []);
                 // Take first 8 for home page grid
-                setProducts(data.slice(0, 8));
+                setProducts(productsArray.slice(0, 8));
             } catch (error) {
                 console.error("Error fetching products:", error);
             } finally {

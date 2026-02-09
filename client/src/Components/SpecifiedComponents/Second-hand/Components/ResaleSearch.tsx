@@ -1,4 +1,4 @@
-import { Box, TextField, InputAdornment, Button, Paper } from '@mui/material';
+import { TextField, InputAdornment, Button, Paper } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import FilterListIcon from '@mui/icons-material/FilterList';
 

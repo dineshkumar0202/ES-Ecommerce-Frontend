@@ -1,4 +1,6 @@
-import { Box, Typography, Paper, Stack, Button, IconButton, TextField, Dialog, DialogTitle, DialogContent, DialogActions, MenuItem, InputAdornment, Alert, Avatar, Divider, Chip } from '@mui/material';
+import { Box, Typography, Paper, Stack, Button, IconButton, TextField, Dialog, DialogTitle, DialogContent, DialogActions, MenuItem, InputAdornment, Alert, Avatar, Chip, Fade, CircularProgress } from '@mui/material';
+import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
+import ImageOutlinedIcon from '@mui/icons-material/ImageOutlined';
 import PersonOutlineIcon from '@mui/icons-material/PersonOutline';
 import EmailOutlinedIcon from '@mui/icons-material/EmailOutlined';
 import PhoneOutlinedIcon from '@mui/icons-material/PhoneOutlined';
@@ -67,6 +69,9 @@ const FreelancerSidebar = ({ onPost }: FreelancerSidebarProps) => {
     const [status, setStatus] = useState<string>('Pending');
 
     useEffect(() => {
+        const token = localStorage.getItem('token');
+        if (!token) return;
+
         const fetchUserStatus = async () => {
             try {
                 const { data: user } = await AuthService.getMe();
@@ -74,8 +79,10 @@ const FreelancerSidebar = ({ onPost }: FreelancerSidebarProps) => {
                     setIsRegistered(true);
                     setStatus(user.freelancer.status || 'Pending');
                 }
-            } catch (error) {
-                console.error("Failed to fetch user status", error);
+            } catch (error: any) {
+                if (error.response?.status !== 401) {
+                    console.error("Failed to fetch user status", error);
+                }
             }
         };
         fetchUserStatus();
@@ -155,183 +162,329 @@ const FreelancerSidebar = ({ onPost }: FreelancerSidebarProps) => {
 
     const currentTests = SKILL_TESTS[registerData.category] || SKILL_TESTS["default"];
 
+    // AI Generation State
+    const [prompt, setPrompt] = useState('');
+    const [isGenerating, setIsGenerating] = useState(false);
+    const [generatedImage, setGeneratedImage] = useState<string | null>(null);
+    const [openPostDialog, setOpenPostDialog] = useState(false);
+    const [formData, setFormData] = useState({ name: '', productName: '', contact: '', location: '' });
+
+    const handleGenerate = async () => {
+        if (!prompt) return;
+        setIsGenerating(true);
+        try {
+            const API_KEY = "FPSX9eeb26f1be1427e9773dfd2d7e3f4447"; // Freepik Key
+            const response = await fetch('/freepik-api/v1/ai/text-to-image', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'x-freepik-api-key': API_KEY, 'Accept': 'application/json' },
+                body: JSON.stringify({ prompt: prompt, aspect_ratio: "square", num_images: 1 })
+            });
+            if (!response.ok) throw new Error('API Failed');
+            const data = await response.json();
+            let imageUrl = null;
+            if (data.data?.length > 0) imageUrl = data.data[0].base64 ? `data:image/png;base64,${data.data[0].base64}` : data.data[0].url;
+            if (!imageUrl && data.url) imageUrl = data.url;
+            if (imageUrl) setGeneratedImage(imageUrl);
+        } catch (error: any) {
+            console.error('Error generating image:', error);
+            alert(`Failed: ${error.message}`);
+        } finally {
+            setIsGenerating(false);
+        }
+    };
+
+    const handleOpenPostDialog = () => {
+        if (!generatedImage) return;
+        setOpenPostDialog(true);
+        setFormData({ ...formData, productName: prompt.substring(0, 30), name: registerData.name || '' });
+    };
+
+    const userRole = localStorage.getItem('userRole');
+
+    const handleConfirmPost = () => {
+        const isBuyer = userRole === 'Buyer';
+        const newPost = {
+            id: Date.now(),
+            title: formData.productName || (isBuyer ? "Looking for Service" : "New Service"),
+            description: isBuyer
+                ? `${formData.name} is looking for ${formData.productName} services in ${formData.location}. Contact: ${formData.contact}.`
+                : `${formData.name} is offering services in ${formData.location}. Contact: ${formData.contact}.`,
+            price: Math.floor(Math.random() * 200) + 50,
+            currency: "$",
+            status: isBuyer ? "REQUEST" : "NEW",
+            tagColor: isBuyer ? "#f472b6" : "#3b82f6", // Pink for requests, Blue for services
+            tagTextColor: "white",
+            views: "0 views",
+            time: "Just now",
+            image: generatedImage,
+            nameDisplay: formData.name
+        };
+        onPost(newPost);
+        setOpenPostDialog(false);
+        setPrompt('');
+        setGeneratedImage(null);
+    };
+
     return (
-        <Stack spacing={3}>    {/* Seller / Freelancer Access Card */}
-            <Paper
-                elevation={0}
-                sx={{
-                    bgcolor: 'white',
-                    p: 3,
-                    borderRadius: 4,
-                    border: '1px solid #e2e8f0',
-                    display: 'flex',
-                    flexDirection: 'column'
-                }}
-            >
-                {!isRegistered ? (
-                    <>
-                        <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 2 }}>
-                            <PersonOutlineIcon sx={{ color: 'black' }} />
-                            <Typography variant="h6" sx={{ fontWeight: 700, fontSize: '1rem' }}>For Freelancers & Sellers</Typography>
-                        </Stack>
-
-                        <Typography variant="body2" sx={{ color: '#64748b', mb: 3, lineHeight: 1.5 }}>
-                            Log in to view exclusive buyer requests, manage your profile, and bid on projects.
-                        </Typography>
-
-                        <Stack spacing={2}>
-                            <Button
-                                fullWidth
-                                onClick={() => setOpenRegisterDialog(true)}
-                                sx={{
-                                    bgcolor: '#f1f5f9',
-                                    color: 'black',
-                                    borderRadius: 2,
-                                    fontWeight: 700,
-                                    textTransform: 'none',
-                                    py: 1.5,
-                                    '&:hover': { bgcolor: '#e2e8f0' }
-                                }}
-                            >
-                                Register as Freelancer
-                            </Button>
-                        </Stack>
-                    </>
-                ) : (
-                    <>
-                        <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 2 }}>
-                            <Avatar
-                                sx={{
-                                    bgcolor: '#bef264',
-                                    color: 'black',
-                                    fontWeight: 700,
-                                    width: 56,
-                                    height: 56,
-                                    fontSize: '1.25rem'
-                                }}
-                            >
-                                {registerData.name.charAt(0).toUpperCase()}
-                            </Avatar>
-                            <Box>
-                                <Typography variant="h6" sx={{ fontWeight: 700, lineHeight: 1.2 }}>
-                                    {registerData.name || "User Name"}
-                                </Typography>
-                                <Typography variant="body2" sx={{ color: '#64748b' }}>
-                                    {registerData.category || "Freelancer"}
-                                </Typography>
-                            </Box>
-                        </Stack>
-
-                        <Chip
-                            icon={<CheckCircleIcon sx={{ fontSize: '1rem !important' }} />}
-                            label={status === 'Approved' ? "Verified Freelancer" : (status === 'Rejected' ? "Application Rejected" : "Verification Pending")}
-                            color={status === 'Approved' ? "success" : (status === 'Rejected' ? "error" : "warning")}
-                            variant="outlined"
-                            size="small"
-                            sx={{ alignSelf: 'flex-start', mb: 3, fontWeight: 600 }}
-                        />
-
-
-                        <Stack spacing={2}>
-                            <Button
-                                fullWidth
-                                variant="outlined"
-                                sx={{
-                                    borderRadius: 2,
-                                    textTransform: 'none',
-                                    fontWeight: 600,
-                                    borderColor: '#e2e8f0',
-                                    color: '#475569',
-                                    '&:hover': { borderColor: '#cbd5e1', bgcolor: '#f8fafc' }
-                                }}
-                            >
-                                Edit Profile
-                            </Button>
-                            <Button
-                                fullWidth
-                                sx={{
-                                    bgcolor: '#0f172a',
-                                    color: 'white',
-                                    borderRadius: 2,
-                                    fontWeight: 600,
-                                    textTransform: 'none',
-                                    py: 1.5,
-                                    '&:hover': { bgcolor: '#334155' }
-                                }}
-                            >
-                                Dashboard
-                            </Button>
-                        </Stack>
-
-                        <Divider sx={{ my: 3 }} />
-                        <Box>
+        <Stack spacing={3}>
+            {/* Seller / Freelancer Access Card - Hide for Buyers */}
+            {userRole !== 'Buyer' && (
+                <Paper
+                    elevation={0}
+                    sx={{
+                        bgcolor: 'white',
+                        p: 3,
+                        borderRadius: 4,
+                        border: '1px solid #e2e8f0',
+                        display: 'flex',
+                        flexDirection: 'column'
+                    }}
+                >
+                    {!isRegistered ? (
+                        <>
                             <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 2 }}>
-                                <Box sx={{
-                                    bgcolor: 'black',
-                                    color: '#bef264',
-                                    borderRadius: 1,
-                                    px: 1,
-                                    py: 0.5,
-                                    fontWeight: 800,
-                                    fontSize: '0.75rem',
-                                    letterSpacing: 1
-                                }}>
-                                    AI
-                                </Box>
-                                <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>Image Generator</Typography>
+                                <PersonOutlineIcon sx={{ color: 'black' }} />
+                                <Typography variant="h6" sx={{ fontWeight: 700, fontSize: '1rem' }}>For Freelancers & Sellers</Typography>
                             </Stack>
 
-                            <TextField
-                                fullWidth
-                                multiline
-                                rows={3}
-                                placeholder="Describe the image you want to generate..."
-                                variant="outlined"
-                                sx={{
-                                    mb: 2,
-                                    '& .MuiOutlinedInput-root': {
-                                        borderRadius: 2,
-                                        bgcolor: '#f8fafc',
-                                        fontSize: '0.875rem'
-                                    }
-                                }}
-                            />
+                            <Typography variant="body2" sx={{ color: '#64748b', mb: 3, lineHeight: 1.5 }}>
+                                Log in to view exclusive buyer requests, manage your profile, and bid on projects.
+                            </Typography>
 
-                            <Stack direction="row" spacing={1}>
+                            <Stack spacing={2}>
                                 <Button
                                     fullWidth
-                                    variant="contained"
+                                    onClick={() => setOpenRegisterDialog(true)}
+                                    sx={{
+                                        bgcolor: '#f1f5f9',
+                                        color: 'black',
+                                        borderRadius: 2,
+                                        fontWeight: 700,
+                                        textTransform: 'none',
+                                        py: 1.5,
+                                        '&:hover': { bgcolor: '#e2e8f0' }
+                                    }}
+                                >
+                                    Register as Freelancer
+                                </Button>
+                            </Stack>
+                        </>
+                    ) : (
+                        <>
+                            <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 2 }}>
+                                <Avatar
                                     sx={{
                                         bgcolor: '#bef264',
                                         color: 'black',
                                         fontWeight: 700,
-                                        textTransform: 'none',
-                                        borderRadius: 2,
-                                        '&:hover': { bgcolor: '#a3e635' }
+                                        width: 56,
+                                        height: 56,
+                                        fontSize: '1.25rem'
                                     }}
                                 >
-                                    Auto Genrate
-                                </Button>
+                                    {registerData.name.charAt(0).toUpperCase()}
+                                </Avatar>
+                                <Box>
+                                    <Typography variant="h6" sx={{ fontWeight: 700, lineHeight: 1.2 }}>
+                                        {registerData.name || "User Name"}
+                                    </Typography>
+                                    <Typography variant="body2" sx={{ color: '#64748b' }}>
+                                        {registerData.category || "Freelancer"}
+                                    </Typography>
+                                </Box>
+                            </Stack>
+
+                            <Chip
+                                icon={<CheckCircleIcon sx={{ fontSize: '1rem !important' }} />}
+                                label={status === 'Approved' ? "Verified Freelancer" : (status === 'Rejected' ? "Application Rejected" : "Verification Pending")}
+                                color={status === 'Approved' ? "success" : (status === 'Rejected' ? "error" : "warning")}
+                                variant="outlined"
+                                size="small"
+                                sx={{ alignSelf: 'flex-start', mb: 3, fontWeight: 600 }}
+                            />
+
+
+                            <Stack spacing={2}>
                                 <Button
+                                    fullWidth
                                     variant="outlined"
                                     sx={{
-                                        minWidth: 'auto',
-                                        px: 2,
                                         borderRadius: 2,
+                                        textTransform: 'none',
+                                        fontWeight: 600,
                                         borderColor: '#e2e8f0',
-                                        color: '#64748b',
+                                        color: '#475569',
                                         '&:hover': { borderColor: '#cbd5e1', bgcolor: '#f8fafc' }
                                     }}
                                 >
-                                    <CloudUploadIcon fontSize="small" />
+                                    Edit Profile
+                                </Button>
+                                <Button
+                                    fullWidth
+                                    sx={{
+                                        bgcolor: '#0f172a',
+                                        color: 'white',
+                                        borderRadius: 2,
+                                        fontWeight: 600,
+                                        textTransform: 'none',
+                                        py: 1.5,
+                                        '&:hover': { bgcolor: '#334155' }
+                                    }}
+                                >
+                                    Dashboard
                                 </Button>
                             </Stack>
+
+
+
+
+                        </>
+                    )}
+                </Paper>
+            )}
+
+            {/* AI Image Generation Tool - Available to All */}
+            <Paper
+                elevation={0}
+                sx={{
+                    bgcolor: 'black',
+                    color: 'white',
+                    p: 3,
+                    borderRadius: 4,
+                    overflow: 'hidden',
+                    display: 'flex',
+                    flexDirection: 'column'
+                }}
+            >
+                <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 3 }}>
+                    <AutoAwesomeIcon sx={{ color: '#d9f99d' }} />
+                    <Typography variant="h6" sx={{ fontWeight: 700 }}>AI Image Generation</Typography>
+                </Stack>
+
+                {/* Image Preview Area */}
+                <Box
+                    sx={{
+                        bgcolor: '#1e1e1e',
+                        borderRadius: 3,
+                        mb: 2,
+                        position: 'relative',
+                        height: 250,
+                        flexShrink: 0,
+                        overflow: 'hidden',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        border: '1px dashed #333'
+                    }}
+                >
+                    {generatedImage ? (
+                        <Fade in={true}>
+                            <Box
+                                component="img"
+                                src={generatedImage}
+                                sx={{
+                                    width: '100%',
+                                    height: '100%',
+                                    objectFit: 'cover',
+                                }}
+                            />
+                        </Fade>
+                    ) : (
+                        <Stack alignItems="center" spacing={1} sx={{ color: '#444' }}>
+                            <ImageOutlinedIcon sx={{ fontSize: 40 }} />
+                            <Typography variant="caption">Preview Area</Typography>
+                        </Stack>
+                    )}
+
+                    {isGenerating && (
+                        <Box sx={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: 'rgba(0,0,0,0.7)', zIndex: 5 }}>
+                            <CircularProgress sx={{ color: '#d9f99d' }} />
                         </Box>
+                    )}
+                </Box>
 
+                {/* Prompt Input */}
+                <Box sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', mb: 2 }}>
+                    <Typography variant="caption" sx={{ color: '#888', mb: 1, fontWeight: 600 }}>PROMPT</Typography>
+                    <TextField
+                        multiline
+                        placeholder="Describe the image..."
+                        value={prompt}
+                        onChange={(e) => setPrompt(e.target.value)}
+                        variant="outlined"
+                        fullWidth
+                        sx={{
+                            bgcolor: '#111',
+                            borderRadius: 2,
+                            '& .MuiOutlinedInput-root': {
+                                color: 'white',
+                                '& fieldset': { borderColor: '#333' },
+                                '&:hover fieldset': { borderColor: '#555' },
+                                '&.Mui-focused fieldset': { borderColor: '#bef264' },
+                            },
+                            '& .MuiInputBase-input': { fontSize: '0.95rem', lineHeight: 1.5 }
+                        }}
+                    />
+                </Box>
 
-                    </>
-                )}
+                <Stack direction="row" spacing={2}>
+                    <Button
+                        fullWidth
+                        onClick={handleGenerate}
+                        disabled={isGenerating || !prompt}
+                        sx={{
+                            bgcolor: '#333',
+                            color: 'white',
+                            borderRadius: 2,
+                            fontWeight: 700,
+                            textTransform: 'none',
+                            py: 1.5,
+                            '&:hover': { bgcolor: '#444' },
+                            '&:disabled': { bgcolor: '#222', color: '#555' }
+                        }}
+                    >
+                        {isGenerating ? '...' : 'GENERATE'}
+                    </Button>
+                    <Button
+                        fullWidth
+                        onClick={handleOpenPostDialog}
+                        disabled={!generatedImage}
+                        sx={{
+                            bgcolor: '#bef264',
+                            color: 'black',
+                            borderRadius: 2,
+                            fontWeight: 800,
+                            textTransform: 'none',
+                            py: 1.5,
+                            '&:hover': { bgcolor: '#a3e635' },
+                            '&:disabled': { bgcolor: '#333', color: '#555' }
+                        }}
+                    >
+                        POST
+                    </Button>
+                </Stack>
             </Paper>
+
+            {/* Post Dialog */}
+            <Dialog
+                open={openPostDialog}
+                onClose={() => setOpenPostDialog(false)}
+                PaperProps={{ sx: { borderRadius: 3, bgcolor: 'white', minWidth: 400, p: 1 } }}
+            >
+                <DialogTitle sx={{ fontWeight: 800 }}>Complete Your Post</DialogTitle>
+                <DialogContent>
+                    <Stack spacing={2} sx={{ mt: 1 }}>
+                        <TextField label="Your Name" fullWidth value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} />
+                        <TextField label="Service Name" fullWidth value={formData.productName} onChange={(e) => setFormData({ ...formData, productName: e.target.value })} />
+                        <TextField label="Contact" fullWidth value={formData.contact} onChange={(e) => setFormData({ ...formData, contact: e.target.value })} />
+                        <TextField label="Location" fullWidth value={formData.location} onChange={(e) => setFormData({ ...formData, location: e.target.value })} />
+                    </Stack>
+                </DialogContent>
+                <DialogActions sx={{ p: 3 }}>
+                    <Button onClick={() => setOpenPostDialog(false)} sx={{ color: '#64748b' }}>Cancel</Button>
+                    <Button variant="contained" onClick={handleConfirmPost} disabled={!formData.name} sx={{ bgcolor: 'black', color: 'white', fontWeight: 700, px: 3 }}>Post Now</Button>
+                </DialogActions>
+            </Dialog>
 
             {/* Freelancer Registration Dialog */}
             <Dialog

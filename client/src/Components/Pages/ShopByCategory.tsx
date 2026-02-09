@@ -11,7 +11,7 @@ const ShopByCategory = () => {
     const navigate = useNavigate();
 
     const [displayProducts, setDisplayProducts] = useState<any[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
+    const [_isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
         const fetchProducts = async () => {

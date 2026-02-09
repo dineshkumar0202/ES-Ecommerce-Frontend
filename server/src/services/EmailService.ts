@@ -52,6 +52,23 @@ class EmailService {
         }
     }
 
+    async sendOtp(email: string, otp: string) {
+        const html = `
+            <div style="font-family: Arial, sans-serif; padding: 20px;">
+                <h2>Your Verification Code</h2>
+                <p>Please use the following OTP to verify your account:</p>
+                <h1 style="color: #bef264; background: #000; display: inline-block; padding: 10px 20px; border-radius: 8px;">${otp}</h1>
+                <p>This code is valid for 10 minutes.</p>
+                <p>If you didn't request this code, please ignore this email.</p>
+            </div>
+        `;
+        return this.sendEmail({
+            to: email,
+            subject: 'Your Verification Code - AtoZ Marketplace',
+            html
+        });
+    }
+
     // Order Confirmation Email
     async sendOrderConfirmation(userEmail: string, orderDetails: any) {
         const html = `

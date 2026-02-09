@@ -18,6 +18,9 @@ const FreelancerSidebarBuyer = ({ onPost }: FreelancerSidebarBuyerProps) => {
         name: '',
         productName: '',
         contact: '',
+        email: '',
+        requirements: '',
+        description: '',
         location: ''
     });
 
@@ -86,11 +89,15 @@ const FreelancerSidebarBuyer = ({ onPost }: FreelancerSidebarBuyerProps) => {
         const newPost = {
             id: Date.now(),
             title: formData.productName || "New Service",
-            description: `${formData.name} is offering services in ${formData.location}. Contact: ${formData.contact}.`,
-            price: Math.floor(Math.random() * 200) + 50,
+            description: formData.description || `Service offering in ${formData.location}`,
+            requirements: formData.requirements,
+            contact: formData.contact,
+            email: formData.email,
+            location: formData.location,
+            price: Math.floor(Math.random() * 200) + 50, // Default price or add field
             currency: "$",
             unit: "/hr",
-            status: "NEW",
+            status: "NEW", // Initially Pending? User said "Active product (Confrom, Regicted, Pendind)"
             tagColor: "#3b82f6",
             tagTextColor: "white",
             views: "0 views",
@@ -105,7 +112,7 @@ const FreelancerSidebarBuyer = ({ onPost }: FreelancerSidebarBuyerProps) => {
         // Reset
         setPrompt('');
         setGeneratedImage(null);
-        setFormData({ name: '', productName: '', contact: '', location: '' });
+        setFormData({ name: '', productName: '', contact: '', email: '', requirements: '', description: '', location: '' });
     };
 
     return (
@@ -119,7 +126,7 @@ const FreelancerSidebarBuyer = ({ onPost }: FreelancerSidebarBuyerProps) => {
                     p: 3,
                     borderRadius: 4,
                     overflow: 'hidden',
-                    minHeight: 'calc(100vh - 40px)',
+                    // minHeight: 'calc(100vh - 40px)', // adjust height if needed
                     display: 'flex',
                     flexDirection: 'column'
                 }}
@@ -252,7 +259,7 @@ const FreelancerSidebarBuyer = ({ onPost }: FreelancerSidebarBuyerProps) => {
                     sx: {
                         borderRadius: 3,
                         bgcolor: 'white',
-                        minWidth: 400,
+                        minWidth: 450,
                         p: 1
                     }
                 }}
@@ -274,15 +281,45 @@ const FreelancerSidebarBuyer = ({ onPost }: FreelancerSidebarBuyerProps) => {
                             value={formData.productName}
                             onChange={(e) => setFormData({ ...formData, productName: e.target.value })}
                         />
+                        <Stack direction="row" spacing={2}>
+                            <TextField
+                                label="Contact Number"
+                                fullWidth
+                                variant="outlined"
+                                value={formData.contact}
+                                onChange={(e) => setFormData({ ...formData, contact: e.target.value })}
+                            />
+                            <TextField
+                                label="Email"
+                                fullWidth
+                                variant="outlined"
+                                value={formData.email}
+                                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                            />
+                        </Stack>
+
                         <TextField
-                            label="Contact Info (Email/Phone)"
+                            label="Requirements (Requirement Box)"
                             fullWidth
+                            multiline
+                            rows={3}
                             variant="outlined"
-                            value={formData.contact}
-                            onChange={(e) => setFormData({ ...formData, contact: e.target.value })}
+                            placeholder="Describe what you need..."
+                            value={formData.requirements}
+                            onChange={(e) => setFormData({ ...formData, requirements: e.target.value })}
                         />
                         <TextField
-                            label="Location"
+                            label="Description"
+                            fullWidth
+                            multiline
+                            rows={3}
+                            variant="outlined"
+                            placeholder="Detailed description..."
+                            value={formData.description}
+                            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                        />
+                        <TextField
+                            label="Current Location"
                             fullWidth
                             variant="outlined"
                             value={formData.location}

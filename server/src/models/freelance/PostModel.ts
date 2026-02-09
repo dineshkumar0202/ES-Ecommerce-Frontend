@@ -13,6 +13,10 @@ export interface IPost extends Document {
     image?: string;
     nameDisplay?: string;
     unit: string;
+    contact?: string;
+    email?: string;
+    requirements?: string;
+    location?: string;
     createdAt: Date;
     user: mongoose.Types.ObjectId;
 }
@@ -24,12 +28,28 @@ const postSchema: Schema = new mongoose.Schema({
         required: false // Optional for older posts, but new ones should have it
     },
     title: {
-        type: String,
+        type: String, // Product Name
         required: true,
     },
     description: {
         type: String,
         required: true,
+    },
+    requirements: {
+        type: String,
+        required: false,
+    },
+    contact: {
+        type: String,
+        required: false,
+    },
+    email: {
+        type: String,
+        required: false,
+    },
+    location: {
+        type: String,
+        required: false,
     },
     price: Number,
     currency: {
@@ -57,7 +77,7 @@ const postSchema: Schema = new mongoose.Schema({
         default: "Just now",
     },
     image: String,
-    nameDisplay: String, // Freelancer Name
+    nameDisplay: String, // User Name
     unit: {
         type: String,
         default: "/hr", // default unit

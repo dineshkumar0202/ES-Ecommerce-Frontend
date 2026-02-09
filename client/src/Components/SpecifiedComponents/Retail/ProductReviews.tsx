@@ -7,7 +7,6 @@ import {
     Button,
     Stack,
     Avatar,
-    Divider,
     LinearProgress,
     Paper,
     Alert

@@ -16,6 +16,7 @@ import QuickCommerce from './Components/Pages/QuickCommerce';
 import Resale from './Components/Pages/Resale';
 import Profile from './Components/Pages/Profile';
 import SellerProfile from './Components/Pages/SellerProfile';
+import AddProduct from './Components/Pages/AddProduct';
 import Retail from './Components/Pages/Retail';
 import Checkout from './Components/Pages/Checkout';
 import PaymentSuccess from './Components/Pages/PaymentSuccess';
@@ -63,6 +64,7 @@ function App() {
           <Route path="/freelance" element={<Freelance />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/seller/profile" element={<SellerProfile />} />
+          <Route path="/seller/add-product" element={<AddProduct />} />
           <Route path="/checkout" element={<Checkout />} />
           <Route path="/payment-success" element={<PaymentSuccess />} />
 

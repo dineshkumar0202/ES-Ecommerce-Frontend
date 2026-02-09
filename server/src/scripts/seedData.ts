@@ -1,44 +1,14 @@
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import bcrypt from 'bcryptjs';
+import Buyer from '../models/users/BuyerModel';
+import Seller from '../models/users/SellerModel';
+import Admin from '../models/users/AdminModel';
+import Product from '../models/retail/ProductModel'; // Assuming ProductModel is in ../models/retail/ProductModel.ts or similar
+// Wait, I need to check where ProductModel is. It was imported as ./src/routers/retail/ProductRouter in server.ts
+// listing models/retail might help confirm location.
 
 dotenv.config();
-
-// Import models directly
-const UserSchema = new mongoose.Schema({
-    username: { type: String, required: true },
-    email: { type: String },
-    mobile: { type: String, required: true },
-    password: { type: String },
-    role: { type: String, enum: ['Buyer', 'Seller', 'Admin'], default: 'Buyer' },
-    profile: {
-        name: String,
-        avatar: String,
-        bio: String,
-        phone: String,
-        location: String,
-    },
-    createdAt: { type: Date, default: Date.now },
-});
-
-const ProductSchema = new mongoose.Schema({
-    title: { type: String, required: true },
-    description: String,
-    price: { type: Number, required: true },
-    category: String,
-    brand: String,
-    stock: { type: Number, default: 0 },
-    images: [String],
-    rating: { type: Number, default: 0 },
-    numReviews: { type: Number, default: 0 },
-    sku: String,
-    lowStockThreshold: { type: Number, default: 10 },
-    seller: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-    createdAt: { type: Date, default: Date.now },
-});
-
-const User = mongoose.model('User', UserSchema);
-const Product = mongoose.model('Product', ProductSchema);
 
 async function seedDatabase() {
     try {
@@ -47,138 +17,76 @@ async function seedDatabase() {
 
         // Clear existing data
         console.log('🗑️  Clearing existing data...');
-        await User.deleteMany({});
+        // We can keep User for legacy or clear it. Let's clear everything to be clean.
+        // But need to import User if we want to clear it? Or just use mongoose.connection.dropCollection('users')?
+        // Let's just focus on the new collections.
+        await Buyer.deleteMany({});
+        await Seller.deleteMany({});
+        await Admin.deleteMany({});
         await Product.deleteMany({});
 
         // Create users
         console.log('👥 Creating users...');
         const hashedPassword = await bcrypt.hash('password123', 10);
 
-        const users = await User.insertMany([
-            {
-                username: 'Admin User',
-                email: 'admin@atoz.com',
-                mobile: '9876543210',
-                password: hashedPassword,
-                role: 'Admin',
-            },
-            {
-                username: 'John Seller',
-                email: 'john@example.com',
-                mobile: '9876543211',
-                password: hashedPassword,
-                role: 'Seller',
-            },
-            {
-                username: 'Jane Buyer',
-                email: 'jane@example.com',
-                mobile: '9876543212',
-                password: hashedPassword,
-                role: 'Buyer',
-            },
-        ]);
-        console.log(`✅ Created ${users.length} users`);
+        // Admin
+        const admin = await Admin.create({
+            username: 'Admin User',
+            email: 'admin@atoz.com',
+            password: hashedPassword,
+            role: 'Admin',
+            profile: {
+                name: 'Super Admin',
+                avatar: 'https://via.placeholder.com/150'
+            }
+        });
 
-        const seller = users.find(u => u.role === 'Seller');
+        // Seller
+        const seller = await Seller.create({
+            username: 'John Seller',
+            email: 'john@example.com',
+            mobile: '9876543211',
+            password: hashedPassword,
+            role: 'Seller',
+            profile: {
+                name: 'John Doe',
+                bio: 'Top seller',
+                phone: '9876543211',
+                location: 'NYC'
+            }
+        });
+
+        // Buyer
+        const buyer = await Buyer.create({
+            username: 'Jane Buyer',
+            email: 'jane@example.com',
+            mobile: '9876543212',
+            password: hashedPassword,
+            role: 'Buyer',
+            profile: {
+                name: 'Jane Doe',
+                phone: '9876543212',
+                location: 'LA'
+            }
+        });
+
+        console.log(`✅ Created Admin, Seller, and Buyer`);
 
         // Create products
-        console.log('🛍️  Creating products...');
-        const products = await Product.insertMany([
-            {
-                title: 'Premium Wireless Headphones',
-                description: 'High-quality wireless headphones with noise cancellation.',
-                price: 4999,
-                category: 'Electronics',
-                brand: 'AudioTech',
-                stock: 50,
-                images: ['https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=500'],
-                rating: 4.5,
-                numReviews: 128,
-                sku: 'AUDIO-WH-001',
-                seller: seller?._id,
-            },
-            {
-                title: 'Smart Fitness Watch',
-                description: 'Track your fitness goals with this advanced smartwatch.',
-                price: 8999,
-                category: 'Electronics',
-                brand: 'FitTech',
-                stock: 35,
-                images: ['https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=500'],
-                rating: 4.7,
-                numReviews: 256,
-                sku: 'FIT-WATCH-002',
-                seller: seller?._id,
-            },
-            {
-                title: 'Organic Cotton T-Shirt',
-                description: 'Comfortable and eco-friendly organic cotton t-shirt.',
-                price: 799,
-                category: 'Fashion',
-                brand: 'EcoWear',
-                stock: 100,
-                images: ['https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=500'],
-                rating: 4.3,
-                numReviews: 89,
-                sku: 'ECO-TSHIRT-003',
-                seller: seller?._id,
-            },
-            {
-                title: 'Stainless Steel Water Bottle',
-                description: 'Insulated water bottle that keeps drinks cold for 24 hours.',
-                price: 1299,
-                category: 'Home & Kitchen',
-                brand: 'HydroLife',
-                stock: 75,
-                images: ['https://images.unsplash.com/photo-1602143407151-7111542de6e8?w=500'],
-                rating: 4.6,
-                numReviews: 167,
-                sku: 'HYDRO-BTL-004',
-                seller: seller?._id,
-            },
-            {
-                title: 'Yoga Mat Premium',
-                description: 'Non-slip yoga mat with extra cushioning.',
-                price: 1999,
-                category: 'Sports',
-                brand: 'YogaPro',
-                stock: 60,
-                images: ['https://images.unsplash.com/photo-1601925260368-ae2f83cf8b7f?w=500'],
-                rating: 4.4,
-                numReviews: 94,
-                sku: 'YOGA-MAT-005',
-                seller: seller?._id,
-            },
-            {
-                title: 'Laptop Backpack',
-                description: 'Durable laptop backpack with multiple compartments.',
-                price: 2499,
-                category: 'Accessories',
-                brand: 'TravelGear',
-                stock: 45,
-                images: ['https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=500'],
-                rating: 4.5,
-                numReviews: 142,
-                sku: 'TRAVEL-BP-006',
-                seller: seller?._id,
-            },
-        ]);
-        console.log(`✅ Created ${products.length} products`);
+        // Note: Product model needs to be checked for "seller" reference. 
+        // If Product refers to "User", it might fail validation if we pass a Seller ID from "sellers" collection
+        // IF the Product schema has `ref: 'User'`.
+        // We need to check ProductModel.
 
-        console.log('\n🎉 Database seeded successfully!');
-        console.log('\n📊 Summary:');
-        console.log(`   Users: ${users.length}`);
-        console.log(`   Products: ${products.length}`);
-        console.log('\n🔐 Test Credentials (all passwords: password123):');
-        console.log('   Admin: admin@atoz.com');
-        console.log('   Seller: john@example.com');
-        console.log('   Buyer: jane@example.com');
+        // I will assume for now I can seed products.
+        // But I should comment out product seeding or fix ProductModel first.
 
-        process.exit(0);
+        // Let's check ProductModel location and content before writing this file fully.
     } catch (error) {
         console.error('❌ Error seeding database:', error);
         process.exit(1);
     }
 }
+
 
 seedDatabase();

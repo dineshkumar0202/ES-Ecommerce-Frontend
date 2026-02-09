@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import {
     Box,
     Container,
@@ -16,8 +16,6 @@ import {
 } from '@mui/material';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import FlashOnIcon from '@mui/icons-material/FlashOn';
-import LocalOfferIcon from '@mui/icons-material/LocalOffer';
-import ThumbUpOutlinedIcon from '@mui/icons-material/ThumbUpOutlined';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import { useParams, useNavigate } from 'react-router-dom';
@@ -267,18 +265,18 @@ const ProductDetails = () => {
 
                         <Box sx={{ mb: 4, p: 3, bgcolor: '#f8fafc', borderRadius: 4 }}>
                             <Typography variant="h6" sx={{ mb: 2, fontWeight: 800 }}>Key Specifications</Typography>
-                            <Grid container spacing={2}>
-                                <Grid item xs={6}>
+                            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3 }}>
+                                <Box sx={{ flex: '1 1 45%' }}>
                                     <Typography variant="caption" sx={{ color: '#94a3b8', display: 'block' }}>Brand</Typography>
                                     <Typography variant="body2" sx={{ fontWeight: 700 }}>{product.brand || 'Generic'}</Typography>
-                                </Grid>
-                                <Grid item xs={6}>
+                                </Box>
+                                <Box sx={{ flex: '1 1 45%' }}>
                                     <Typography variant="caption" sx={{ color: '#94a3b8', display: 'block' }}>Stock Status</Typography>
                                     <Typography variant="body2" sx={{ fontWeight: 700, color: product.countInStock > 0 ? '#059669' : '#ef4444' }}>
                                         {product.countInStock > 0 ? `In Stock (${product.countInStock})` : 'Out of Stock'}
                                     </Typography>
-                                </Grid>
-                            </Grid>
+                                </Box>
+                            </Box>
                         </Box>
 
                         <Divider sx={{ my: 4 }} />
@@ -298,7 +296,7 @@ const ProductDetails = () => {
                                             <Typography variant="caption" sx={{ color: '#64748b', display: 'block', mb: 1 }}>Rating</Typography>
                                             <Rating
                                                 value={rating}
-                                                onChange={(event, newValue) => setRating(newValue)}
+                                                onChange={(_event, newValue) => setRating(newValue)}
                                                 size="large"
                                             />
                                         </Box>

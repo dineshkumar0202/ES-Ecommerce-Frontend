@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import {
     Box,
     Typography,
@@ -32,7 +32,7 @@ const FilterSidebar = ({ categories, brands, onFilterChange, initialFilters = {}
     const [selectedBrands, setSelectedBrands] = useState<string[]>(initialFilters.brands || []);
     const [minRating, setMinRating] = useState<number>(initialFilters.minRating || 0);
 
-    const handlePriceChange = (event: Event, newValue: number | number[]) => {
+    const handlePriceChange = (_event: Event, newValue: number | number[]) => {
         setPriceRange(newValue as number[]);
     };
 

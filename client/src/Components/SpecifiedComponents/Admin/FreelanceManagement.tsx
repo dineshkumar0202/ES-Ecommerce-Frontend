@@ -163,8 +163,28 @@ const FreelanceManagement = () => {
                                                     }}
                                                 />
                                             </Stack>
-                                            <Typography variant="h6" sx={{ fontWeight: 700, mb: 1, fontSize: '1.1rem' }}>{post.title}</Typography>
-                                            <Typography variant="body2" sx={{ color: '#64748b', mb: 3, flexGrow: 1 }}>{post.description}</Typography>
+
+                                            {post.image && (
+                                                <Box component="img" src={post.image} sx={{ width: '100%', height: 160, objectFit: 'cover', borderRadius: 2, mb: 2 }} />
+                                            )}
+
+                                            <Typography variant="h6" sx={{ fontWeight: 700, mb: 0.5, fontSize: '1.1rem' }}>{post.title}</Typography>
+
+                                            <Stack spacing={0.5} sx={{ mb: 2 }}>
+                                                {post.location && <Typography variant="caption" sx={{ color: '#64748b' }}>📍 {post.location}</Typography>}
+                                                {post.contact && <Typography variant="caption" sx={{ color: '#64748b' }}>📞 {post.contact}</Typography>}
+                                                {post.email && <Typography variant="caption" sx={{ color: '#64748b' }}>✉️ {post.email}</Typography>}
+                                            </Stack>
+
+                                            <Typography variant="body2" sx={{ color: '#334155', mb: 1, fontWeight: 600 }}>Description:</Typography>
+                                            <Typography variant="body2" sx={{ color: '#64748b', mb: 2 }}>{post.description}</Typography>
+
+                                            {post.requirements && (
+                                                <Box sx={{ mb: 2, p: 1.5, bgcolor: '#f8fafc', borderRadius: 2, border: '1px dashed #cbd5e1' }}>
+                                                    <Typography variant="caption" sx={{ fontWeight: 700, display: 'block', mb: 0.5 }}>Requirements:</Typography>
+                                                    <Typography variant="caption" sx={{ color: '#475569' }}>{post.requirements}</Typography>
+                                                </Box>
+                                            )}
 
                                             <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mt: 'auto', pt: 2, borderTop: '1px solid #f1f5f9' }}>
                                                 <Stack direction="row" alignItems="center" spacing={1}>

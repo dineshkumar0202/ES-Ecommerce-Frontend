@@ -180,6 +180,77 @@ const Profile = () => {
         );
     };
 
+    const renderWholesaleSection = () => (
+        <Box>
+            <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 4 }}>
+                <Typography variant="h6" sx={{ fontWeight: 800 }}>Wholesale Orders</Typography>
+                <Button variant="outlined" size="small" sx={{ textTransform: 'none', borderRadius: 2 }}>Request Quiz</Button>
+            </Stack>
+
+            {/* Mock Wholesale Data for now - eventually filter from orders or separate API */}
+            <Paper elevation={0} sx={{ p: 4, textAlign: 'center', bgcolor: '#f8fafc', borderRadius: 4, mb: 4 }}>
+                <Typography sx={{ color: '#94a3b8', mb: 2 }}>No active wholesale bulk orders.</Typography>
+                <Button variant="contained" onClick={() => navigate('/wholesale')} sx={{ bgcolor: '#2563eb', textTransform: 'none' }}>
+                    Browse Wholesale Catalog
+                </Button>
+            </Paper>
+
+            <Typography variant="h6" sx={{ fontWeight: 800, mb: 3 }}>Quote Requests</Typography>
+            <Paper elevation={0} sx={{ p: 4, textAlign: 'center', bgcolor: '#f8fafc', borderRadius: 4 }}>
+                <Typography sx={{ color: '#94a3b8' }}>You haven't requested any quotes yet.</Typography>
+            </Paper>
+        </Box>
+    );
+
+    const renderQCommerceSection = () => (
+        <Box>
+            <Typography variant="h6" sx={{ fontWeight: 800, mb: 4 }}>Quick Commerce Orders (10-30 min delivery)</Typography>
+            {/* eventually filter orders by type='q-commerce' */}
+            <Paper elevation={0} sx={{ p: 4, textAlign: 'center', bgcolor: '#f8fafc', borderRadius: 4 }}>
+                <Typography sx={{ color: '#94a3b8', mb: 2 }}>No recent quick orders.</Typography>
+                <Button variant="contained" onClick={() => navigate('/quick')} sx={{ bgcolor: '#fb923c', textTransform: 'none' }}>
+                    Order Essentials Now
+                </Button>
+            </Paper>
+        </Box>
+    );
+
+    const renderResaleSection = () => (
+        <Box>
+            <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 4 }}>
+                <Typography variant="h6" sx={{ fontWeight: 800 }}>My Resale Listings</Typography>
+                <Button variant="contained" onClick={() => navigate('/resale')} sx={{ bgcolor: '#bef264', color: 'black', textTransform: 'none', fontWeight: 700 }}>
+                    Sell an Item
+                </Button>
+            </Stack>
+
+            <Paper elevation={0} sx={{ p: 4, textAlign: 'center', bgcolor: '#f8fafc', borderRadius: 4, mb: 6 }}>
+                <Typography sx={{ color: '#94a3b8' }}>You haven't listed any items for resale yet.</Typography>
+            </Paper>
+
+            <Typography variant="h6" sx={{ fontWeight: 800, mb: 4 }}>Resale Purchases</Typography>
+            <Paper elevation={0} sx={{ p: 4, textAlign: 'center', bgcolor: '#f8fafc', borderRadius: 4 }}>
+                <Typography sx={{ color: '#94a3b8' }}>No resale items purchased recently.</Typography>
+            </Paper>
+        </Box>
+    );
+
+    const renderFreelanceSection = () => (
+        <Box>
+            <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 4 }}>
+                <Typography variant="h6" sx={{ fontWeight: 800 }}>My Freelance Projects</Typography>
+                <Button variant="contained" onClick={() => navigate('/freelance')} sx={{ bgcolor: '#8b5cf6', textTransform: 'none' }}>
+                    Post a Request
+                </Button>
+            </Stack>
+
+            <Paper elevation={0} sx={{ p: 4, textAlign: 'center', bgcolor: '#f8fafc', borderRadius: 4 }}>
+                <Typography sx={{ color: '#94a3b8', mb: 2 }}>No active projects or hiring requests.</Typography>
+                <Typography variant="body2" sx={{ color: '#64748b' }}>Need work done? Post a request to find top talent.</Typography>
+            </Paper>
+        </Box>
+    );
+
     const renderCartAndWishlist = () => {
         return (
             <Box sx={{ display: 'flex', flexDirection: { xs: 'column', lg: 'row' }, gap: 4 }}>
@@ -301,19 +372,17 @@ const Profile = () => {
                                 <Box sx={{ display: 'flex', justifyContent: 'center', py: 10 }}><CircularProgress color="inherit" /></Box>
                             ) : (
                                 <>
-                                    {activeTab === 'Retail' ? (
+                                    {activeTab === 'Retail' && (
                                         <Stack spacing={6}>
                                             {renderCartAndWishlist()}
                                             <Divider />
                                             {renderRetailOrders()}
                                         </Stack>
-                                    ) : (
-                                        <Box sx={{ textAlign: 'center', py: 6 }}>
-                                            <Typography variant="h6" sx={{ color: '#94a3b8' }}>
-                                                {activeTab} management panel coming soon.
-                                            </Typography>
-                                        </Box>
                                     )}
+                                    {activeTab === 'Wholesale' && renderWholesaleSection()}
+                                    {activeTab === 'Q-Commerce' && renderQCommerceSection()}
+                                    {activeTab === 'Resale' && renderResaleSection()}
+                                    {activeTab === 'Freelance' && renderFreelanceSection()}
                                 </>
                             )}
                         </Paper>
