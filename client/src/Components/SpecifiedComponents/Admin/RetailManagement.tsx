@@ -60,15 +60,17 @@ const RetailManagement = () => {
 
         setIsUploading(true);
         try {
+            console.log("Starting upload for file:", file.name);
             const { data } = await UploadService.uploadImage(file);
+            console.log("Upload success:", data);
             setNewProduct(prev => ({
                 ...prev,
                 images: prev.images ? `${prev.images}, ${data.url}` : data.url
             }));
             alert('Image uploaded successfully!');
-        } catch (error) {
-            console.error("Upload failed", error);
-            alert('Upload failed');
+        } catch (error: any) {
+            console.error("Upload failed detailed:", error.response?.data || error.message);
+            alert(`Upload failed: ${error.response?.data?.message || error.message}`);
         } finally {
             setIsUploading(false);
         }

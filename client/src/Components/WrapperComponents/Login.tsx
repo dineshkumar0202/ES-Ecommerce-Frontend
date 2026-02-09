@@ -173,10 +173,14 @@ const Login = () => {
                                     { id: 1, label: 'Buyer', icon: <ShoppingCartOutlinedIcon /> },
                                     { id: 0, label: 'Seller', icon: <StorefrontOutlinedIcon /> },
                                     { id: 2, label: 'Admin', icon: <AdminPanelSettingsOutlinedIcon /> }
-                                ].filter(type => isLogin || type.id !== 2).map((type) => (
+                                ].map((type) => (
                                     <Box
                                         key={type.id}
-                                        onClick={() => { setUserType(type.id); setError(''); }}
+                                        onClick={() => {
+                                            setUserType(type.id);
+                                            setError('');
+                                            if (type.id === 2) setIsLogin(true);
+                                        }}
                                         sx={{
                                             flex: 1,
                                             border: userType === type.id ? '2px solid #bef264' : '1px solid #e5e7eb',

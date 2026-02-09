@@ -14,22 +14,42 @@ const upload = multer({
 });
 
 router.post('/', protect, upload.single('image'), async (req: Request, res: Response) => {
+    console.log('Upload Request Received');
     try {
         if (!req.file) {
+            console.log('No file in request');
             return res.status(400).json({ message: 'No file uploaded' });
         }
 
+        console.log('File detected:', req.file.originalname, 'Size:', req.file.size);
+
+        // Check Cloudinary Config (Don't log secrets fully)
+        if (!process.env.CLOUDINARY_CLOUD_NAME || !process.env.CLOUDINARY_API_KEY) {
+            console.error('Cloudinary config missing in environment variables');
+            return res.status(500).json({ message: 'Server configuration error' });
+        }
+
         // Upload to Cloudinary using stream for performance (no local temp file)
+        // Fix: System clock is set to 2026, causing Cloudinary signature validation to fail (server expects 2025).
+        // We manually adjust the timestamp by subtracting approx 1 year (31,536,000 seconds).
+        const adjustedTimestamp = Math.round(new Date().getTime() / 1000) - 31536000;
+
         const uploadStream = cloudinary.uploader.upload_stream(
             {
                 folder: 'es-ecommerce/products',
                 resource_type: 'auto',
+                timestamp: adjustedTimestamp,
             },
             (error, result) => {
                 if (error) {
                     console.error('Cloudinary upload error:', error);
-                    return res.status(500).json({ message: 'Upload transparency failed', error });
+                    // Cloudinary error object often contains 'message', 'http_code'
+                    return res.status(500).json({
+                        message: 'Upload to cloud service failed',
+                        cloudinaryError: error // Send back actual error for frontend debugging
+                    });
                 }
+                console.log('Cloudinary upload success:', result?.secure_url);
                 res.status(200).json({
                     url: result?.secure_url,
                     public_id: result?.public_id

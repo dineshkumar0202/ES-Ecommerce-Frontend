@@ -248,14 +248,23 @@ class AuthService {
 
     // --- Admin ---
     async loginAdmin(loginData: any) {
+        console.log("Login Admin Attempt:", loginData.email);
         const { email, password } = loginData;
         if (!email || !password) throw new Error('Email and password required for admin login');
 
         const admin = await Admin.findOne({ email });
-        if (!admin) throw new Error('Admin not found');
+        if (!admin) {
+            console.log("Admin not found for email:", email);
+            throw new Error('Admin not found');
+        }
 
         const isMatch = await admin.matchPassword(password);
-        if (!isMatch) throw new Error('Password incorrect');
+        if (!isMatch) {
+            console.log("Admin password mismatch for email:", email);
+            throw new Error('Password incorrect');
+        }
+
+        console.log("Admin login successful:", admin.username);
 
         return {
             _id: admin._id,

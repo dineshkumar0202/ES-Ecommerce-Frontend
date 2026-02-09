@@ -1,5 +1,7 @@
 import { Request, Response } from 'express';
-import User from '../../models/users/UserModel';
+import Buyer from '../../models/users/BuyerModel';
+import Seller from '../../models/users/SellerModel';
+import Admin from '../../models/users/AdminModel';
 import Order from '../../models/retail/OrderModel';
 import Product from '../../models/retail/ProductModel';
 import WholesaleProduct from '../../models/Wholesale/WholesaleProductModel';
@@ -10,7 +12,10 @@ import Post from '../../models/freelance/PostModel';
 class AdminController {
     async getDashboardStats(req: Request, res: Response) {
         try {
-            const userCount = await User.countDocuments();
+            const buyerCount = await Buyer.countDocuments();
+            const sellerCount = await Seller.countDocuments();
+            const userCount = buyerCount + sellerCount;
+
             const orderCount = await Order.countDocuments();
 
             // Total Selling Amount (sum of totalPrice from paid orders)
@@ -26,6 +31,8 @@ class AdminController {
 
             res.json({
                 userCount,
+                buyerCount,
+                sellerCount,
                 orderCount,
                 totalSales,
                 segments: {
@@ -44,7 +51,7 @@ class AdminController {
     async getAllActivities(req: Request, res: Response) {
         try {
             // Recent orders
-            const recentOrders = await Order.find().sort({ createdAt: -1 }).limit(10).populate('user', 'username');
+            const recentOrders = await Order.find().sort({ createdAt: -1 }).limit(10).populate('user', 'username profile.name');
 
             // Recent products added across categories
             const recentRetail = await Product.find().sort({ createdAt: -1 }).limit(5);
@@ -110,17 +117,23 @@ class AdminController {
             const thirtyDaysAgo = new Date();
             thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
-            const newUsers = await User.countDocuments({ createdAt: { $gte: thirtyDaysAgo } });
-            const totalUsers = await User.countDocuments();
+            const newBuyers = await Buyer.countDocuments({ createdAt: { $gte: thirtyDaysAgo } });
+            const newSellers = await Seller.countDocuments({ createdAt: { $gte: thirtyDaysAgo } });
+            const newUsers = newBuyers + newSellers;
 
-            // Active users (users who placed orders in last 30 days)
+            const totalBuyers = await Buyer.countDocuments();
+            const totalSellers = await Seller.countDocuments();
+            const totalUsers = totalBuyers + totalSellers;
+
+            // Active users (users who placed orders in last 30 days - currently only Buyers place orders)
             const activeUserIds = await Order.distinct('user', { createdAt: { $gte: thirtyDaysAgo } });
             const activeUsers = activeUserIds.length;
 
             // User role distribution
-            const usersByRole = await User.aggregate([
-                { $group: { _id: '$role', count: { $sum: 1 } } }
-            ]);
+            const usersByRole = [
+                { _id: 'Buyer', count: totalBuyers },
+                { _id: 'Seller', count: totalSellers }
+            ];
 
             // Average order value
             const paidOrders = await Order.find({ isPaid: true });
@@ -210,7 +223,8 @@ class AdminController {
 
     async getPendingFreelancers(req: Request, res: Response) {
         try {
-            const freelancers = await User.find({ 'freelancer.isRegistered': true, 'freelancer.status': 'Pending' });
+            // Freelancers are typically Sellers in this model
+            const freelancers = await Seller.find({ 'freelancer.isRegistered': true, 'freelancer.status': 'Pending' });
             res.json(freelancers);
         } catch (error: any) {
             res.status(500).json({ message: error.message });
@@ -220,17 +234,18 @@ class AdminController {
     async updateFreelancerStatus(req: Request, res: Response) {
         try {
             const { status, rejectionReason } = req.body;
-            const user = await User.findById(req.params.id);
+            // Check Seller model for freelancers
+            const seller = await Seller.findById(req.params.id);
 
-            if (user && user.freelancer) {
-                user.freelancer.status = status;
+            if (seller && seller.freelancer) {
+                seller.freelancer.status = status;
                 if (status === 'Rejected') {
-                    user.freelancer.rejectionReason = rejectionReason;
+                    seller.freelancer.rejectionReason = rejectionReason;
                 }
-                const updatedUser = await user.save();
-                res.json(updatedUser);
+                const updatedSeller = await seller.save();
+                res.json(updatedSeller);
             } else {
-                res.status(404).json({ message: "User not found or not a freelancer" });
+                res.status(404).json({ message: "Freelancer not found" });
             }
         } catch (error: any) {
             res.status(500).json({ message: error.message });
