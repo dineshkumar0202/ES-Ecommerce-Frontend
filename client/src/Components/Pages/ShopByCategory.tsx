@@ -4,15 +4,38 @@ import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import ShoppingCartOutlinedIcon from '@mui/icons-material/ShoppingCartOutlined';
 import Navbar from '../WrapperComponents/Navbar';
 import Footer from '../WrapperComponents/Footer';
-import { allProducts } from '../../data/productsData';
+import { ProductService } from '../../services/api';
+import { useState, useEffect } from 'react';
 
 const ShopByCategory = () => {
     const navigate = useNavigate();
 
-    // Show 8 NEW Unique Products
-    const categoryProductIds = Array.from({ length: 8 }, (_, i) => 81 + i); // 81 to 88
+    const [displayProducts, setDisplayProducts] = useState<any[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
 
-    const displayProducts = allProducts.filter(p => categoryProductIds.includes(p.id));
+    useEffect(() => {
+        const fetchProducts = async () => {
+            setIsLoading(true);
+            try {
+                const { data } = await ProductService.getAll();
+                let products = [];
+                if (Array.isArray(data)) {
+                    products = data;
+                } else if (data.products) {
+                    products = data.products;
+                }
+
+                // Filter or select specific products if needed, otherwise show all or a subset
+                // For now, let's just show the first 8 products to match the previous behavior of showing a subset
+                setDisplayProducts(products.slice(0, 8));
+            } catch (error) {
+                console.error("Error fetching products:", error);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        fetchProducts();
+    }, []);
 
     return (
         <Box sx={{ bgcolor: 'white', minHeight: '100vh' }}>
@@ -31,14 +54,14 @@ const ShopByCategory = () => {
                 <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3, justifyContent: 'center' }}>
                     {displayProducts.map((product) => (
                         <Box
-                            key={product.id}
+                            key={product._id || product.id}
                             sx={{
                                 width: { xs: '100%', sm: 'calc(50% - 24px)', md: 'calc(33.33% - 24px)', lg: 'calc(25% - 24px)' },
                                 mb: 2
                             }}
                         >
                             <Card
-                                onClick={() => navigate(`/product/${product.id}`)}
+                                onClick={() => navigate(`/product/${product._id || product.id}`)}
                                 sx={{
                                     border: 'none',
                                     boxShadow: 'none',
@@ -62,8 +85,8 @@ const ShopByCategory = () => {
                                 <Box sx={{ position: 'relative', borderRadius: 4, overflow: 'hidden', mb: 2, pt: '100%', width: '100%' }}>
                                     <CardMedia
                                         component="img"
-                                        image={product.image}
-                                        alt={product.name}
+                                        image={product.images?.[0] || product.image}
+                                        alt={product.title || product.name}
                                         className="product-image"
                                         sx={{
                                             position: 'absolute',
@@ -128,14 +151,14 @@ const ShopByCategory = () => {
                                             lineHeight: '1.3em'
                                         }}
                                     >
-                                        {product.name}
+                                        {product.title || product.name}
                                     </Typography>
 
                                     <Box sx={{ mt: 'auto' }}>
                                         <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
                                             <Rating value={product.rating} readOnly size="small" sx={{ color: '#ffb400', mr: 0.5 }} />
                                             <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-                                                ({product.ratingCount.toLocaleString()})
+                                                ({(product.numReviews || product.ratingCount || 0).toLocaleString()})
                                             </Typography>
                                         </Box>
                                         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>

@@ -6,6 +6,8 @@ interface EmailOptions {
     html: string;
 }
 
+
+
 class EmailService {
     private transporter: nodemailer.Transporter | null;
 

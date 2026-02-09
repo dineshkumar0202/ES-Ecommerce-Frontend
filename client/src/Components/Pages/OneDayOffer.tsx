@@ -4,19 +4,38 @@ import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import ShoppingCartOutlinedIcon from '@mui/icons-material/ShoppingCartOutlined';
 import Navbar from '../WrapperComponents/Navbar';
 import Footer from '../WrapperComponents/Footer';
-import { allProducts } from '../../data/productsData';
+import { ProductService } from '../../services/api';
+import { useState, useEffect } from 'react';
 
 const OneDayOffer = () => {
     const navigate = useNavigate();
 
-    // Show exactly 20 products (Electronics & Gadgets)
-    // IDs: 18, 20, 22, 24 (New individual items) + 25-40 (New categories)
-    const selectedProductIds = [
-        18, 20, 22, 24, // Laptop, Tablet, Watch, Buds
-        25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40 // Cameras, Consoles, etc.
-    ];
+    const [displayProducts, setDisplayProducts] = useState<any[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
 
-    const displayProducts = allProducts.filter(p => selectedProductIds.includes(p.id));
+    useEffect(() => {
+        const fetchProducts = async () => {
+            setIsLoading(true);
+            try {
+                const { data } = await ProductService.getAll();
+                let products = [];
+                if (Array.isArray(data)) {
+                    products = data;
+                } else if (data.products) {
+                    products = data.products;
+                }
+
+                // Show products with discount > 0, or just first 20 if no discount info
+                const offers = products.filter((p: any) => p.discount > 0).slice(0, 20);
+                setDisplayProducts(offers.length > 0 ? offers : products.slice(0, 20));
+            } catch (error) {
+                console.error("Error fetching products:", error);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        fetchProducts();
+    }, []);
 
     return (
         <Box sx={{ bgcolor: 'white', minHeight: '100vh' }}>
@@ -34,9 +53,9 @@ const OneDayOffer = () => {
 
                 <Grid container spacing={3}>
                     {displayProducts.map((product) => (
-                        <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }} key={product.id}>
+                        <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }} key={product._id || product.id}>
                             <Card
-                                onClick={() => navigate(`/product/${product.id}`)}
+                                onClick={() => navigate(`/product/${product._id || product.id}`)}
                                 sx={{
                                     border: 'none',
                                     boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
@@ -58,8 +77,8 @@ const OneDayOffer = () => {
                                     <CardMedia
                                         component="img"
                                         height="280"
-                                        image={product.image}
-                                        alt={product.name}
+                                        image={product.images?.[0] || product.image || 'https://via.placeholder.com/300'}
+                                        alt={product.title || product.name}
                                         className="product-image"
                                         sx={{
                                             transition: 'transform 0.5s ease',
@@ -105,12 +124,12 @@ const OneDayOffer = () => {
                                         {product.category}
                                     </Typography>
                                     <Typography variant="subtitle1" sx={{ fontWeight: 700, mb: 1, overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', minHeight: '3em' }}>
-                                        {product.name}
+                                        {product.title || product.name}
                                     </Typography>
                                     <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                                         <Rating value={product.rating} readOnly size="small" precision={0.1} sx={{ color: '#ffb400', mr: 0.5 }} />
                                         <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-                                            ({product.ratingCount.toLocaleString()})
+                                            ({(product.numReviews || product.ratingCount || 0).toLocaleString()})
                                         </Typography>
                                     </Box>
                                     <Box sx={{ mt: 'auto' }}>
@@ -118,7 +137,7 @@ const OneDayOffer = () => {
                                             <Typography variant="h6" sx={{ fontWeight: 800, color: '#212121' }}>
                                                 ₹{product.price.toLocaleString()}
                                             </Typography>
-                                            {product.mrp > product.price && (
+                                            {(product.mrp && product.mrp > product.price) && (
                                                 <Typography variant="body2" sx={{ color: '#878787', textDecoration: 'line-through' }}>
                                                     ₹{product.mrp.toLocaleString()}
                                                 </Typography>
@@ -126,7 +145,7 @@ const OneDayOffer = () => {
                                         </Box>
                                         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                                             <Typography variant="caption" sx={{ color: '#388e3c', fontWeight: 700 }}>
-                                                Save ₹{(product.mrp - product.price).toLocaleString()}
+                                                Save ₹{((product.mrp || product.price) - product.price).toLocaleString()}
                                             </Typography>
                                             <IconButton
                                                 sx={{

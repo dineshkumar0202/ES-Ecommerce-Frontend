@@ -1,19 +1,40 @@
 import { useNavigate } from 'react-router-dom';
-import { Box, Container, Typography, Card, CardContent, CardMedia, Rating, IconButton } from '@mui/material';
+import { Box, Container, Typography, Card, CardContent, CardMedia, Rating, IconButton, CircularProgress } from '@mui/material';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import ShoppingCartOutlinedIcon from '@mui/icons-material/ShoppingCartOutlined';
 import Navbar from '../WrapperComponents/Navbar';
 import Footer from '../WrapperComponents/Footer';
-import { allProducts } from '../../data/productsData';
+import { ProductService } from '../../services/api';
+import { useState, useEffect } from 'react';
 
 const KeepShopping = () => {
     const navigate = useNavigate();
 
-    // Show 20 NEW Exclusive Products (IDs 61-80)
-    // Includes: Home Decor, Books, Toys & Gaming, Sports & Fitness
-    const keepShoppingProductIds = Array.from({ length: 8 }, (_, i) => 61 + i); // 61 to 68
+    const [displayProducts, setDisplayProducts] = useState<any[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
 
-    const displayProducts = allProducts.filter(p => keepShoppingProductIds.includes(p.id));
+    useEffect(() => {
+        const fetchProducts = async () => {
+            setIsLoading(true);
+            try {
+                const { data } = await ProductService.getAll();
+                let products = [];
+                if (Array.isArray(data)) {
+                    products = data;
+                } else if (data.products) {
+                    products = data.products;
+                }
+
+                // Show some random products or just a slice
+                setDisplayProducts(products.slice(0, 8));
+            } catch (error) {
+                console.error("Error fetching products:", error);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        fetchProducts();
+    }, []);
 
     return (
         <Box sx={{ bgcolor: 'white', minHeight: '100vh' }}>
@@ -29,149 +50,155 @@ const KeepShopping = () => {
                     </Typography>
                 </Box>
 
-                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3, justifyContent: 'center' }}>
-                    {displayProducts.map((product) => (
-                        <Box
-                            key={product.id}
-                            sx={{
-                                width: { xs: '100%', sm: 'calc(50% - 24px)', md: 'calc(33.33% - 24px)', lg: 'calc(25% - 24px)' },
-                                mb: 2
-                            }}
-                        >
-                            <Card
-                                onClick={() => navigate(`/product/${product.id}`)}
+                {isLoading ? (
+                    <Box sx={{ display: 'flex', justifyContent: 'center', py: 10 }}>
+                        <CircularProgress sx={{ color: 'black' }} />
+                    </Box>
+                ) : (
+                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3, justifyContent: 'center' }}>
+                        {displayProducts.map((product) => (
+                            <Box
+                                key={product._id || product.id}
                                 sx={{
-                                    border: 'none',
-                                    boxShadow: 'none',
-                                    bgcolor: '#f8f9fa',
-                                    borderRadius: 4,
-                                    p: 2,
-                                    cursor: 'pointer',
-                                    height: '420px', // STRICT 420px HEIGHT
-                                    display: 'flex',
-                                    flexDirection: 'column',
-                                    transition: 'transform 0.3s ease',
-                                    '&:hover': {
-                                        transform: 'translateY(-8px)',
-                                        bgcolor: '#f1f3f5',
-                                    },
-                                    '&:hover .product-image': {
-                                        transform: 'scale(1.02)', // MINIMIZED ZOOM
-                                    },
+                                    width: { xs: '100%', sm: 'calc(50% - 24px)', md: 'calc(33.33% - 24px)', lg: 'calc(25% - 24px)' },
+                                    mb: 2
                                 }}
                             >
-                                <Box sx={{ position: 'relative', borderRadius: 4, overflow: 'hidden', mb: 2, pt: '100%', width: '100%' }}>
-                                    <CardMedia
-                                        component="img"
-                                        image={product.image}
-                                        alt={product.name}
-                                        className="product-image"
-                                        sx={{
-                                            position: 'absolute',
-                                            top: 0,
-                                            left: 0,
-                                            width: '100%',
-                                            height: '100%',
-                                            transition: 'transform 0.5s ease',
-                                            bgcolor: '#f5f5f5',
-                                            objectFit: 'cover',
-                                        }}
-                                    />
-                                    <IconButton
-                                        sx={{
-                                            position: 'absolute',
-                                            top: 10,
-                                            right: 10,
-                                            bgcolor: 'white',
-                                            '&:hover': { bgcolor: 'white', color: '#e91e63' },
-                                        }}
-                                        size="small"
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                        }}
-                                    >
-                                        <FavoriteBorderIcon fontSize="small" />
-                                    </IconButton>
-                                    {product.discount > 0 && (
-                                        <Box
+                                <Card
+                                    onClick={() => navigate(`/product/${product._id || product.id}`)}
+                                    sx={{
+                                        border: 'none',
+                                        boxShadow: 'none',
+                                        bgcolor: '#f8f9fa',
+                                        borderRadius: 4,
+                                        p: 2,
+                                        cursor: 'pointer',
+                                        height: '420px', // STRICT 420px HEIGHT
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        transition: 'transform 0.3s ease',
+                                        '&:hover': {
+                                            transform: 'translateY(-8px)',
+                                            bgcolor: '#f1f3f5',
+                                        },
+                                        '&:hover .product-image': {
+                                            transform: 'scale(1.02)', // MINIMIZED ZOOM
+                                        },
+                                    }}
+                                >
+                                    <Box sx={{ position: 'relative', borderRadius: 4, overflow: 'hidden', mb: 2, pt: '100%', width: '100%' }}>
+                                        <CardMedia
+                                            component="img"
+                                            image={product.images?.[0] || product.image || 'https://via.placeholder.com/300'}
+                                            alt={product.title || product.name}
+                                            className="product-image"
+                                            sx={{
+                                                position: 'absolute',
+                                                top: 0,
+                                                left: 0,
+                                                width: '100%',
+                                                height: '100%',
+                                                transition: 'transform 0.5s ease',
+                                                bgcolor: '#f5f5f5',
+                                                objectFit: 'cover',
+                                            }}
+                                        />
+                                        <IconButton
                                             sx={{
                                                 position: 'absolute',
                                                 top: 10,
-                                                left: 10,
-                                                bgcolor: '#388e3c',
-                                                color: 'white',
-                                                px: 1.5,
-                                                py: 0.5,
-                                                borderRadius: 1,
-                                                fontWeight: 700,
-                                                fontSize: '0.875rem',
+                                                right: 10,
+                                                bgcolor: 'white',
+                                                '&:hover': { bgcolor: 'white', color: '#e91e63' },
+                                            }}
+                                            size="small"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
                                             }}
                                         >
-                                            {product.discount}% OFF
-                                        </Box>
-                                    )}
-                                </Box>
-
-                                <CardContent sx={{ p: 1, flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
-                                    <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block', mb: 0.5, textTransform: 'uppercase' }}>
-                                        {product.category}
-                                    </Typography>
-                                    <Typography
-                                        variant="subtitle1"
-                                        sx={{
-                                            fontWeight: 'bold',
-                                            fontSize: '1.1rem', // INCREASED FONT SIZE
-                                            mb: 0.5,
-                                            height: '2.6em',
-                                            overflow: 'hidden',
-                                            textOverflow: 'ellipsis',
-                                            display: '-webkit-box',
-                                            WebkitLineClamp: 2,
-                                            WebkitBoxOrient: 'vertical',
-                                            lineHeight: '1.3em'
-                                        }}
-                                    >
-                                        {product.name}
-                                    </Typography>
-
-                                    <Box sx={{ mt: 'auto' }}>
-                                        <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                                            <Rating value={product.rating} readOnly size="small" sx={{ color: '#ffb400', mr: 0.5 }} />
-                                            <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-                                                ({product.ratingCount})
-                                            </Typography>
-                                        </Box>
-                                        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                                            <Box>
-                                                <Typography variant="h6" sx={{ fontWeight: 800, fontSize: '1.3rem' }}> {/* INCREASED FONT SIZE */}
-                                                    ₹{product.price.toLocaleString()}
-                                                </Typography>
-                                                {product.mrp > product.price && (
-                                                    <Typography variant="caption" sx={{ textDecoration: 'line-through', color: '#b2bec3' }}>
-                                                        ₹{product.mrp.toLocaleString()}
-                                                    </Typography>
-                                                )}
-                                            </Box>
-                                            <IconButton
+                                            <FavoriteBorderIcon fontSize="small" />
+                                        </IconButton>
+                                        {product.discount > 0 && (
+                                            <Box
                                                 sx={{
-                                                    bgcolor: '#212121',
+                                                    position: 'absolute',
+                                                    top: 10,
+                                                    left: 10,
+                                                    bgcolor: '#388e3c',
                                                     color: 'white',
-                                                    '&:hover': { bgcolor: '#424242' },
-                                                }}
-                                                size="small"
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
+                                                    px: 1.5,
+                                                    py: 0.5,
+                                                    borderRadius: 1,
+                                                    fontWeight: 700,
+                                                    fontSize: '0.875rem',
                                                 }}
                                             >
-                                                <ShoppingCartOutlinedIcon fontSize="small" />
-                                            </IconButton>
-                                        </Box>
+                                                {product.discount}% OFF
+                                            </Box>
+                                        )}
                                     </Box>
-                                </CardContent>
-                            </Card>
-                        </Box>
-                    ))}
-                </Box>
+
+                                    <CardContent sx={{ p: 1, flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
+                                        <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block', mb: 0.5, textTransform: 'uppercase' }}>
+                                            {product.category}
+                                        </Typography>
+                                        <Typography
+                                            variant="subtitle1"
+                                            sx={{
+                                                fontWeight: 'bold',
+                                                fontSize: '1.1rem', // INCREASED FONT SIZE
+                                                mb: 0.5,
+                                                height: '2.6em',
+                                                overflow: 'hidden',
+                                                textOverflow: 'ellipsis',
+                                                display: '-webkit-box',
+                                                WebkitLineClamp: 2,
+                                                WebkitBoxOrient: 'vertical',
+                                                lineHeight: '1.3em'
+                                            }}
+                                        >
+                                            {product.title || product.name}
+                                        </Typography>
+
+                                        <Box sx={{ mt: 'auto' }}>
+                                            <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                                                <Rating value={product.rating} readOnly size="small" sx={{ color: '#ffb400', mr: 0.5 }} />
+                                                <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+                                                    ({(product.numReviews || product.ratingCount || 0)})
+                                                </Typography>
+                                            </Box>
+                                            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                                                <Box>
+                                                    <Typography variant="h6" sx={{ fontWeight: 800, fontSize: '1.3rem' }}> {/* INCREASED FONT SIZE */}
+                                                        ₹{product.price.toLocaleString()}
+                                                    </Typography>
+                                                    {product.mrp > product.price && (
+                                                        <Typography variant="caption" sx={{ textDecoration: 'line-through', color: '#b2bec3' }}>
+                                                            ₹{product.mrp.toLocaleString()}
+                                                        </Typography>
+                                                    )}
+                                                </Box>
+                                                <IconButton
+                                                    sx={{
+                                                        bgcolor: '#212121',
+                                                        color: 'white',
+                                                        '&:hover': { bgcolor: '#424242' },
+                                                    }}
+                                                    size="small"
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                    }}
+                                                >
+                                                    <ShoppingCartOutlinedIcon fontSize="small" />
+                                                </IconButton>
+                                            </Box>
+                                        </Box>
+                                    </CardContent>
+                                </Card>
+                            </Box>
+                        ))}
+                    </Box>
+                )}
 
                 {displayProducts.length === 0 && (
                     <Box sx={{ textAlign: 'center', py: 8 }}>
