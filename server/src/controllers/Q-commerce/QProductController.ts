@@ -26,10 +26,23 @@ class QProductController {
 
     async createProduct(req: Request, res: Response) {
         try {
+            // Default MRP to price if missing
+            if (!req.body.mrp && req.body.price) {
+                req.body.mrp = req.body.price;
+            }
+            // Brand is required, provide a default if missing
+            if (!req.body.brand) {
+                req.body.brand = 'Generic';
+            }
+
             const product = await QProductService.createQProduct(req.body);
             res.status(201).json(product);
         } catch (error: any) {
-            res.status(400).json({ message: error.message });
+            console.error("Q-Product Creation Error:", error);
+            res.status(400).json({
+                message: error.message,
+                details: error.errors
+            });
         }
     }
     async updateProduct(req: Request, res: Response) {

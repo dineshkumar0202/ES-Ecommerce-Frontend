@@ -26,6 +26,10 @@ This is the backend server for the E-commerce frontend.
     npm run dev
     ```
 
+## Admin Credentials
+- **Email:** `admin@atoz.com`
+- **Password:** `8`
+
 ## API Endpoints
 
 -   `GET /api/posts`: Get all freelancer posts.

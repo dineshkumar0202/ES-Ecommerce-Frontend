@@ -30,15 +30,14 @@ router.post('/', protect, upload.single('image'), async (req: Request, res: Resp
         }
 
         // Upload to Cloudinary using stream for performance (no local temp file)
-        // Fix: System clock is set to 2026, causing Cloudinary signature validation to fail (server expects 2025).
-        // We manually adjust the timestamp by subtracting approx 1 year (31,536,000 seconds).
-        const adjustedTimestamp = Math.round(new Date().getTime() / 1000) - 31536000;
+        // Use current timestamp for Cloudinary signature validation
+        const currentTimestamp = Math.round(new Date().getTime() / 1000);
 
         const uploadStream = cloudinary.uploader.upload_stream(
             {
                 folder: 'es-ecommerce/products',
                 resource_type: 'auto',
-                timestamp: adjustedTimestamp,
+                timestamp: currentTimestamp,
             },
             (error, result) => {
                 if (error) {

@@ -10,6 +10,7 @@ interface EmailOptions {
 
 class EmailService {
     private transporter: nodemailer.Transporter | null;
+    private isMock: boolean = false;
 
     constructor() {
         // Only initialize transporter if email credentials are configured
@@ -23,15 +24,26 @@ class EmailService {
                     pass: process.env.EMAIL_PASS,
                 },
             });
+            console.log('📧 Email Service: Configured successfully.');
         } else {
             this.transporter = null;
-            console.warn('⚠️  Email service not configured. Set EMAIL_USER and EMAIL_PASS in .env to enable email notifications.');
+            this.isMock = true;
+            console.log('📧 Email Service: Running in Mock Mode (Console Logging Only - No Real Emails will be sent)');
         }
     }
 
     async sendEmail(options: EmailOptions) {
+        if (this.isMock) {
+            console.log('--- [MOCK EMAIL SENT] ---');
+            console.log(`To: ${options.to}`);
+            console.log(`Subject: ${options.subject}`);
+            console.log(`Content (HTML Preview): ${options.html.substring(0, 500)}...`);
+            console.log('-------------------------');
+            return { messageId: `mock-${Date.now()}` };
+        }
+
         if (!this.transporter) {
-            console.warn('⚠️  Email not sent: Email service is not configured.');
+            console.warn('⚠️  Email not sent: Email service is not configured and Mock Mode is disabled (unexpected state).');
             return null;
         }
 
@@ -48,7 +60,8 @@ class EmailService {
             return info;
         } catch (error) {
             console.error('❌ Email sending failed:', error);
-            throw error;
+            // In dev mode, don't crash, just log error
+            return null;
         }
     }
 

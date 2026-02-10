@@ -1,31 +1,55 @@
 import User from '../../models/users/UserModel';
+import Buyer from '../../models/users/BuyerModel';
+import Seller from '../../models/users/SellerModel';
 
 class UserService {
     async getUserProfile(userId: string) {
-        return await User.findById(userId).select('-password');
+        return await User.findById(userId).select('-password') ||
+            await Buyer.findById(userId).select('-password') ||
+            await Seller.findById(userId).select('-password');
     }
 
     async registerFreelancer(userId: string, freelancerData: any) {
-        const user = await User.findById(userId);
+        // Find user in any collection
+        let user: any = await User.findById(userId) || await Buyer.findById(userId) || await Seller.findById(userId);
+
         if (user) {
-            user.freelancer = {
-                ...freelancerData,
-                isRegistered: true,
-                status: 'Pending'
-            };
-
-            // Update role to Seller if they are a Buyer
+            // If they are currently a Buyer, we need to promote them to Seller collection or update role
+            // In split model architecture, we might need to move them to the Seller collection
             if (user.role === 'Buyer') {
-                user.role = 'Seller';
-            }
+                const userData = user.toObject();
+                // Remove from Buyer collection if exists
+                if (user.constructor.modelName === 'Buyer') {
+                    await Buyer.deleteOne({ _id: userId });
+                }
 
-            return await user.save();
+                // Create in Seller collection
+                const newSeller = new Seller({
+                    ...userData,
+                    role: 'Seller',
+                    freelancer: {
+                        ...freelancerData,
+                        isRegistered: true,
+                        status: 'Pending'
+                    }
+                });
+                return await newSeller.save();
+            } else {
+                // Already a Seller or Admin (or in legacy User collection)
+                user.freelancer = {
+                    ...freelancerData,
+                    isRegistered: true,
+                    status: 'Pending'
+                };
+                if (user.role !== 'Admin') user.role = 'Seller';
+                return await user.save();
+            }
         }
         return null;
     }
 
     async updateUserProfile(userId: string, updateData: any) {
-        const user = await User.findById(userId);
+        let user: any = await User.findById(userId) || await Buyer.findById(userId) || await Seller.findById(userId);
 
         if (user) {
             user.username = updateData.username || user.username;
@@ -51,15 +75,20 @@ class UserService {
     }
 
     async getAllUsers() {
-        return await User.find({});
+        const users = await User.find({});
+        const buyers = await Buyer.find({});
+        const sellers = await Seller.find({});
+        return [...users, ...buyers, ...sellers];
     }
 
     async getUserById(id: string) {
-        return await User.findById(id).select("-password");
+        return await User.findById(id).select("-password") ||
+            await Buyer.findById(id).select("-password") ||
+            await Seller.findById(id).select("-password");
     }
 
     async updateUser(id: string, updateData: any) {
-        const user = await User.findById(id);
+        let user: any = await User.findById(id) || await Buyer.findById(id) || await Seller.findById(id);
 
         if (user) {
             user.username = updateData.username || user.username;
@@ -78,9 +107,11 @@ class UserService {
     }
 
     async deleteUser(id: string) {
-        const user = await User.findById(id);
+        let user: any = await User.findById(id) || await Buyer.findById(id) || await Seller.findById(id);
         if (user) {
-            await User.deleteOne({ _id: id });
+            if (user.constructor.modelName === 'User') await User.deleteOne({ _id: id });
+            else if (user.constructor.modelName === 'Buyer') await Buyer.deleteOne({ _id: id });
+            else if (user.constructor.modelName === 'Seller') await Seller.deleteOne({ _id: id });
             return true;
         }
         return false;

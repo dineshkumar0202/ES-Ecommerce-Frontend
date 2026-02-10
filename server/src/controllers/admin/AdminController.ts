@@ -8,8 +8,38 @@ import WholesaleProduct from '../../models/Wholesale/WholesaleProductModel';
 import QProduct from '../../models/q-commerce/QProductModel';
 import ResaleProduct from '../../models/Resale/ResaleProductModel';
 import Post from '../../models/freelance/PostModel';
+import Interest from '../../models/freelance/InterestModel';
 
 class AdminController {
+    // ... existing methods ...
+
+    async getFreelanceInterests(req: Request, res: Response) {
+        try {
+            const interests = await Interest.find()
+                .populate('post', 'title description')
+                .populate('user', 'username email profile.name freelancer');
+            res.json(interests);
+        } catch (error: any) {
+            res.status(500).json({ message: error.message });
+        }
+    }
+
+    async updateInterestStatus(req: Request, res: Response) {
+        try {
+            const { status } = req.body;
+            const interest = await Interest.findById(req.params.id);
+            if (!interest) {
+                res.status(404).json({ message: "Interest request not found" });
+                return;
+            }
+            interest.status = status;
+            await interest.save();
+            res.json(interest);
+        } catch (error: any) {
+            res.status(500).json({ message: error.message });
+        }
+    }
+
     async getDashboardStats(req: Request, res: Response) {
         try {
             const buyerCount = await Buyer.countDocuments();
@@ -225,6 +255,24 @@ class AdminController {
         try {
             // Freelancers are typically Sellers in this model
             const freelancers = await Seller.find({ 'freelancer.isRegistered': true, 'freelancer.status': 'Pending' });
+            res.json(freelancers);
+        } catch (error: any) {
+            res.status(500).json({ message: error.message });
+        }
+    }
+
+    async getVerifiedFreelancers(req: Request, res: Response) {
+        try {
+            const freelancers = await Seller.find({ 'freelancer.isRegistered': true, 'freelancer.status': 'Approved' });
+            res.json(freelancers);
+        } catch (error: any) {
+            res.status(500).json({ message: error.message });
+        }
+    }
+
+    async getAllFreelancers(req: Request, res: Response) {
+        try {
+            const freelancers = await Seller.find({ 'freelancer.isRegistered': true });
             res.json(freelancers);
         } catch (error: any) {
             res.status(500).json({ message: error.message });

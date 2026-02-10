@@ -9,7 +9,7 @@ router
     .get(protect, UserController.getUserProfile)
     .put(protect, UserController.updateUserProfile);
 
-router.route("/freelancer/register").put(protect, (req: any, res: any) => UserController.registerFreelancer(req, res));
+router.route("/freelancer/register").post(protect, (req: any, res: any) => UserController.registerFreelancer(req, res));
 
 router.route("/").get(protect, admin, UserController.getUsers);
 

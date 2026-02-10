@@ -16,9 +16,9 @@ class CartController {
     }
 
     async addToCart(req: IAuthRequest, res: Response) {
-        const { productId, quantity } = req.body;
+        const { productId, quantity, type } = req.body;
         try {
-            const cart = await CartService.addToCart(req.user._id as string, productId, quantity);
+            const cart = await CartService.addToCart(req.user._id as string, productId, quantity, type);
             res.json(cart);
         } catch (error: any) {
             res.status(500).json({ message: error.message });

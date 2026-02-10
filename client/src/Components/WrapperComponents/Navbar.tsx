@@ -223,27 +223,32 @@ const Navbar = () => {
 
                     {/* Categories Row (Modules) - Light Background, Active Black */}
                     <Stack direction="row" spacing={1.5} justifyContent="center" sx={{ overflowX: 'auto', pb: 0, position: 'relative', zIndex: 2, '::-webkit-scrollbar': { display: 'none' } }}>
-                        {(localStorage.getItem('userRole') === 'Seller' ? [
-                            { label: 'Retail', icon: <StorefrontIcon />, path: '/retail' },
-                            { label: 'Wholesale', icon: <FactoryIcon />, path: '/wholesale' },
-                            { label: 'Q-Commerce', icon: <RocketLaunchIcon />, path: '/quick' },
-                            { label: 'Resale', icon: <AutorenewIcon />, path: '/resale' },
-                            { label: 'FreelancerSeller', icon: <WorkIcon />, path: '/freelance' }
-                        ] : [
-                            { label: 'Retail', icon: <StorefrontIcon />, path: '/retail' },
-                            { label: 'WholesalePost', icon: <FactoryIcon />, path: '/wholesale' },
-                            { label: 'Q-Commerce', icon: <RocketLaunchIcon />, path: '/quick' },
-                            { label: 'Resale', icon: <AutorenewIcon />, path: '/resale' },
-                            { label: 'FreelancerBuyer', icon: <WorkIcon />, path: '/freelance' }
-                        ]).map((link) => (
-                            <CategoryChip
-                                key={link.label}
-                                icon={link.icon}
-                                label={link.label}
-                                isActive={location.pathname.startsWith(link.path)}
-                                onClick={() => navigate(link.path)}
-                            />
-                        ))}
+                        {(() => {
+                            const role = localStorage.getItem('userRole');
+                            const categories = role === 'Seller' ? [
+                                { label: 'Retail', icon: <StorefrontIcon />, path: '/retail' },
+                                { label: 'Wholesale', icon: <FactoryIcon />, path: '/wholesale' },
+                                { label: 'Q-Commerce', icon: <RocketLaunchIcon />, path: '/quick' },
+                                { label: 'Resale', icon: <AutorenewIcon />, path: '/resale' },
+                                { label: 'Freelancer', icon: <WorkIcon />, path: '/freelance' }
+                            ] : [
+                                { label: 'Retail', icon: <StorefrontIcon />, path: '/retail' },
+                                { label: 'Wholesale', icon: <FactoryIcon />, path: '/wholesale' },
+                                { label: 'Q-Commerce', icon: <RocketLaunchIcon />, path: '/quick' },
+                                { label: 'Resale', icon: <AutorenewIcon />, path: '/resale' },
+                                { label: 'Freelancer', icon: <WorkIcon />, path: '/freelance' }
+                            ];
+
+                            return categories.map((link) => (
+                                <CategoryChip
+                                    key={link.label}
+                                    icon={link.icon}
+                                    label={link.label}
+                                    isActive={location.pathname.startsWith(link.path)}
+                                    onClick={() => navigate(link.path)}
+                                />
+                            ));
+                        })()}
                     </Stack>
                 </Container>
             </Box>

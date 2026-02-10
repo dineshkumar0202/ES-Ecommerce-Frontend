@@ -40,7 +40,9 @@ class OrderController {
 
             res.status(201).json(order);
         } catch (error: any) {
-            res.status(400).json({ message: error.message });
+            console.error('Order Creation Failed:', error);
+            console.error('Request Body:', JSON.stringify(req.body, null, 2));
+            res.status(400).json({ message: `Order Failed: ${error.message}` });
         }
     }
 

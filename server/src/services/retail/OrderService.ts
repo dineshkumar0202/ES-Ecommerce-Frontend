@@ -2,30 +2,26 @@ import Order from '../../models/retail/OrderModel';
 
 class OrderService {
     async createOrder(userId: string, orderData: any) {
-        const {
-            orderItems,
-            shippingAddress,
-            paymentMethod,
-            itemsPrice,
-            taxPrice,
-            shippingPrice,
-            totalPrice,
-        } = orderData;
-
-        if (orderItems && orderItems.length === 0) {
-            throw new Error("No order items");
+        // Validation
+        if (!orderData.orderItems || orderData.orderItems.length === 0) {
+            throw new Error('No order items found');
         }
 
-        const order = new Order({
-            orderItems,
+        // Clean undefined fields
+        const { paymentResult, ...rest } = orderData;
+
+        const finalOrderData = {
+            ...rest,
             user: userId,
-            shippingAddress,
-            paymentMethod,
-            itemsPrice,
-            taxPrice,
-            shippingPrice,
-            totalPrice,
-        });
+            status: 'Ordered'
+        };
+
+        // Only add paymentResult if it exists and has basic fields
+        if (paymentResult && paymentResult.id) {
+            finalOrderData.paymentResult = paymentResult;
+        }
+
+        const order = new Order(finalOrderData);
 
         return await order.save();
     }

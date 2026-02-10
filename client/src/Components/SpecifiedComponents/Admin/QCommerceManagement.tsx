@@ -9,7 +9,8 @@ import {
     WorkOutline as WorkOutlineIcon,
     ExitToApp as ExitToAppIcon,
     Delete as DeleteIcon,
-    Add as AddIcon
+    Add as AddIcon,
+    Edit as EditIcon
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { QProductService, UploadService } from '../../../services/api';
@@ -23,9 +24,10 @@ const QCommerceManagement = () => {
     // Modal State
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [newProduct, setNewProduct] = useState({
-        title: '', price: '', unit: '', discount: '0', category: '', stock: '', image: '', description: ''
+        title: '', price: '', brand: '', unit: '', discount: '0', category: '', stock: '', image: '', description: ''
     });
     const [isUploading, setIsUploading] = useState(false);
+    const [editingId, setEditingId] = useState<string | null>(null);
 
     useEffect(() => {
         fetchProducts();
@@ -70,13 +72,40 @@ const QCommerceManagement = () => {
                 discount: Number(newProduct.discount),
                 stock: Number(newProduct.stock)
             };
-            const { data } = await QProductService.create(productData);
-            setProducts([data, ...products]);
+
+            if (editingId) {
+                const { data } = await QProductService.update(editingId, productData);
+                setProducts(products.map(p => p._id === editingId ? data : p));
+                alert('Product updated successfully!');
+            } else {
+                const { data } = await QProductService.create(productData);
+                setProducts([data, ...products]);
+                alert('Product created successfully!');
+            }
+
             setIsModalOpen(false);
-            setNewProduct({ title: '', price: '', unit: '', discount: '0', category: '', stock: '', image: '', description: '' });
-        } catch (error) {
-            alert("Failed to create Q-commerce product");
+            setEditingId(null);
+            setNewProduct({ title: '', price: '', brand: '', unit: '', discount: '0', category: '', stock: '', image: '', description: '' });
+        } catch (error: any) {
+            console.error("Failed to save Q-commerce product:", error.response?.data || error.message);
+            alert(`Failed to save product: ${error.response?.data?.message || error.message}`);
         }
+    };
+
+    const handleEditClick = (product: any) => {
+        setEditingId(product._id);
+        setNewProduct({
+            title: product.title || product.name || '',
+            price: product.price?.toString() || '',
+            brand: product.brand || '',
+            unit: product.unit || '',
+            discount: product.discount?.toString() || '0',
+            category: product.category || '',
+            stock: product.stock?.toString() || '',
+            image: product.image || '',
+            description: product.description || ''
+        });
+        setIsModalOpen(true);
     };
 
     const handleDelete = async (id: string) => {
@@ -191,9 +220,12 @@ const QCommerceManagement = () => {
                                             <Box sx={{ textAlign: 'right' }}>
                                                 <Typography variant="subtitle1" sx={{ fontWeight: 900 }}>₹{product.price}</Typography>
                                                 {product.discount > 0 && (
-                                                    <Chip label={`-${product.discount}%`} size="small" sx={{ height: 18, fontSize: '0.6rem', bgcolor: '#fecaca', color: '#b91c1c', fontWeight: 800 }} />
+                                                    <Chip label={`${product.discount}% OFF`} size="small" sx={{ height: 18, fontSize: '0.6rem', bgcolor: '#bef264', color: 'black', fontWeight: 800 }} />
                                                 )}
                                             </Box>
+                                            <IconButton size="small" onClick={() => handleEditClick(product)} sx={{ color: '#64748b' }}>
+                                                <EditIcon fontSize="small" />
+                                            </IconButton>
                                             <IconButton size="small" onClick={() => handleDelete(product._id)} sx={{ color: '#ef4444' }}>
                                                 <DeleteIcon fontSize="small" />
                                             </IconButton>
@@ -207,8 +239,8 @@ const QCommerceManagement = () => {
                 )}
 
                 {/* Add Product Modal */}
-                <Dialog open={isModalOpen} onClose={() => setIsModalOpen(false)} maxWidth="sm" fullWidth>
-                    <DialogTitle sx={{ fontWeight: 800 }}>Quick Add Item</DialogTitle>
+                <Dialog open={isModalOpen} onClose={() => { setIsModalOpen(false); setEditingId(null); }} maxWidth="sm" fullWidth>
+                    <DialogTitle sx={{ fontWeight: 800 }}>{editingId ? 'Edit Quick Item' : 'Quick Add Item'}</DialogTitle>
                     <DialogContent dividers>
                         <Stack spacing={2.5} sx={{ py: 1 }}>
                             <TextField fullWidth label="Product Title" value={newProduct.title} onChange={(e) => setNewProduct({ ...newProduct, title: e.target.value })} />
@@ -225,6 +257,7 @@ const QCommerceManagement = () => {
                             <TextField fullWidth select label="Category" value={newProduct.category} onChange={(e) => setNewProduct({ ...newProduct, category: e.target.value })}>
                                 {['Fruits & Veg', 'Dairy & Eggs', 'Bakery', 'Snacks', 'Beverages', 'Instant Food'].map(cat => <MenuItem key={cat} value={cat}>{cat}</MenuItem>)}
                             </TextField>
+                            <TextField fullWidth label="Brand" value={newProduct.brand} onChange={(e) => setNewProduct({ ...newProduct, brand: e.target.value })} />
                             <TextField fullWidth label="Image URL" value={newProduct.image} onChange={(e) => setNewProduct({ ...newProduct, image: e.target.value })} />
                             <Button
                                 variant="outlined"
@@ -240,8 +273,10 @@ const QCommerceManagement = () => {
                         </Stack>
                     </DialogContent>
                     <DialogActions sx={{ p: 2.5 }}>
-                        <Button onClick={() => setIsModalOpen(false)} sx={{ color: '#64748b' }}>Cancel</Button>
-                        <Button variant="contained" onClick={handleAddProduct} sx={{ bgcolor: 'black', color: 'white', borderRadius: 2 }}>Confirm Add</Button>
+                        <Button onClick={() => { setIsModalOpen(false); setEditingId(null); }} sx={{ color: '#64748b' }}>Cancel</Button>
+                        <Button variant="contained" onClick={handleAddProduct} sx={{ bgcolor: 'black', color: 'white', borderRadius: 2 }}>
+                            {editingId ? 'Save Changes' : 'Confirm Add'}
+                        </Button>
                     </DialogActions>
                 </Dialog>
             </Box>

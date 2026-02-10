@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 // Base API URL - pointing to your backend
-const API_URL = 'http://localhost:5000/api';
+const API_URL = 'http://127.0.0.1:5000/api';
 
 const api = axios.create({
     baseURL: API_URL,
@@ -37,6 +37,7 @@ export const ResaleService = {
 
 export const WholesaleService = {
     getAll: () => api.get('/wholesale'),
+    getMyProducts: () => api.get('/wholesale/my-products'),
     getById: (id: string) => api.get(`/wholesale/${id}`),
     create: (data: any) => api.post('/wholesale', data),
     update: (id: string, data: any) => api.put(`/wholesale/${id}`, data),
@@ -61,7 +62,8 @@ export const FreelanceService = {
     create: (data: any) => api.post('/posts', data),
     update: (id: string, data: any) => api.put(`/posts/${id}`, data),
     updateStatus: (id: string, status: string) => api.put(`/posts/${id}/status`, { status }),
-    delete: (id: string) => api.delete(`/posts/${id}`)
+    delete: (id: string) => api.delete(`/posts/${id}`),
+    submitInterest: (postId: string) => api.post(`/posts/${postId}/interest`)
 };
 
 export const OrderService = {
@@ -84,14 +86,18 @@ export const UserService = {
     getAll: () => api.get('/users'),
     getById: (id: string) => api.get(`/users/${id}`),
     delete: (id: string) => api.delete(`/users/${id}`),
-    registerFreelancer: (data: any) => api.put('/users/freelancer/register', data)
+    registerFreelancer: (data: any) => api.post('/users/freelancer/register', data)
 };
 
 export const AdminService = {
     getStats: () => api.get('/admin/stats'),
     getActivities: () => api.get('/admin/activities'),
     getPendingFreelancers: () => api.get('/admin/freelancers/pending'),
-    updateFreelancerStatus: (id: string, status: string, rejectionReason?: string) => api.put(`/admin/freelancers/${id}/status`, { status, rejectionReason })
+    getVerifiedFreelancers: () => api.get('/admin/freelancers/verified'),
+    getAllFreelancers: () => api.get('/admin/freelancers/all'),
+    updateFreelancerStatus: (id: string, status: string, rejectionReason?: string) => api.put(`/admin/freelancers/${id}/status`, { status, rejectionReason }),
+    getInterests: () => api.get('/admin/freelance/interests'),
+    updateInterestStatus: (id: string, status: string) => api.put(`/admin/freelance/interests/${id}/status`, { status })
 };
 
 export const CartService = {

@@ -169,7 +169,7 @@ const RetailOffers = () => {
             {/* Bottom Grid Section */}
             <Grid container spacing={3}>
                 {/* Valentine's Offer */}
-                <Grid item xs={12} md={6}>
+                <Grid size={{ xs: 12, md: 6 }}>
                     <Paper
                         elevation={0}
                         sx={{
@@ -219,7 +219,7 @@ const RetailOffers = () => {
                 </Grid>
 
                 {/* Flash Sale */}
-                <Grid item xs={12} md={6}>
+                <Grid size={{ xs: 12, md: 6 }}>
                     <Paper
                         elevation={0}
                         sx={{

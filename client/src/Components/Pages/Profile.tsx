@@ -42,7 +42,7 @@ const Profile = () => {
                 OrderService.getMyOrders().catch(() => ({ data: [] }))
             ]);
             setCart(cartRes.data);
-            setWishlist(wishlistRes.data || []);
+            setWishlist(wishlistRes.data?.products || []);
             setOrders(ordersRes.data || []);
         } catch (error) {
             console.error("Error fetching profile data:", error);
@@ -294,10 +294,10 @@ const Profile = () => {
                         <Stack spacing={2}>
                             {wishlist.map((item: any) => (
                                 <Paper key={item._id} elevation={0} sx={{ p: 2, borderRadius: 3, border: '1px solid #f1f5f9', display: 'flex', gap: 2, alignItems: 'center' }}>
-                                    <Avatar src={item.product?.images?.[0]} variant="rounded" sx={{ width: 60, height: 60 }} />
+                                    <Avatar src={item.images?.[0]} variant="rounded" sx={{ width: 60, height: 60 }} />
                                     <Box sx={{ flex: 1 }}>
-                                        <Typography variant="subtitle2" sx={{ fontWeight: 800 }}>{item.product?.title}</Typography>
-                                        <Typography variant="caption" sx={{ color: '#64748b' }}>₹{item.product?.price}</Typography>
+                                        <Typography variant="subtitle2" sx={{ fontWeight: 800 }}>{item.title}</Typography>
+                                        <Typography variant="caption" sx={{ color: '#64748b' }}>₹{item.price ? item.price.toLocaleString() : 'N/A'}</Typography>
                                     </Box>
                                     <IconButton size="small" onClick={() => handleRemoveFromWishlist(item._id)}>
                                         <DeleteIcon fontSize="small" color="error" />

@@ -21,10 +21,15 @@ const deleteWholesaleProduct = async (id: string): Promise<IWholesaleProduct | n
     return await WholesaleProduct.findByIdAndDelete(id);
 };
 
+const getWholesaleProductsBySeller = async (sellerId: string): Promise<IWholesaleProduct[]> => {
+    return await WholesaleProduct.find({ seller: sellerId }).populate('seller', 'username email');
+};
+
 export default {
     getAllWholesaleProducts,
     createWholesaleProduct,
     getWholesaleProductById,
     updateWholesaleProduct,
-    deleteWholesaleProduct
+    deleteWholesaleProduct,
+    getWholesaleProductsBySeller
 };

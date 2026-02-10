@@ -58,4 +58,12 @@ const admin = (req: IAuthRequest, res: Response, next: NextFunction) => {
     }
 };
 
-export { protect, admin };
+const seller = (req: IAuthRequest, res: Response, next: NextFunction) => {
+    if (req.user && (req.user.role === "Seller" || req.user.role === "Admin")) {
+        next();
+    } else {
+        res.status(401).json({ message: "Not authorized as a seller" });
+    }
+};
+
+export { protect, admin, seller };

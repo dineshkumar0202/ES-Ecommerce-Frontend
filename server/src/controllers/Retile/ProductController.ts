@@ -68,14 +68,9 @@ class ProductController {
         } = req.body;
 
         try {
-            const productData: CreateProductDto = {
-                title,
-                description,
-                price,
-                category,
-                images,
-                stock,
-                seller: seller || req.user._id, // Allow override if admin or default to user
+            const productData = {
+                ...req.body,
+                seller: seller || req.user._id,
                 numReviews: 0,
                 rating: 0
             };
@@ -83,7 +78,11 @@ class ProductController {
             const createdProduct = await ProductService.createProduct(productData);
             res.status(201).json(createdProduct);
         } catch (error: any) {
-            res.status(400).json({ message: error.message });
+            console.error("Product Creation Error:", error);
+            res.status(400).json({
+                message: error.message,
+                details: error.errors
+            });
         }
     }
 

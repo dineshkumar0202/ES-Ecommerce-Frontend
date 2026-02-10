@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import PostService from '../../services/freelance/PostService';
+import Interest from '../../models/freelance/InterestModel';
 import { CreatePostDto } from '../../dtos/freelance/PostDto';
 
 class PostController {
@@ -7,6 +8,31 @@ class PostController {
         try {
             const posts = await PostService.getAllPosts();
             res.status(200).json(posts);
+        } catch (error: any) {
+            res.status(500).json({ message: error.message });
+        }
+    }
+
+    async submitInterest(req: Request, res: Response) {
+        try {
+            const postId = req.params.id;
+            const userId = (req as any).user?._id;
+
+            // Check if already submitted
+            const existing = await Interest.findOne({ post: postId, user: userId });
+            if (existing) {
+                res.status(400).json({ message: "You have already shown interest in this post" });
+                return;
+            }
+
+            const newInterest = new Interest({
+                post: postId,
+                user: userId,
+                status: 'Pending'
+            });
+
+            await newInterest.save();
+            res.status(201).json({ message: "Interest submitted successfully", interest: newInterest });
         } catch (error: any) {
             res.status(500).json({ message: error.message });
         }

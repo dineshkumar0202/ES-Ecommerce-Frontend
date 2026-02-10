@@ -5,7 +5,7 @@ import FreelancersFeed from '../SpecifiedComponents/Freelancers/Components/Freel
 import FreelancerSidebar from '../SpecifiedComponents/Freelancers/Components/FreelancerSidebar';
 import FreelancerSidebarBuyer from '../SpecifiedComponents/Freelancers/Components/FreelancerSidebarBuyer';
 import { useState, useEffect } from 'react';
-import { FreelanceService } from '../../services/api';
+import { FreelanceService, AuthService } from '../../services/api';
 
 // Define interface locally to avoid 'export not found' issues
 interface Post {
@@ -27,9 +27,10 @@ interface Post {
 }
 
 const Freelance = () => {
-    const user = JSON.parse(localStorage.getItem('user') || '{}');
-    const isBuyer = user?.role === 'Buyer';
+    const userRole = localStorage.getItem('userRole');
+    const isBuyer = userRole === 'Buyer';
     const [posts, setPosts] = useState<Post[]>([]);
+    const [isFreelancerRegistered, setIsFreelancerRegistered] = useState(false);
 
     const fetchPosts = async () => {
         try {
@@ -49,6 +50,9 @@ const Freelance = () => {
                 nameDisplay: p.nameDisplay || p.username || "Anonymous",
                 category: p.category || "General",
                 unit: p.unit || "/hr",
+                contact: p.contact,
+                email: p.email,
+                location: p.location,
                 image: p.image || "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80"
             }));
             setPosts(formattedPosts);
@@ -57,9 +61,42 @@ const Freelance = () => {
         }
     };
 
+    const fetchUserStatus = async () => {
+        try {
+            const token = localStorage.getItem('token');
+            if (token) {
+                const { data: me } = await AuthService.getMe();
+                setIsFreelancerRegistered(me?.freelancer?.isRegistered || false);
+            }
+        } catch (error) {
+            console.error("Failed to fetch user status", error);
+        }
+    };
+
     useEffect(() => {
         fetchPosts();
+        fetchUserStatus();
     }, []);
+
+    const handleInterestClick = async (postId: string | number) => {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            alert("Please login first to show interest");
+            return;
+        }
+
+        if (!isFreelancerRegistered) {
+            alert("Registration is compulsory! Please register as a freelancer using the sidebar to show interest in this post.");
+            return;
+        }
+
+        try {
+            await FreelanceService.submitInterest(postId.toString());
+            alert("Success! Your interest has been recorded. The admin will review your request shortly.");
+        } catch (error: any) {
+            alert(error.response?.data?.message || "Failed to submit interest");
+        }
+    };
 
     const handlePost = async (newPost: any) => {
         try {
@@ -77,7 +114,11 @@ const Freelance = () => {
             <Container maxWidth="xl" sx={{ mt: 4, mb: 8 }}>
                 <Box sx={{ display: 'flex', flexDirection: { xs: 'column-reverse', md: 'row' }, gap: 4, alignItems: 'flex-start' }}>
                     <Box sx={{ flex: 1, minWidth: 0 }}>
-                        <FreelancersFeed posts={posts} />
+                        <FreelancersFeed
+                            posts={posts}
+                            onInterestClick={handleInterestClick}
+                            showInterestButton={!isBuyer}
+                        />
                     </Box>
                     <Box sx={{ width: { xs: '100%', md: 340, lg: 380 }, flexShrink: 0, position: { md: 'sticky' }, top: 20 }}>
                         {isBuyer ? (

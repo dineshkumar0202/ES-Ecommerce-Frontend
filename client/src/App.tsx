@@ -26,6 +26,7 @@ import WholesaleProductDetails from './Components/SpecifiedComponents/WholeSale/
 import QCategoryPage from './Components/Pages/QCategoryPage';
 import QAllProducts from './Components/Pages/QAllProducts';
 import QProductDetails from './Components/SpecifiedComponents/Q-Commerces/Components/QProductDetails';
+import QAddProduct from './Components/Pages/QAddProduct';
 import ResaleProductDetails from './Components/SpecifiedComponents/Second-hand/Components/ResaleProductDetails';
 import AdminDashboard from './Components/SpecifiedComponents/Admin/AdminDashboard';
 import RetailManagement from './Components/SpecifiedComponents/Admin/RetailManagement';
@@ -34,6 +35,9 @@ import QCommerceManagement from './Components/SpecifiedComponents/Admin/QCommerc
 import ResaleManagement from './Components/SpecifiedComponents/Admin/ResaleManagement';
 import FreelanceManagement from './Components/SpecifiedComponents/Admin/FreelanceManagement';
 import ProtectedAdminRoute from './Components/SpecifiedComponents/Admin/ProtectedAdminRoute';
+
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import './App.css';
 
 const theme = createTheme({
@@ -51,6 +55,7 @@ function App() {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
+      <ToastContainer position="bottom-right" autoClose={3000} />
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Home />} />
@@ -88,6 +93,7 @@ function App() {
           <Route path="/admin/retail" element={<ProtectedAdminRoute><RetailManagement /></ProtectedAdminRoute>} />
           <Route path="/admin/wholesale" element={<ProtectedAdminRoute><WholesaleManagement /></ProtectedAdminRoute>} />
           <Route path="/admin/quick" element={<ProtectedAdminRoute><QCommerceManagement /></ProtectedAdminRoute>} />
+          <Route path="/admin/quick/add" element={<ProtectedAdminRoute><QAddProduct /></ProtectedAdminRoute>} />
           <Route path="/admin/resale" element={<ProtectedAdminRoute><ResaleManagement /></ProtectedAdminRoute>} />
           <Route path="/admin/freelance" element={<ProtectedAdminRoute><FreelanceManagement /></ProtectedAdminRoute>} />
         </Routes>

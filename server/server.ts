@@ -18,6 +18,8 @@ import paymentRoutes from "./src/routers/paymentRouter";
 import notificationRoutes from "./src/routers/users/NotificationRouter";
 import testEmailRoutes from "./src/routers/testEmailRouter";
 import User from "./src/models/users/UserModel";
+import Product from "./src/models/retail/ProductModel";
+import QProduct from "./src/models/q-commerce/QProductModel";
 
 
 import { Server } from "socket.io";
@@ -88,17 +90,15 @@ const startServer = async () => {
         await mongoose.connect(process.env.MONGO_URI as string);
         console.log("MongoDB Connected 🌱");
 
-        // Sync indexes to ensure 'sparse' option is applied to email index
-        try {
-            await User.syncIndexes();
-            console.log("User Indexes Synced ✅");
-        } catch (idxError) {
-            console.error("Warning: User Indexes Sync failed (server continuing):", idxError);
-        }
-
         const serverInstance = server.listen(PORT, () => {
             console.log(`Server running on port ${PORT} ✅🚀`);
         });
+
+        // Sync indexes to ensure 'sparse' option is applied to indexes (Non-blocking)
+        User.syncIndexes().catch(err => console.error("User Index Sync failed:", err));
+        Product.syncIndexes().catch(err => console.error("Product Index Sync failed:", err));
+        QProduct.syncIndexes().catch(err => console.error("QProduct Index Sync failed:", err));
+        console.log("Database Index Sync initiated ⏳");
 
         // Handle server errors
         serverInstance.on('error', (error: any) => {

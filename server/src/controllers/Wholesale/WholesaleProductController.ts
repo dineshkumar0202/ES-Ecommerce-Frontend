@@ -79,6 +79,16 @@ class WholesaleProductController {
             res.status(500).json({ message: error.message });
         }
     }
+
+    async getSellerProducts(req: Request, res: Response) {
+        try {
+            const userId = (req as any).user?._id;
+            const products = await WholesaleProductService.getWholesaleProductsBySeller(userId);
+            res.json(products);
+        } catch (error: any) {
+            res.status(500).json({ message: error.message });
+        }
+    }
 }
 
 export default new WholesaleProductController();

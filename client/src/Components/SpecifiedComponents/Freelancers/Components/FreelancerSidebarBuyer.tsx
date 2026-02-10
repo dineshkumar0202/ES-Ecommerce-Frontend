@@ -126,11 +126,47 @@ const FreelancerSidebarBuyer = ({ onPost }: FreelancerSidebarBuyerProps) => {
                     p: 3,
                     borderRadius: 4,
                     overflow: 'hidden',
-                    // minHeight: 'calc(100vh - 40px)', // adjust height if needed
                     display: 'flex',
-                    flexDirection: 'column'
+                    flexDirection: 'column',
+                    position: 'relative' // For the brain button
                 }}
             >
+                {/* Floating Brain Button (The "Interesting" Button) */}
+                <Box
+                    sx={{
+                        position: 'absolute',
+                        right: -1,
+                        top: '50%',
+                        transform: 'translateY(-50%)',
+                        bgcolor: 'white',
+                        borderRadius: '50px 0 0 50px',
+                        width: 38,
+                        height: 44,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        boxShadow: '-4px 0 10px rgba(0,0,0,0.2)',
+                        cursor: 'pointer',
+                        zIndex: 10,
+                        '&:hover': { width: 42 }
+                    }}
+                >
+                    <Box
+                        sx={{
+                            width: 22,
+                            height: 22,
+                            borderRadius: '50%',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            background: 'linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888)',
+                            color: 'white',
+                            fontSize: '12px'
+                        }}
+                    >
+                        🧠
+                    </Box>
+                </Box>
                 <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 3 }}>
                     <AutoAwesomeIcon sx={{ color: '#d9f99d' }} />
                     <Typography variant="h6" sx={{ fontWeight: 700 }}>AI Image Generation</Typography>

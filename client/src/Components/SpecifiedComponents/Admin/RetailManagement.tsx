@@ -88,8 +88,9 @@ const RetailManagement = () => {
             setProducts([data, ...products]);
             setIsModalOpen(false);
             setNewProduct({ title: '', price: '', category: '', brand: '', stock: '', description: '', images: '' });
-        } catch (error) {
-            alert("Failed to create product");
+        } catch (error: any) {
+            console.error("Failed to create product:", error.response?.data || error.message);
+            alert(`Failed to create product: ${error.response?.data?.message || error.message}`);
         }
     };
 

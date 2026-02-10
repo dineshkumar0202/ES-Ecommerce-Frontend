@@ -8,6 +8,8 @@ import Navbar from '../WrapperComponents/Navbar';
 import Footer from '../WrapperComponents/Footer';
 import { CartService, OrderService, PaymentService } from '../../services/api';
 import CheckoutForm from '../SpecifiedComponents/Profile/CheckoutForm';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const Checkout = () => {
     const navigate = useNavigate();
@@ -17,6 +19,8 @@ const Checkout = () => {
     const [paymentMethod, setPaymentMethod] = useState('COD');
     const [stripePromise, setStripePromise] = useState<any>(null);
     const [clientSecret, setClientSecret] = useState('');
+    const [intentError, setIntentError] = useState<string | null>(null);
+    const [isMock, setIsMock] = useState(false);
 
     // Form state
     const [shippingAddress, setShippingAddress] = useState({
@@ -36,18 +40,20 @@ const Checkout = () => {
             const { data } = await PaymentService.getConfig();
             if (data.publishableKey) {
                 setStripePromise(loadStripe(data.publishableKey));
+            } else {
+                setIntentError("Stripe public key missing.");
             }
         } catch (error) {
             console.error("Stripe config failed", error);
+            setIntentError("Failed to load payment configuration.");
         }
     };
-
     const fetchCart = async () => {
         try {
             const { data } = await CartService.getCart();
             if (!data.cartItems || data.cartItems.length === 0) {
                 navigate('/retail');
-                alert('Your cart is empty!');
+                toast.info('Your cart is empty!');
                 return;
             }
             setCart(data);
@@ -64,13 +70,18 @@ const Checkout = () => {
             createIntent();
         }
     }, [paymentMethod, cart]);
-
     const createIntent = async () => {
+        setIntentError(null);
+        setIsMock(false);
         try {
             const { data } = await PaymentService.createPaymentIntent(cart.totalPrice * 1.18);
+            if (data.isMock) {
+                setIsMock(true);
+            }
             setClientSecret(data.clientSecret);
-        } catch (error) {
+        } catch (error: any) {
             console.error("Failed to create intent", error);
+            setIntentError(error.response?.data?.message || "Failed to initialize payment.");
         }
     };
 
@@ -80,7 +91,7 @@ const Checkout = () => {
 
     const handlePlaceOrder = async (stripePaymentId?: string) => {
         if (!shippingAddress.address || !shippingAddress.city || !shippingAddress.postalCode) {
-            alert('Please fill in all shipping details');
+            toast.warning('Please fill in all shipping details');
             return;
         }
 
@@ -88,9 +99,9 @@ const Checkout = () => {
         try {
             const orderData = {
                 orderItems: cart.cartItems.map((item: any) => ({
-                    name: item.product.title,
+                    title: item.product.title,
                     quantity: item.quantity,
-                    image: item.product.images[0],
+                    image: item.product.images?.[0] || "https://via.placeholder.com/150",
                     price: item.product.price,
                     product: item.product._id
                 })),
@@ -106,11 +117,11 @@ const Checkout = () => {
             };
 
             const { data } = await OrderService.create(orderData);
-            alert('Order placed successfully!');
+            toast.success('Order placed successfully!');
             navigate(`/payment-success?orderId=${data._id}`);
         } catch (error) {
             console.error("Error placing order:", error);
-            alert('Failed to place order.');
+            toast.error('Failed to place order.');
         } finally {
             setIsSubmitting(false);
         }
@@ -176,11 +187,36 @@ const Checkout = () => {
                                             </Box>
                                         } sx={{ width: '100%', m: 0 }} />
 
-                                        {paymentMethod === 'Stripe' && clientSecret && stripePromise && (
-                                            <Box sx={{ mt: 3, p: 2, bgcolor: '#f8fafc', borderRadius: 2 }}>
-                                                <Elements options={options} stripe={stripePromise}>
-                                                    <CheckoutForm amount={cart.totalPrice * 1.18} onSuccess={handlePlaceOrder} />
-                                                </Elements>
+                                        {paymentMethod === 'Stripe' && (
+                                            <Box sx={{ mt: 2 }}>
+                                                {isMock ? (
+                                                    <Box sx={{ p: 2, bgcolor: '#f0fdf4', borderRadius: 2, border: '1px solid #bbf7d0', textAlign: 'center' }}>
+                                                        <Typography variant="body2" color="success.main" sx={{ mb: 2, fontWeight: 700 }}>
+                                                            Development Mode: Stripe Mock Active
+                                                        </Typography>
+                                                        <Button
+                                                            variant="contained"
+                                                            color="success"
+                                                            onClick={() => handlePlaceOrder(clientSecret)}
+                                                            fullWidth
+                                                            sx={{ fontWeight: 800 }}
+                                                        >
+                                                            Simulate Successful Payment
+                                                        </Button>
+                                                    </Box>
+                                                ) : clientSecret && stripePromise && !isMock ? (
+                                                    <Box sx={{ p: 2, bgcolor: '#f8fafc', borderRadius: 2 }}>
+                                                        <Elements options={options} stripe={stripePromise}>
+                                                            <CheckoutForm amount={cart.totalPrice * 1.18} onSuccess={handlePlaceOrder} />
+                                                        </Elements>
+                                                    </Box>
+                                                ) : (
+                                                    <Box sx={{ p: 2, bgcolor: '#fff1f2', borderRadius: 2, border: '1px solid #fecdd3' }}>
+                                                        <Typography color="error" variant="body2">
+                                                            {intentError || "Loading secure payment..."}
+                                                        </Typography>
+                                                    </Box>
+                                                )}
                                             </Box>
                                         )}
                                     </Paper>
