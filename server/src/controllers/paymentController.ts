@@ -14,11 +14,16 @@ class PaymentController {
     async createPaymentIntent(req: Request, res: Response) {
         const { amount } = req.body;
 
-        // Check for Missing or Default Stripe Key -> Use Mock Mode
-        let isMock = !stripe || !process.env.STRIPE_SECRET_KEY || process.env.STRIPE_SECRET_KEY.includes('your_stripe_secret_key_here');
+        // More robust Mock Mode detection
+        const secretKey = process.env.STRIPE_SECRET_KEY || '';
+        const publishableKey = process.env.STRIPE_PUBLISHABLE_KEY || '';
+
+        const isMock = !stripe ||
+            !secretKey.startsWith('sk_') ||
+            !publishableKey.startsWith('pk_');
 
         if (isMock) {
-            console.log('Stripe not configured (explicitly). Using Mock Payment Mode.');
+            // console.log('Stripe not configured correctly. Using Mock Payment Mode.');
             return res.status(200).json({
                 id: 'mock_pi_' + Date.now(),
                 clientSecret: 'mock_secret_' + Date.now(),
@@ -45,7 +50,7 @@ class PaymentController {
 
             // Fallback to mock mode if Stripe fails (e.g., Auth Error, Invalid Key)
             if (error.type === 'StripeAuthenticationError' || error.statusCode === 401) {
-                console.log('Stripe Authentication Failed. Falling back to Mock Payment Mode.');
+                // console.log('Stripe Authentication Failed. Falling back to Mock Payment Mode.');
                 return res.status(200).json({
                     id: 'mock_pi_' + Date.now(),
                     clientSecret: 'mock_secret_' + Date.now(),
@@ -58,8 +63,11 @@ class PaymentController {
     }
 
     async getStripeConfig(req: Request, res: Response) {
+        const pk = process.env.STRIPE_PUBLISHABLE_KEY || '';
+        const isMock = !pk.startsWith('pk_');
         res.status(200).json({
-            publishableKey: process.env.STRIPE_PUBLISHABLE_KEY,
+            publishableKey: pk,
+            isMock
         });
     }
 }

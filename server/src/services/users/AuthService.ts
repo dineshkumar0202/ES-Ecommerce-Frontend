@@ -26,7 +26,7 @@ class AuthService {
             verified: false
         });
 
-        console.log(`[OTP-DEBUG] Generated OTP for ${identifier}: ${otpCode}`);
+        // console.log(`[OTP-DEBUG] Generated OTP for ${identifier}: ${otpCode}`);
 
         // Send OTP
         const isEmail = identifier.includes('@');
@@ -41,27 +41,27 @@ class AuthService {
             }
         } else {
             // Mock SMS sending
-            console.log(`[OTP-MOCK] Sending SMS to ${identifier}: Your OTP is ${otpCode}`);
+            // console.log(`[OTP-MOCK] Sending SMS to ${identifier}: Your OTP is ${otpCode}`);
             return { message: 'OTP sent to mobile successfully (mock)', success: true };
         }
     }
 
     async verifyOtp(identifier: string, enteredOtp: string) {
-        console.log(`[OTP-DEBUG] Verifying OTP. Identifier: ${identifier}, OTP: ${enteredOtp}`);
+        // console.log(`[OTP-DEBUG] Verifying OTP. Identifier: ${identifier}, OTP: ${enteredOtp}`);
 
         // Find OTP record
         const otpRecord = await Otp.findOne({ identifier, otp: enteredOtp });
 
         if (!otpRecord) {
-            console.log(`[OTP-DEBUG] OTP record not found for ${identifier} and ${enteredOtp}`);
+            // console.log(`[OTP-DEBUG] OTP record not found for ${identifier} and ${enteredOtp}`);
             throw new Error('Invalid OTP or OTP expired');
         }
 
-        console.log(`[OTP-DEBUG] Found OTP Record:`, otpRecord);
+        // console.log(`[OTP-DEBUG] Found OTP Record:`, otpRecord);
 
         // Check expiry
         if (new Date() > otpRecord.expiresAt) {
-            console.log(`[OTP-DEBUG] OTP expired. Current: ${new Date()}, Expires: ${otpRecord.expiresAt}`);
+            // console.log(`[OTP-DEBUG] OTP expired. Current: ${new Date()}, Expires: ${otpRecord.expiresAt}`);
             await Otp.deleteOne({ _id: otpRecord._id });
             throw new Error('OTP has expired');
         }
@@ -71,7 +71,7 @@ class AuthService {
         // Or we just consume it now and trust the caller.
         // Let's delete it to prevent reuse.
         await Otp.deleteOne({ _id: otpRecord._id });
-        console.log(`[OTP-DEBUG] OTP verified successfully for ${identifier}`);
+        // console.log(`[OTP-DEBUG] OTP verified successfully for ${identifier}`);
         return { success: true, message: 'OTP verified successfully' };
     }
 
@@ -155,12 +155,12 @@ class AuthService {
 
     // --- Seller ---
     async registerSeller(userData: any) {
-        console.log("Registering Seller:", userData);
+        // console.log("Registering Seller:", userData);
         const { username, mobile, password, email } = userData;
 
         const orConditions: any[] = [{ mobile }];
         if (email) orConditions.push({ email });
-        console.log("Seller Check Conditions:", orConditions);
+        // console.log("Seller Check Conditions:", orConditions);
 
         const existingSeller = await Seller.findOne({ $or: orConditions });
 
@@ -177,7 +177,7 @@ class AuthService {
         });
 
         if (seller) {
-            console.log("Seller Created Successfully:", seller._id);
+            // console.log("Seller Created Successfully:", seller._id);
             return {
                 _id: seller._id,
                 username: seller.username,
@@ -192,18 +192,18 @@ class AuthService {
     }
 
     async loginSeller(loginData: any) {
-        console.log("Login Seller Attempt:", loginData);
+        // console.log("Login Seller Attempt:", loginData);
         const { mobile, email, password } = loginData;
 
         let seller = null;
 
         if (email) {
-            console.log("Seller Login Query by email:", email);
+            // console.log("Seller Login Query by email:", email);
             seller = await Seller.findOne({ email });
         } else if (mobile) {
             // Try multiple mobile number formats
             const cleanMobile = mobile.replace(/\D/g, ''); // Remove all non-digits
-            console.log("Seller Login - Clean mobile:", cleanMobile);
+            // console.log("Seller Login - Clean mobile:", cleanMobile);
 
             // Build possible mobile number formats
             const possibleMobiles = [
@@ -214,24 +214,22 @@ class AuthService {
                 cleanMobile.slice(-10), // Last 10 digits only
             ];
 
-            console.log("Seller Login - Trying mobiles:", possibleMobiles);
+            // console.log("Seller Login - Trying mobiles:", possibleMobiles);
 
             // Try to find seller with any of these formats
             seller = await Seller.findOne({ mobile: { $in: possibleMobiles } });
 
-            if (!seller) {
-                console.log("Seller Not Found via any mobile format");
-            }
+            // console.log("Seller Not Found via any mobile format");
         } else {
             throw new Error('Please provide email or mobile number');
         }
 
         if (!seller) {
-            console.log("Seller Not Found");
+            // console.log("Seller Not Found");
             throw new Error('Seller not found');
         }
 
-        console.log("Seller Found:", seller.username, "Mobile:", seller.mobile);
+        // console.log("Seller Found:", seller.username, "Mobile:", seller.mobile);
 
         const isMatch = await seller.matchPassword(password);
         if (!isMatch) throw new Error('Password incorrect');
@@ -248,23 +246,23 @@ class AuthService {
 
     // --- Admin ---
     async loginAdmin(loginData: any) {
-        console.log("Login Admin Attempt:", loginData.email);
+        // console.log("Login Admin Attempt:", loginData.email);
         const { email, password } = loginData;
         if (!email || !password) throw new Error('Email and password required for admin login');
 
         const admin = await Admin.findOne({ email });
         if (!admin) {
-            console.log("Admin not found for email:", email);
+            // console.log("Admin not found for email:", email);
             throw new Error('Admin not found');
         }
 
         const isMatch = await admin.matchPassword(password);
         if (!isMatch) {
-            console.log("Admin password mismatch for email:", email);
+            // console.log("Admin password mismatch for email:", email);
             throw new Error('Password incorrect');
         }
 
-        console.log("Admin login successful:", admin.username);
+        // console.log("Admin login successful:", admin.username);
 
         return {
             _id: admin._id,

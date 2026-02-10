@@ -42,7 +42,7 @@ const protect = async (req: IAuthRequest, res: Response, next: NextFunction) => 
                 res.status(401).json({ message: "User not found" });
             }
         } catch (error) {
-            console.error(error);
+            // console.error(error);
             res.status(401).json({ message: "Not authorized, token failed" });
         }
     } else {

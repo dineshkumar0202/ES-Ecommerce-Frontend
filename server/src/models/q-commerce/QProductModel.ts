@@ -7,6 +7,7 @@ export interface IQProduct extends Document {
     price: number;
     mrp: number;
     image: string;
+    images: string[];
     description?: string;
     discount: number;
     category: string;
@@ -22,6 +23,7 @@ const QProductSchema: Schema = new mongoose.Schema({
     price: { type: Number, required: true },
     mrp: { type: Number, required: true },
     image: { type: String, required: true },
+    images: [{ type: String }],
     discount: { type: Number, default: 0 },
     category: { type: String, required: true },
     stock: { type: Number, default: 0 },

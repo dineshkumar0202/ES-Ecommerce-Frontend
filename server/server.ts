@@ -40,15 +40,15 @@ const PORT = process.env.PORT || 5000;
 
 // Socket connection
 io.on("connection", (socket) => {
-    console.log("New client connected:", socket.id);
+    // console.log("New client connected:", socket.id);
 
     socket.on("join", (userId) => {
         socket.join(userId);
-        console.log(`User ${userId} joined room`);
+        // console.log(`User ${userId} joined room`);
     });
 
     socket.on("disconnect", () => {
-        console.log("Client disconnected");
+        // console.log("Client disconnected");
     });
 });
 
@@ -98,7 +98,7 @@ const startServer = async () => {
         User.syncIndexes().catch(err => console.error("User Index Sync failed:", err));
         Product.syncIndexes().catch(err => console.error("Product Index Sync failed:", err));
         QProduct.syncIndexes().catch(err => console.error("QProduct Index Sync failed:", err));
-        console.log("Database Index Sync initiated ⏳");
+        // console.log("Database Index Sync initiated ⏳");
 
         // Handle server errors
         serverInstance.on('error', (error: any) => {

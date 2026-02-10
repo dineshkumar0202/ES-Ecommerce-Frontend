@@ -78,7 +78,7 @@ class ProductController {
             const createdProduct = await ProductService.createProduct(productData);
             res.status(201).json(createdProduct);
         } catch (error: any) {
-            console.error("Product Creation Error:", error);
+            // console.error("Product Creation Error:", error);
             res.status(400).json({
                 message: error.message,
                 details: error.errors

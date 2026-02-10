@@ -24,21 +24,23 @@ class EmailService {
                     pass: process.env.EMAIL_PASS,
                 },
             });
-            console.log('📧 Email Service: Configured successfully.');
+            // console.log('📧 Email Service: Configured successfully.');
         } else {
             this.transporter = null;
             this.isMock = true;
-            console.log('📧 Email Service: Running in Mock Mode (Console Logging Only - No Real Emails will be sent)');
+            // console.log('📧 Email Service: Running in Mock Mode (Console Logging Only - No Real Emails will be sent)');
         }
     }
 
     async sendEmail(options: EmailOptions) {
         if (this.isMock) {
+            /*
             console.log('--- [MOCK EMAIL SENT] ---');
             console.log(`To: ${options.to}`);
             console.log(`Subject: ${options.subject}`);
             console.log(`Content (HTML Preview): ${options.html.substring(0, 500)}...`);
             console.log('-------------------------');
+            */
             return { messageId: `mock-${Date.now()}` };
         }
 

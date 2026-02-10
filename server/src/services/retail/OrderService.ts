@@ -1,4 +1,5 @@
 import Order from '../../models/retail/OrderModel';
+import Payment from '../../models/PaymentModel';
 
 class OrderService {
     async createOrder(userId: string, orderData: any) {
@@ -49,6 +50,25 @@ class OrderService {
                 update_time: paymentResult.update_time,
                 email_address: paymentResult.email_address,
             };
+
+            // Create and save Payment record
+            try {
+                const payment = new Payment({
+                    user: order.user,
+                    order: order._id,
+                    paymentMethod: 'PayPal', // Defaulting to PayPal as per typical paymentResult structure, could be dynamic
+                    amount: order.totalPrice,
+                    currency: 'USD', // Default, should ideally come from order
+                    status: 'Completed',
+                    transactionId: paymentResult.id || `TXN-${Date.now()}`,
+                    metadata: paymentResult
+                });
+                await payment.save();
+            } catch (error) {
+                console.error("Failed to save Payment record:", error);
+                // Continue execution, don't fail the order update
+            }
+
             return await order.save();
         }
         return null;

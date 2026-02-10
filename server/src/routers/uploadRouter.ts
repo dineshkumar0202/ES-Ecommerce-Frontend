@@ -14,14 +14,14 @@ const upload = multer({
 });
 
 router.post('/', protect, upload.single('image'), async (req: Request, res: Response) => {
-    console.log('Upload Request Received');
+    // console.log('Upload Request Received');
     try {
         if (!req.file) {
             console.log('No file in request');
             return res.status(400).json({ message: 'No file uploaded' });
         }
 
-        console.log('File detected:', req.file.originalname, 'Size:', req.file.size);
+        // console.log('File detected:', req.file.originalname, 'Size:', req.file.size);
 
         // Check Cloudinary Config (Don't log secrets fully)
         if (!process.env.CLOUDINARY_CLOUD_NAME || !process.env.CLOUDINARY_API_KEY) {
@@ -48,7 +48,7 @@ router.post('/', protect, upload.single('image'), async (req: Request, res: Resp
                         cloudinaryError: error // Send back actual error for frontend debugging
                     });
                 }
-                console.log('Cloudinary upload success:', result?.secure_url);
+                // console.log('Cloudinary upload success:', result?.secure_url);
                 res.status(200).json({
                     url: result?.secure_url,
                     public_id: result?.public_id
