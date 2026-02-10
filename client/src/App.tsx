@@ -2,7 +2,7 @@ import { CssBaseline } from '@mui/material';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Home from './Components/Pages/Home';
-import ProductDetails from './Components/SpecifiedComponents/HomePage/ProductDetails';
+import ProductDetails from './Components/Pages/HomePage/ProductDetails';
 import AllProducts from './Components/Pages/AllProducts';
 import OneDayOffer from './Components/Pages/OneDayOffer';
 import TShirts from './Components/Pages/TShirts';

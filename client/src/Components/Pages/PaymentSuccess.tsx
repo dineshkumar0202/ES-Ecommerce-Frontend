@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useLocation, useNavigate, Link } from 'react-router-dom';
 import { Box, Container, Typography, Paper, Button, Divider, List, ListItem, ListItemText, CircularProgress, Avatar, Chip, Stack } from '@mui/material';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
+import CreditCardIcon from '@mui/icons-material/CreditCard';
 import Navbar from '../WrapperComponents/Navbar';
 import Footer from '../WrapperComponents/Footer';
 import { OrderService } from '../../services/api';
@@ -86,19 +87,22 @@ const PaymentSuccess = () => {
 
                         <Typography variant="subtitle1" sx={{ fontWeight: 800, mb: 2 }}>Order Details</Typography>
                         <List disablePadding>
-                            {order?.orderItems.map((item: any) => (
-                                <ListItem key={item._id} sx={{ px: 0, py: 2 }}>
-                                    <Avatar src={item.image} variant="rounded" sx={{ width: 50, height: 50, mr: 2, borderRadius: 2 }} />
-                                    <ListItemText
-                                        primary={item.title || item.name}
-                                        primaryTypographyProps={{ fontWeight: 700 }}
-                                        secondary={`Quantity: ${item.quantity}`}
-                                    />
-                                    <Typography sx={{ fontWeight: 800 }}>
-                                        ₹{(item.price * item.quantity).toLocaleString()}
-                                    </Typography>
-                                </ListItem>
-                            ))}
+                            {order?.orderItems?.map((item: any) => {
+                                if (!item) return null;
+                                return (
+                                    <ListItem key={item._id} sx={{ px: 0, py: 2 }}>
+                                        <Avatar src={item.image} variant="rounded" sx={{ width: 50, height: 50, mr: 2, borderRadius: 2 }} />
+                                        <ListItemText
+                                            primary={item.title || item.name}
+                                            primaryTypographyProps={{ fontWeight: 700 }}
+                                            secondary={`Quantity: ${item.quantity}`}
+                                        />
+                                        <Typography sx={{ fontWeight: 800 }}>
+                                            ₹{(item.price * item.quantity).toLocaleString()}
+                                        </Typography>
+                                    </ListItem>
+                                );
+                            })}
                         </List>
 
                         <Stack spacing={2} sx={{ mt: 4, p: 3, bgcolor: 'white', borderRadius: 4, border: '1px solid #e2e8f0' }}>
@@ -121,13 +125,31 @@ const PaymentSuccess = () => {
                             </Box>
                         </Stack>
 
-                        <Box sx={{ mt: 4 }}>
-                            <Typography variant="subtitle1" sx={{ fontWeight: 800, mb: 1 }}>Delivering to</Typography>
-                            <Typography variant="body2" sx={{ color: '#475569', lineHeight: 1.6 }}>
-                                {order?.shippingAddress.address}<br />
-                                {order?.shippingAddress.city}, {order?.shippingAddress.postalCode}<br />
-                                {order?.shippingAddress.country}
-                            </Typography>
+                        <Box sx={{ mt: 4, display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 4 }}>
+                            <Box>
+                                <Typography variant="subtitle1" sx={{ fontWeight: 800, mb: 1 }}>Delivering to</Typography>
+                                <Typography variant="body2" sx={{ color: '#475569', lineHeight: 1.6 }}>
+                                    {order?.shippingAddress.address}<br />
+                                    {order?.shippingAddress.city}, {order?.shippingAddress.postalCode}<br />
+                                    {order?.shippingAddress.country}
+                                </Typography>
+                            </Box>
+
+                            <Box>
+                                <Typography variant="subtitle1" sx={{ fontWeight: 800, mb: 1 }}>Payment Method</Typography>
+                                <Stack direction="row" alignItems="center" spacing={1.5} sx={{ p: 2, border: '1px solid #e2e8f0', borderRadius: 3, display: 'inline-flex', bgcolor: 'white' }}>
+                                    <CreditCardIcon sx={{ color: '#000' }} />
+                                    <Box>
+                                        <Typography variant="body2" sx={{ fontWeight: 800, lineHeight: 1.2 }}>
+                                            {order?.paymentMethod || 'Credit Card'}
+                                        </Typography>
+                                        <Typography variant="caption" sx={{ color: '#64748b', display: 'block' }}>
+                                            Ending in •••• 4242
+                                        </Typography>
+                                    </Box>
+                                    <Chip label="PAID" size="small" color="success" sx={{ height: 24, fontSize: '0.7rem', fontWeight: 800, borderRadius: 1 }} />
+                                </Stack>
+                            </Box>
                         </Box>
                     </Box>
 

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Box, Typography, Paper, Stack, IconButton, List, ListItemButton, ListItemIcon, ListItemText, Grid, Chip, Avatar, CircularProgress, Tabs, Tab, Button, Link } from '@mui/material';
+import { toast } from 'react-toastify';
 import {
     Dashboard as DashboardIcon,
     Store as StoreIcon,
@@ -73,8 +74,9 @@ const FreelanceManagement = () => {
         try {
             await AdminService.updateFreelancerStatus(id, status);
             setPendingFreelancers(pendingFreelancers.filter(f => f._id !== id));
+            toast.success(`Freelancer ${status} successfully`);
         } catch (error) {
-            alert("Failed to update status");
+            toast.error("Failed to update status");
         }
     };
 
@@ -82,8 +84,9 @@ const FreelanceManagement = () => {
         try {
             await AdminService.updateInterestStatus(id, status);
             setInterests(interests.map(i => i._id === id ? { ...i, status } : i));
+            toast.success(`Interest request ${status} successfully`);
         } catch (error) {
-            alert("Failed to update interest status");
+            toast.error("Failed to update interest status");
         }
     };
 
@@ -91,8 +94,9 @@ const FreelanceManagement = () => {
         try {
             await FreelanceService.updateStatus(id, status);
             setPosts(posts.map(p => p._id === id ? { ...p, status } : p));
+            toast.success(`Post ${status} successfully`);
         } catch (error) {
-            alert("Failed to update post status");
+            toast.error("Failed to update post status");
         }
     };
 
@@ -101,8 +105,9 @@ const FreelanceManagement = () => {
             try {
                 await FreelanceService.delete(id);
                 setPosts(posts.filter(p => p._id !== id));
+                toast.success("Post deleted successfully");
             } catch (error) {
-                alert("Failed to delete post");
+                toast.error("Failed to delete post");
             }
         }
     };

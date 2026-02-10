@@ -98,82 +98,85 @@ const Profile = () => {
                     </Box>
                 ) : (
                     <Stack spacing={2}>
-                        {orders.map((order: any) => (
-                            <Paper key={order._id} elevation={0} sx={{ p: 3, borderRadius: 4, border: '1px solid #e2e8f0' }}>
-                                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2, alignItems: 'center' }}>
-                                    <Box>
-                                        <Typography variant="subtitle2" sx={{ fontWeight: 800 }}>Order ID: {order._id.slice(-8).toUpperCase()}</Typography>
-                                        <Typography variant="caption" sx={{ color: '#64748b' }}>Placed on {new Date(order.createdAt).toLocaleDateString()}</Typography>
-                                    </Box>
-                                    <Box sx={{ textAlign: 'right' }}>
-                                        <Chip
-                                            label={order.status || (order.isDelivered ? 'Delivered' : 'Ordered')}
-                                            size="small"
-                                            sx={{
-                                                bgcolor: getStatusColor(order.status || (order.isDelivered ? 'Delivered' : 'Ordered')).bg,
-                                                color: getStatusColor(order.status || (order.isDelivered ? 'Delivered' : 'Ordered')).text,
-                                                fontWeight: 800
-                                            }}
-                                        />
-                                        <Typography variant="caption" sx={{ display: 'block', mt: 0.5, color: '#64748b' }}>
-                                            {order.isPaid ? 'Paid' : 'Payment Pending'}
-                                        </Typography>
-                                    </Box>
-                                </Box>
-
-                                {/* Tracking Stepper (Simplified) */}
-                                <Box sx={{ mb: 3, mt: 2, p: 2, bgcolor: '#f8fafc', borderRadius: 3 }}>
-                                    <Stack direction="row" spacing={1} alignItems="center">
-                                        <InfoOutlinedIcon sx={{ fontSize: 16, color: '#64748b' }} />
-                                        <Typography variant="caption" sx={{ fontWeight: 600 }}>Tracking Status:</Typography>
-                                    </Stack>
-                                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 1, position: 'relative' }}>
-                                        {['Ordered', 'Shipped', 'Out for Delivery', 'Delivered'].map((s, idx) => {
-                                            const statusesList = ['Ordered', 'Shipped', 'Out for Delivery', 'Delivered'];
-                                            const currentIdx = statusesList.indexOf(order.status || 'Ordered');
-                                            const isActive = idx <= currentIdx;
-                                            return (
-                                                <Box key={s} sx={{ textAlign: 'center', flex: 1, zIndex: 1 }}>
-                                                    <Box sx={{
-                                                        width: 12, height: 12, borderRadius: '50%', mx: 'auto', mb: 1,
-                                                        bgcolor: isActive ? '#000' : '#e2e8f0'
-                                                    }} />
-                                                    <Typography variant="caption" sx={{
-                                                        fontSize: '0.65rem', fontWeight: isActive ? 800 : 500,
-                                                        color: isActive ? '#000' : '#94a3b8'
-                                                    }}>
-                                                        {s}
-                                                    </Typography>
-                                                </Box>
-                                            )
-                                        })}
-                                        {/* Progress Line */}
-                                        <Box sx={{
-                                            position: 'absolute', top: 5, left: '12.5%', right: '12.5%', height: 2, bgcolor: '#e2e8f0', zIndex: 0
-                                        }}>
-                                            <Box sx={{
-                                                height: '100%', bgcolor: '#000',
-                                                width: `${(['Ordered', 'Shipped', 'Out for Delivery', 'Delivered'].indexOf(order.status || 'Ordered') / 3) * 100}%`,
-                                                transition: 'width 0.5s ease'
-                                            }} />
+                        {orders.map((order: any) => {
+                            if (!order) return null;
+                            return (
+                                <Paper key={order._id} elevation={0} sx={{ p: 3, borderRadius: 4, border: '1px solid #e2e8f0' }}>
+                                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2, alignItems: 'center' }}>
+                                        <Box>
+                                            <Typography variant="subtitle2" sx={{ fontWeight: 800 }}>Order ID: {order._id.slice(-8).toUpperCase()}</Typography>
+                                            <Typography variant="caption" sx={{ color: '#64748b' }}>Placed on {new Date(order.createdAt).toLocaleDateString()}</Typography>
+                                        </Box>
+                                        <Box sx={{ textAlign: 'right' }}>
+                                            <Chip
+                                                label={order.status || (order.isDelivered ? 'Delivered' : 'Ordered')}
+                                                size="small"
+                                                sx={{
+                                                    bgcolor: getStatusColor(order.status || (order.isDelivered ? 'Delivered' : 'Ordered')).bg,
+                                                    color: getStatusColor(order.status || (order.isDelivered ? 'Delivered' : 'Ordered')).text,
+                                                    fontWeight: 800
+                                                }}
+                                            />
+                                            <Typography variant="caption" sx={{ display: 'block', mt: 0.5, color: '#64748b' }}>
+                                                {order.isPaid ? 'Paid' : 'Payment Pending'}
+                                            </Typography>
                                         </Box>
                                     </Box>
-                                </Box>
 
-                                <Stack spacing={1}>
-                                    {order.orderItems?.map((item: any, i: number) => (
-                                        <Typography key={i} variant="body2" sx={{ color: '#334155' }}>
-                                            • {item.title || item.name} x {item.quantity}
-                                        </Typography>
-                                    ))}
-                                </Stack>
-                                <Divider sx={{ my: 2 }} />
-                                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                    <Typography variant="h6" sx={{ fontWeight: 900 }}>Total: ₹{order.totalPrice.toLocaleString()}</Typography>
-                                    <Button variant="text" size="small" onClick={() => navigate(`/checkout`)}>Need Help?</Button>
-                                </Box>
-                            </Paper>
-                        ))}
+                                    {/* Tracking Stepper (Simplified) */}
+                                    <Box sx={{ mb: 3, mt: 2, p: 2, bgcolor: '#f8fafc', borderRadius: 3 }}>
+                                        <Stack direction="row" spacing={1} alignItems="center">
+                                            <InfoOutlinedIcon sx={{ fontSize: 16, color: '#64748b' }} />
+                                            <Typography variant="caption" sx={{ fontWeight: 600 }}>Tracking Status:</Typography>
+                                        </Stack>
+                                        <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 1, position: 'relative' }}>
+                                            {['Ordered', 'Shipped', 'Out for Delivery', 'Delivered'].map((s, idx) => {
+                                                const statusesList = ['Ordered', 'Shipped', 'Out for Delivery', 'Delivered'];
+                                                const currentIdx = statusesList.indexOf(order.status || 'Ordered');
+                                                const isActive = idx <= currentIdx;
+                                                return (
+                                                    <Box key={s} sx={{ textAlign: 'center', flex: 1, zIndex: 1 }}>
+                                                        <Box sx={{
+                                                            width: 12, height: 12, borderRadius: '50%', mx: 'auto', mb: 1,
+                                                            bgcolor: isActive ? '#000' : '#e2e8f0'
+                                                        }} />
+                                                        <Typography variant="caption" sx={{
+                                                            fontSize: '0.65rem', fontWeight: isActive ? 800 : 500,
+                                                            color: isActive ? '#000' : '#94a3b8'
+                                                        }}>
+                                                            {s}
+                                                        </Typography>
+                                                    </Box>
+                                                )
+                                            })}
+                                            {/* Progress Line */}
+                                            <Box sx={{
+                                                position: 'absolute', top: 5, left: '12.5%', right: '12.5%', height: 2, bgcolor: '#e2e8f0', zIndex: 0
+                                            }}>
+                                                <Box sx={{
+                                                    height: '100%', bgcolor: '#000',
+                                                    width: `${(['Ordered', 'Shipped', 'Out for Delivery', 'Delivered'].indexOf(order.status || 'Ordered') / 3) * 100}%`,
+                                                    transition: 'width 0.5s ease'
+                                                }} />
+                                            </Box>
+                                        </Box>
+                                    </Box>
+
+                                    <Stack spacing={1}>
+                                        {order.orderItems?.map((item: any, i: number) => (
+                                            <Typography key={i} variant="body2" sx={{ color: '#334155' }}>
+                                                • {item?.title || item?.name} x {item?.quantity}
+                                            </Typography>
+                                        ))}
+                                    </Stack>
+                                    <Divider sx={{ my: 2 }} />
+                                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                        <Typography variant="h6" sx={{ fontWeight: 900 }}>Total: ₹{order.totalPrice.toLocaleString()}</Typography>
+                                        <Button variant="text" size="small" onClick={() => navigate(`/checkout`)}>Need Help?</Button>
+                                    </Box>
+                                </Paper>
+                            );
+                        })}
                     </Stack>
                 )}
             </Box>
@@ -259,18 +262,21 @@ const Profile = () => {
                     <Typography variant="h6" sx={{ fontWeight: 800, mb: 3 }}>Shopping Cart ({cart?.cartItems?.length || 0})</Typography>
                     {cart?.cartItems?.length > 0 ? (
                         <Stack spacing={2}>
-                            {cart.cartItems.map((item: any) => (
-                                <Paper key={item.product._id} elevation={0} sx={{ p: 2, borderRadius: 3, border: '1px solid #f1f5f9', display: 'flex', gap: 2, alignItems: 'center' }}>
-                                    <Avatar src={item.product?.images?.[0]} variant="rounded" sx={{ width: 60, height: 60 }} />
-                                    <Box sx={{ flex: 1 }}>
-                                        <Typography variant="subtitle2" sx={{ fontWeight: 800 }}>{item.product?.title}</Typography>
-                                        <Typography variant="caption" sx={{ color: '#64748b' }}>Qty: {item.quantity} • ₹{item.price}</Typography>
-                                    </Box>
-                                    <IconButton color="error" onClick={() => handleRemoveFromCart(item.product._id)}>
-                                        <DeleteIcon fontSize="small" />
-                                    </IconButton>
-                                </Paper>
-                            ))}
+                            {cart.cartItems.map((item: any) => {
+                                if (!item || !item.product) return null;
+                                return (
+                                    <Paper key={item.product._id} elevation={0} sx={{ p: 2, borderRadius: 3, border: '1px solid #f1f5f9', display: 'flex', gap: 2, alignItems: 'center' }}>
+                                        <Avatar src={item.product?.images?.[0]} variant="rounded" sx={{ width: 60, height: 60 }} />
+                                        <Box sx={{ flex: 1 }}>
+                                            <Typography variant="subtitle2" sx={{ fontWeight: 800 }}>{item.product?.title}</Typography>
+                                            <Typography variant="caption" sx={{ color: '#64748b' }}>Qty: {item.quantity} • ₹{item.price}</Typography>
+                                        </Box>
+                                        <IconButton color="error" onClick={() => handleRemoveFromCart(item.product._id)}>
+                                            <DeleteIcon fontSize="small" />
+                                        </IconButton>
+                                    </Paper>
+                                );
+                            })}
                             <Button
                                 variant="contained"
                                 fullWidth
@@ -292,18 +298,21 @@ const Profile = () => {
                     <Typography variant="h6" sx={{ fontWeight: 800, mb: 3 }}>Wishlist ({wishlist?.length || 0})</Typography>
                     {wishlist && wishlist.length > 0 ? (
                         <Stack spacing={2}>
-                            {wishlist.map((item: any) => (
-                                <Paper key={item._id} elevation={0} sx={{ p: 2, borderRadius: 3, border: '1px solid #f1f5f9', display: 'flex', gap: 2, alignItems: 'center' }}>
-                                    <Avatar src={item.images?.[0]} variant="rounded" sx={{ width: 60, height: 60 }} />
-                                    <Box sx={{ flex: 1 }}>
-                                        <Typography variant="subtitle2" sx={{ fontWeight: 800 }}>{item.title}</Typography>
-                                        <Typography variant="caption" sx={{ color: '#64748b' }}>₹{item.price ? item.price.toLocaleString() : 'N/A'}</Typography>
-                                    </Box>
-                                    <IconButton size="small" onClick={() => handleRemoveFromWishlist(item._id)}>
-                                        <DeleteIcon fontSize="small" color="error" />
-                                    </IconButton>
-                                </Paper>
-                            ))}
+                            {wishlist.map((item: any) => {
+                                if (!item) return null;
+                                return (
+                                    <Paper key={item._id} elevation={0} sx={{ p: 2, borderRadius: 3, border: '1px solid #f1f5f9', display: 'flex', gap: 2, alignItems: 'center' }}>
+                                        <Avatar src={item.images?.[0]} variant="rounded" sx={{ width: 60, height: 60 }} />
+                                        <Box sx={{ flex: 1 }}>
+                                            <Typography variant="subtitle2" sx={{ fontWeight: 800 }}>{item.title}</Typography>
+                                            <Typography variant="caption" sx={{ color: '#64748b' }}>₹{item.price ? item.price.toLocaleString() : 'N/A'}</Typography>
+                                        </Box>
+                                        <IconButton size="small" onClick={() => handleRemoveFromWishlist(item._id)}>
+                                            <DeleteIcon fontSize="small" color="error" />
+                                        </IconButton>
+                                    </Paper>
+                                );
+                            })}
                         </Stack>
                     ) : (
                         <Box sx={{ p: 4, textAlign: 'center', bgcolor: '#f8fafc', borderRadius: 4 }}>

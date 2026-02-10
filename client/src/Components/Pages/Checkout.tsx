@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Box, Container, Typography, TextField, Button, Paper, Stack, Divider, CircularProgress, IconButton, Radio, RadioGroup, FormControlLabel, FormControl } from '@mui/material';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements } from '@stripe/react-stripe-js';
@@ -13,10 +13,11 @@ import 'react-toastify/dist/ReactToastify.css';
 
 const Checkout = () => {
     const navigate = useNavigate();
+    const location = useLocation();
     const [isLoading, setIsLoading] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [cart, setCart] = useState<any>(null);
-    const [paymentMethod, setPaymentMethod] = useState('COD');
+    const [paymentMethod, setPaymentMethod] = useState(location.state?.preferredPaymentMethod || 'COD');
     const [stripePromise, setStripePromise] = useState<any>(null);
     const [clientSecret, setClientSecret] = useState('');
     const [intentError, setIntentError] = useState<string | null>(null);
@@ -38,10 +39,11 @@ const Checkout = () => {
     const initStripe = async () => {
         try {
             const { data } = await PaymentService.getConfig();
-            if (data.publishableKey) {
+            if (data.publishableKey && !data.isMock) {
                 setStripePromise(loadStripe(data.publishableKey));
             } else {
-                setIntentError("Stripe public key missing.");
+                // If it's mock or no key, we don't load Stripe
+                setIsMock(true);
             }
         } catch (error) {
             console.error("Stripe config failed", error);
@@ -98,13 +100,16 @@ const Checkout = () => {
         setIsSubmitting(true);
         try {
             const orderData = {
-                orderItems: cart.cartItems.map((item: any) => ({
-                    title: item.product.title,
-                    quantity: item.quantity,
-                    image: item.product.images?.[0] || "https://via.placeholder.com/150",
-                    price: item.product.price,
-                    product: item.product._id
-                })),
+                orderItems: cart.cartItems.map((item: any) => {
+                    if (!item || !item.product) return null;
+                    return {
+                        title: item.product.title,
+                        quantity: item.quantity,
+                        image: item.product.images?.[0] || "https://via.placeholder.com/150",
+                        price: item.product.price,
+                        product: item.product._id
+                    };
+                }).filter(Boolean),
                 shippingAddress,
                 paymentMethod: paymentMethod,
                 paymentResult: stripePaymentId ? { id: stripePaymentId, status: 'succeeded' } : undefined,
@@ -230,12 +235,15 @@ const Checkout = () => {
                         <Paper elevation={0} sx={{ p: 4, borderRadius: 6, border: '1px solid #e2e8f0', bgcolor: 'white', position: 'sticky', top: 120 }}>
                             <Typography variant="h6" sx={{ fontWeight: 800, mb: 3 }}>Order Summary</Typography>
                             <Stack spacing={2} sx={{ mb: 3 }}>
-                                {cart.cartItems.map((item: any) => (
-                                    <Box key={item.product._id} sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                                        <Typography variant="body2" sx={{ fontWeight: 600 }}>{item.product.title} x {item.quantity}</Typography>
-                                        <Typography variant="body2" sx={{ fontWeight: 700 }}>₹{(item.price * item.quantity).toLocaleString()}</Typography>
-                                    </Box>
-                                ))}
+                                {cart.cartItems.map((item: any) => {
+                                    if (!item || !item.product) return null;
+                                    return (
+                                        <Box key={item.product._id} sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                                            <Typography variant="body2" sx={{ fontWeight: 600 }}>{item.product.title} x {item.quantity}</Typography>
+                                            <Typography variant="body2" sx={{ fontWeight: 700 }}>₹{(item.price * item.quantity).toLocaleString()}</Typography>
+                                        </Box>
+                                    );
+                                })}
                             </Stack>
                             <Divider sx={{ my: 3 }} />
                             <Stack spacing={2}>

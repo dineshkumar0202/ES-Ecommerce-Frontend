@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Box, Typography, Paper, Stack, IconButton, List, ListItemButton, ListItemIcon, ListItemText, Chip, CircularProgress, Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField, MenuItem } from '@mui/material';
+import { toast } from 'react-toastify';
 import {
     Dashboard as DashboardIcon,
     Store as StoreIcon,
@@ -24,7 +25,7 @@ const QCommerceManagement = () => {
     // Modal State
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [newProduct, setNewProduct] = useState({
-        title: '', price: '', brand: '', unit: '', discount: '0', category: '', stock: '', image: '', description: ''
+        title: '', price: '', brand: '', unit: '', discount: '0', category: '', stock: '', image: '', images: '', description: ''
     });
     const [isUploading, setIsUploading] = useState(false);
     const [editingId, setEditingId] = useState<string | null>(null);
@@ -45,50 +46,75 @@ const QCommerceManagement = () => {
     };
 
     const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (!file) return;
+        const files = e.target.files;
+        if (!files || files.length === 0) return;
 
         setIsUploading(true);
         try {
-            const { data } = await UploadService.uploadImage(file);
-            setNewProduct(prev => ({
-                ...prev,
-                image: data.url
-            }));
-            alert('Image uploaded successfully!');
+            const uploadPromises = Array.from(files).map(async (file) => {
+                const { data } = await UploadService.uploadImage(file);
+                return data.url;
+            });
+
+            const uploadedUrls = await Promise.all(uploadPromises);
+            setNewProduct(prev => {
+                const existingImages = prev.images ? prev.images.split(',').map(img => img.trim()).filter(img => img !== '') : [];
+                const newImages = [...existingImages, ...uploadedUrls];
+                return {
+                    ...prev,
+                    image: newImages[0] || '',
+                    images: newImages.join(', ')
+                };
+            });
+            toast.success(`${uploadedUrls.length} image(s) uploaded successfully!`);
         } catch (error) {
             console.error("Upload failed", error);
-            alert('Upload failed');
+            toast.error('Upload failed');
         } finally {
             setIsUploading(false);
         }
     };
 
+    const removeImage = (urlToRemove: string) => {
+        setNewProduct(prev => {
+            const currentImages = prev.images.split(',').map(img => img.trim()).filter(img => img !== '');
+            const filteredImages = currentImages.filter(url => url !== urlToRemove);
+            return {
+                ...prev,
+                image: filteredImages[0] || '',
+                images: filteredImages.join(', ')
+            };
+        });
+    };
+
     const handleAddProduct = async () => {
         try {
+            const imageList = newProduct.images.split(',').map(img => img.trim()).filter(img => img !== '');
             const productData = {
                 ...newProduct,
                 price: Number(newProduct.price),
                 discount: Number(newProduct.discount),
-                stock: Number(newProduct.stock)
+                stock: Number(newProduct.stock),
+                image: imageList[0] || '',
+                images: imageList
             };
 
             if (editingId) {
                 const { data } = await QProductService.update(editingId, productData);
                 setProducts(products.map(p => p._id === editingId ? data : p));
-                alert('Product updated successfully!');
+                toast.success('Product updated successfully!');
             } else {
                 const { data } = await QProductService.create(productData);
                 setProducts([data, ...products]);
-                alert('Product created successfully!');
+                toast.success('Product created successfully!');
             }
 
             setIsModalOpen(false);
             setEditingId(null);
-            setNewProduct({ title: '', price: '', brand: '', unit: '', discount: '0', category: '', stock: '', image: '', description: '' });
+            setNewProduct({ title: '', price: '', brand: '', unit: '', discount: '0', category: '', stock: '', image: '', images: '', description: '' });
         } catch (error: any) {
             console.error("Failed to save Q-commerce product:", error.response?.data || error.message);
-            alert(`Failed to save product: ${error.response?.data?.message || error.message}`);
+            toast.error(`Failed to save product: ${error.response?.data?.message || error.message}`);
         }
     };
 
@@ -103,6 +129,7 @@ const QCommerceManagement = () => {
             category: product.category || '',
             stock: product.stock?.toString() || '',
             image: product.image || '',
+            images: product.images?.join(', ') || product.image || '',
             description: product.description || ''
         });
         setIsModalOpen(true);
@@ -113,8 +140,9 @@ const QCommerceManagement = () => {
             try {
                 await QProductService.delete(id);
                 setProducts(products.filter(p => p._id !== id));
+                toast.success("Product deleted successfully");
             } catch (error) {
-                alert("Failed to delete product");
+                toast.error("Failed to delete product");
             }
         }
     };
@@ -258,17 +286,43 @@ const QCommerceManagement = () => {
                                 {['Fruits & Veg', 'Dairy & Eggs', 'Bakery', 'Snacks', 'Beverages', 'Instant Food'].map(cat => <MenuItem key={cat} value={cat}>{cat}</MenuItem>)}
                             </TextField>
                             <TextField fullWidth label="Brand" value={newProduct.brand} onChange={(e) => setNewProduct({ ...newProduct, brand: e.target.value })} />
-                            <TextField fullWidth label="Image URL" value={newProduct.image} onChange={(e) => setNewProduct({ ...newProduct, image: e.target.value })} />
-                            <Button
-                                variant="outlined"
-                                component="label"
-                                startIcon={isUploading ? <CircularProgress size={20} /> : <CloudUploadIcon />}
-                                disabled={isUploading}
-                                sx={{ borderRadius: 2, textTransform: 'none', py: 1 }}
-                            >
-                                {isUploading ? 'Uploading...' : 'Upload Image to Cloud'}
-                                <input type="file" hidden accept="image/*" onChange={handleFileUpload} />
-                            </Button>
+                            <Box sx={{ mt: 1 }}>
+                                <Typography variant="caption" sx={{ fontWeight: 700, color: '#64748b', mb: 1, display: 'block' }}>
+                                    QUICK ITEM IMAGES ({newProduct.images ? newProduct.images.split(',').length : 0}/3)
+                                </Typography>
+                                <Stack direction="row" spacing={2} sx={{ mb: 2, flexWrap: 'wrap', gap: 1 }}>
+                                    {newProduct.images.split(',').map((img, idx) => {
+                                        const trimmedImg = img.trim();
+                                        if (!trimmedImg) return null;
+                                        return (
+                                            <Box key={idx} sx={{ position: 'relative', width: 80, height: 80, borderRadius: 2, overflow: 'hidden', border: '1px solid #e2e8f0' }}>
+                                                <Box component="img" src={trimmedImg} sx={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                                <IconButton
+                                                    size="small"
+                                                    onClick={() => removeImage(trimmedImg)}
+                                                    sx={{ position: 'absolute', top: 2, right: 2, bgcolor: 'rgba(255,255,255,0.8)', '&:hover': { bgcolor: 'white' }, p: 0.5 }}
+                                                >
+                                                    <DeleteIcon sx={{ fontSize: 14, color: '#ef4444' }} />
+                                                </IconButton>
+                                            </Box>
+                                        );
+                                    })}
+                                </Stack>
+                                <Button
+                                    variant="outlined"
+                                    component="label"
+                                    fullWidth
+                                    startIcon={isUploading ? <CircularProgress size={20} /> : <CloudUploadIcon />}
+                                    disabled={isUploading || (newProduct.images ? newProduct.images.split(',').length >= 3 : false)}
+                                    sx={{ borderRadius: 2, textTransform: 'none', py: 1.5, borderStyle: 'dashed', borderWidth: 2 }}
+                                >
+                                    {isUploading ? 'Uploading...' : 'Upload Images (Max 3)'}
+                                    <input type="file" hidden accept="image/*" multiple onChange={handleFileUpload} />
+                                </Button>
+                                <Typography variant="caption" sx={{ color: '#94a3b8', mt: 1, display: 'block' }}>
+                                    Tip: Q-commerce items support up to 3 images.
+                                </Typography>
+                            </Box>
                             <TextField fullWidth multiline rows={2} label="Short Description" value={newProduct.description} onChange={(e) => setNewProduct({ ...newProduct, description: e.target.value })} />
                         </Stack>
                     </DialogContent>

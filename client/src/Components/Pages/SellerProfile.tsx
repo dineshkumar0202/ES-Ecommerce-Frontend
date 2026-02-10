@@ -75,18 +75,21 @@ const SellerProfile = () => {
                 <Typography variant="h6" sx={{ fontWeight: 800, mb: 3 }}>Shopping Cart ({cart?.cartItems?.length || 0})</Typography>
                 {cart?.cartItems?.length > 0 ? (
                     <Stack spacing={2}>
-                        {cart.cartItems.map((item: any) => (
-                            <Paper key={item.product?._id} elevation={0} sx={{ p: 2, borderRadius: 3, border: '1px solid #f1f5f9', display: 'flex', gap: 2, alignItems: 'center', bgcolor: 'white' }}>
-                                <Avatar src={item.product?.images?.[0]} variant="rounded" sx={{ width: 60, height: 60 }} />
-                                <Box sx={{ flex: 1 }}>
-                                    <Typography variant="subtitle2" sx={{ fontWeight: 800 }}>{item.product?.title}</Typography>
-                                    <Typography variant="caption" sx={{ color: '#64748b' }}>Qty: {item.quantity} • ₹{item.price}</Typography>
-                                </Box>
-                                <IconButton color="error" size="small" onClick={() => handleRemoveFromCart(item.product?._id)}>
-                                    <DeleteIcon sx={{ fontSize: 18 }} />
-                                </IconButton>
-                            </Paper>
-                        ))}
+                        {cart.cartItems.map((item: any) => {
+                            if (!item || !item.product) return null;
+                            return (
+                                <Paper key={item.product._id} elevation={0} sx={{ p: 2, borderRadius: 3, border: '1px solid #f1f5f9', display: 'flex', gap: 2, alignItems: 'center', bgcolor: 'white' }}>
+                                    <Avatar src={item.product?.images?.[0]} variant="rounded" sx={{ width: 60, height: 60 }} />
+                                    <Box sx={{ flex: 1 }}>
+                                        <Typography variant="subtitle2" sx={{ fontWeight: 800 }}>{item.product?.title}</Typography>
+                                        <Typography variant="caption" sx={{ color: '#64748b' }}>Qty: {item.quantity} • ₹{item.price}</Typography>
+                                    </Box>
+                                    <IconButton color="error" size="small" onClick={() => handleRemoveFromCart(item.product?._id)}>
+                                        <DeleteIcon sx={{ fontSize: 18 }} />
+                                    </IconButton>
+                                </Paper>
+                            );
+                        })}
                         <Button
                             variant="contained"
                             fullWidth
@@ -113,18 +116,21 @@ const SellerProfile = () => {
                 <Typography variant="h6" sx={{ fontWeight: 800, mb: 3 }}>Wishlist ({wishlist.length})</Typography>
                 {wishlist.length > 0 ? (
                     <Stack spacing={2}>
-                        {wishlist.map((item: any) => (
-                            <Paper key={item._id} elevation={0} sx={{ p: 2, borderRadius: 3, border: '1px solid #f1f5f9', display: 'flex', gap: 2, alignItems: 'center', bgcolor: 'white' }}>
-                                <Avatar src={item.images?.[0]} variant="rounded" sx={{ width: 60, height: 60 }} />
-                                <Box sx={{ flex: 1 }}>
-                                    <Typography variant="subtitle2" sx={{ fontWeight: 800 }}>{item.title}</Typography>
-                                    <Typography variant="caption" sx={{ color: '#64748b' }}>₹{item.price}</Typography>
-                                </Box>
-                                <IconButton color="error" size="small" onClick={() => handleRemoveFromWishlist(item._id)}>
-                                    <DeleteIcon sx={{ fontSize: 18 }} />
-                                </IconButton>
-                            </Paper>
-                        ))}
+                        {wishlist.map((item: any) => {
+                            if (!item) return null;
+                            return (
+                                <Paper key={item._id} elevation={0} sx={{ p: 2, borderRadius: 3, border: '1px solid #f1f5f9', display: 'flex', gap: 2, alignItems: 'center', bgcolor: 'white' }}>
+                                    <Avatar src={item.images?.[0]} variant="rounded" sx={{ width: 60, height: 60 }} />
+                                    <Box sx={{ flex: 1 }}>
+                                        <Typography variant="subtitle2" sx={{ fontWeight: 800 }}>{item.title}</Typography>
+                                        <Typography variant="caption" sx={{ color: '#64748b' }}>₹{item.price}</Typography>
+                                    </Box>
+                                    <IconButton color="error" size="small" onClick={() => handleRemoveFromWishlist(item._id)}>
+                                        <DeleteIcon sx={{ fontSize: 18 }} />
+                                    </IconButton>
+                                </Paper>
+                            );
+                        })}
                     </Stack>
                 ) : (
                     <Paper elevation={0} sx={{ p: 4, textAlign: 'center', bgcolor: '#f8fafc', borderRadius: 4, border: '1px dashed #e2e8f0' }}>
@@ -195,12 +201,15 @@ const SellerProfile = () => {
                             </Box>
 
                             <Stack spacing={1.5} sx={{ mb: 3 }}>
-                                {order.orderItems?.map((item: any, i: number) => (
-                                    <Typography key={i} variant="body2" sx={{ color: '#475569', display: 'flex', alignItems: 'center', gap: 1 }}>
-                                        <Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: '#cbd5e1' }} />
-                                        {item.title || item.name} <strong>x {item.quantity}</strong>
-                                    </Typography>
-                                ))}
+                                {order.orderItems?.map((item: any, i: number) => {
+                                    if (!item) return null;
+                                    return (
+                                        <Typography key={i} variant="body2" sx={{ color: '#475569', display: 'flex', alignItems: 'center', gap: 1 }}>
+                                            <Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: '#cbd5e1' }} />
+                                            {item.title || item.name} <strong>x {item.quantity}</strong>
+                                        </Typography>
+                                    );
+                                })}
                             </Stack>
                             <Divider sx={{ my: 3, borderStyle: 'dashed' }} />
                             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>

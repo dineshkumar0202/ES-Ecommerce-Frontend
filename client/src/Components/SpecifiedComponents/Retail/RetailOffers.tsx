@@ -1,278 +1,260 @@
-import React, { useState, useEffect } from 'react';
-import { Box, Typography, Button, Stack, Container, Grid, Paper, IconButton } from '@mui/material';
+import { Box, Typography, Button, Stack, Paper, Container } from '@mui/material';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
-import AccessTimeIcon from '@mui/icons-material/AccessTime';
-
-const offers = [
-    {
-        id: 1,
-        title: "UpTo 60% Off",
-        subtitle: "Mobiles & Laptops",
-        bg: "linear-gradient(135deg, #0288d1 0%, #26c6da 100%)",
-        image: "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80", // Mobile/Laptop example
-        tag: "TOP DEAL | APPLE"
-    },
-    {
-        id: 2,
-        title: "New Arrivals",
-        subtitle: "Summer Collection",
-        bg: "linear-gradient(135deg, #f57f17 0%, #ffb74d 100%)",
-        image: "https://images.unsplash.com/photo-1523381210434-271e8be1f52b?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80", // Fashion example
-        tag: "TRENDING"
-    },
-    {
-        id: 3,
-        title: "Mega Sale",
-        subtitle: "Home & Living",
-        bg: "linear-gradient(135deg, #d32f2f 0%, #ef5350 100%)",
-        image: "https://images.unsplash.com/photo-1556228453-efd6c1ff04f6?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80", // Home example
-        tag: "LIMITED TIME"
-    }
-];
+import BoltIcon from '@mui/icons-material/Bolt';
 
 const RetailOffers = () => {
-    const [currentIndex, setCurrentIndex] = useState(0);
-
-    // Auto-slide effect
-    useEffect(() => {
-        const interval = setInterval(() => {
-            setCurrentIndex((prev) => (prev + 1) % offers.length);
-        }, 5000);
-        return () => clearInterval(interval);
-    }, []);
-
     return (
         <Box sx={{ width: '100%', mb: 6 }}>
-            {/* Main Carousel Slider */}
+            {/* Main Mega Deal Banner */}
             <Paper
                 elevation={0}
                 sx={{
                     position: 'relative',
-                    height: { xs: 300, md: 400 },
+                    height: { xs: 400, md: 500 },
                     overflow: 'hidden',
                     borderRadius: 4,
                     mb: 3,
-                    background: offers[currentIndex].bg,
+                    bgcolor: '#0f172a', // Dark background
+                    color: 'white',
                     display: 'flex',
-                    alignItems: 'center',
-                    transition: 'background 0.5s ease-in-out',
-                    color: 'white'
+                    alignItems: 'center'
                 }}
             >
-                <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 2, height: '100%' }}>
+                {/* Background Gradient Accent */}
+                <Box
+                    sx={{
+                        position: 'absolute',
+                        top: 0,
+                        right: 0,
+                        width: '50%',
+                        height: '100%',
+                        background: 'linear-gradient(135deg, rgba(190, 242, 100, 0.1) 0%, rgba(190, 242, 100, 0) 100%)',
+                        clipPath: 'polygon(20% 0%, 100% 0, 100% 100%, 0% 100%)'
+                    }}
+                />
+
+                <Box sx={{ position: 'relative', zIndex: 2, height: '100%', width: '100%' }}>
                     <Stack
                         direction={{ xs: 'column', md: 'row' }}
                         justifyContent="space-between"
                         alignItems="center"
-                        sx={{ height: '100%', px: { xs: 2, md: 6 } }}
+                        sx={{ height: '100%', px: { xs: 4, md: 8 } }}
                     >
                         {/* Text Content */}
-                        <Box sx={{ flex: 1, textAlign: { xs: 'center', md: 'left' }, mb: { xs: 3, md: 0 } }}>
+                        <Box sx={{ flex: 1, textAlign: { xs: 'center', md: 'left' }, pt: { xs: 4, md: 0 } }}>
                             <Box
                                 sx={{
                                     display: 'inline-block',
                                     px: 2,
-                                    py: 0.5,
-                                    bgcolor: 'rgba(255,255,255,0.2)',
-                                    backdropFilter: 'blur(10px)',
-                                    borderRadius: 2,
-                                    mb: 2,
+                                    py: 1,
+                                    bgcolor: '#bef264', // Lime Green
+                                    color: 'black',
+                                    borderRadius: 5,
+                                    mb: 3,
                                     fontSize: '0.75rem',
-                                    fontWeight: 700,
-                                    letterSpacing: 1
+                                    fontWeight: 800,
+                                    letterSpacing: 1,
+                                    textTransform: 'uppercase'
                                 }}
                             >
-                                {offers[currentIndex].tag}
+                                Limited Time Only
                             </Box>
                             <Typography
-                                variant="h2"
-                                component="h1"
+                                variant="h1"
                                 sx={{
                                     fontWeight: 900,
-                                    fontSize: { xs: '2.5rem', md: '4rem' },
-                                    mb: 1,
-                                    lineHeight: 1.1
+                                    fontSize: { xs: '2.5rem', md: '5rem' },
+                                    mb: 2,
+                                    lineHeight: 1,
+                                    textTransform: 'uppercase'
                                 }}
                             >
-                                {offers[currentIndex].title}
+                                Mega Deal:<br />
+                                <span style={{ color: '#bef264' }}>Up To 50%</span><br />
+                                Off
                             </Typography>
-                            <Typography variant="h5" sx={{ mb: 4, fontWeight: 400, opacity: 0.9 }}>
-                                {offers[currentIndex].subtitle}
+                            <Typography variant="body1" sx={{ mb: 4, fontSize: '1.1rem', color: '#94a3b8', maxWidth: 450 }}>
+                                Experience the ultimate in retail excellence. Premium tech and lifestyle products at unbeatable prices.
                             </Typography>
-                            <Button
-                                variant="contained"
-                                size="large"
-                                sx={{
-                                    bgcolor: 'white',
-                                    color: 'black',
-                                    fontWeight: 800,
-                                    px: 4,
-                                    py: 1.5,
-                                    borderRadius: 3,
-                                    '&:hover': { bgcolor: '#f5f5f5' }
-                                }}
-                            >
-                                Shop Now
-                            </Button>
+                            <Stack direction="row" spacing={2} justifyContent={{ xs: 'center', md: 'flex-start' }}>
+                                <Button
+                                    variant="contained"
+                                    size="large"
+                                    sx={{
+                                        bgcolor: '#bef264',
+                                        color: 'black',
+                                        fontWeight: 800,
+                                        px: 4,
+                                        py: 1.5,
+                                        borderRadius: 2,
+                                        textTransform: 'none',
+                                        fontSize: '1rem',
+                                        '&:hover': { bgcolor: '#a3d94d' }
+                                    }}
+                                >
+                                    Shop the Sale
+                                </Button>
+                                <Button
+                                    variant="text"
+                                    size="large"
+                                    sx={{
+                                        color: 'white',
+                                        fontWeight: 600,
+                                        textTransform: 'none',
+                                        fontSize: '1rem',
+                                        '&:hover': { color: '#bef264' }
+                                    }}
+                                >
+                                    View Details
+                                </Button>
+                            </Stack>
                         </Box>
 
-                        {/* Image Content (with animation key) */}
+                        {/* Image Content */}
                         <Box
-                            key={currentIndex}
                             sx={{
                                 flex: 1,
                                 display: 'flex',
                                 justifyContent: { xs: 'center', md: 'flex-end' },
-                                animation: 'fadeInRight 0.8s ease-out'
+                                height: '100%',
+                                position: 'relative'
                             }}
                         >
                             <Box
                                 component="img"
-                                src={offers[currentIndex].image}
-                                alt="Offer"
+                                src="https://images.unsplash.com/photo-1505740420928-5e560c06d30e?ixlib=rb-1.2.1&auto=format&fit=crop&w=1000&q=80" // Headphones
+                                alt="Headphones"
                                 sx={{
+                                    height: { xs: 250, md: 450 },
                                     maxWidth: '100%',
-                                    height: { xs: 180, md: 300 },
                                     objectFit: 'contain',
-                                    filter: 'drop-shadow(0 20px 30px rgba(0,0,0,0.3))',
-                                    transform: 'perspective(1000px) rotateY(-15deg)',
-                                    transition: 'transform 0.3s ease',
-                                    '&:hover': {
-                                        transform: 'perspective(1000px) rotateY(-5deg) scale(1.05)'
-                                    }
+                                    mt: { xs: 2, md: 5 },
+                                    filter: 'drop-shadow(0 20px 40px rgba(0,0,0,0.5))'
                                 }}
                             />
                         </Box>
                     </Stack>
-                </Container>
-
-                {/* Dots Indicators */}
-                <Stack direction="row" spacing={1} sx={{ position: 'absolute', bottom: 20, left: '50%', transform: 'translateX(-50%)' }}>
-                    {offers.map((_, index) => (
-                        <Box
-                            key={index}
-                            onClick={() => setCurrentIndex(index)}
-                            sx={{
-                                width: index === currentIndex ? 24 : 8,
-                                height: 8,
-                                borderRadius: 4,
-                                bgcolor: 'white',
-                                opacity: index === currentIndex ? 1 : 0.5,
-                                cursor: 'pointer',
-                                transition: 'all 0.3s ease'
-                            }}
-                        />
-                    ))}
-                </Stack>
+                </Box>
             </Paper>
 
             {/* Bottom Grid Section */}
-            <Grid container spacing={3}>
+            <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 3 }}>
                 {/* Valentine's Offer */}
-                <Grid size={{ xs: 12, md: 6 }}>
+                <Box sx={{ flex: 1 }}>
                     <Paper
                         elevation={0}
                         sx={{
-                            p: 4,
+                            p: 5,
                             borderRadius: 4,
-                            background: 'linear-gradient(135deg, #b71c1c 0%, #ef5350 100%)',
+                            background: 'linear-gradient(135deg, #be4d25 0%, #ed8936 30%, #f6ad55 100%)', // Adjusted to reddish/pink tone
+                            bgcolor: '#a94442',
+                            backgroundBlendMode: 'overlay', // mixing for texture
                             color: 'white',
-                            height: '100%',
-                            minHeight: 250,
+                            height: 280,
                             position: 'relative',
                             overflow: 'hidden',
                             display: 'flex',
                             alignItems: 'center'
                         }}
+                        style={{
+                            background: 'linear-gradient(to right, #b9646c, #ce8f96)'
+                        }}
                     >
                         <Box sx={{ zIndex: 2, flex: 1 }}>
-                            <Typography variant="h4" sx={{ fontWeight: 800, mb: 0.5 }}>Valentine's</Typography>
-                            <Typography variant="h3" sx={{ fontWeight: 900, mb: 3, opacity: 0.9 }}>Offers</Typography>
+                            <Typography variant="h4" sx={{ fontWeight: 800, mb: 1 }}>Valentine's Offers</Typography>
+                            <Typography variant="body1" sx={{ mb: 3, opacity: 0.9, fontWeight: 500 }}>
+                                Gifts for your loved ones up to 30% off
+                            </Typography>
                             <Button
-                                variant="contained"
-                                startIcon={<ArrowForwardIcon />}
+                                variant="text"
+                                endIcon={<ArrowForwardIcon />}
                                 sx={{
-                                    bgcolor: 'white',
-                                    color: '#c62828',
+                                    color: 'white',
                                     fontWeight: 700,
-                                    borderRadius: 3,
-                                    '&:hover': { bgcolor: '#ffebee' }
+                                    p: 0,
+                                    textTransform: 'none',
+                                    '&:hover': { transform: 'translateX(5px)', bgcolor: 'transparent' },
+                                    transition: 'transform 0.2s'
                                 }}
                             >
-                                Shop Gifts
+                                Explore Now
                             </Button>
                         </Box>
 
                         <Box
                             component="img"
-                            src="https://images.unsplash.com/photo-1549465220-1a8b9238cd48?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80" // Gift box example
+                            src="https://images.unsplash.com/photo-1549465220-1a8b9238cd48?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80"
                             sx={{
                                 position: 'absolute',
                                 right: -20,
-                                bottom: -20,
-                                width: 220,
-                                transform: 'rotate(-15deg)',
-                                filter: 'drop-shadow(0 10px 20px rgba(0,0,0,0.2))'
+                                bottom: -30,
+                                width: 250,
+                                transform: 'rotate(-10deg)',
+                                filter: 'drop-shadow(0 10px 20px rgba(0,0,0,0.2)) opacity(0.9)'
                             }}
                         />
                     </Paper>
-                </Grid>
+                </Box>
 
                 {/* Flash Sale */}
-                <Grid size={{ xs: 12, md: 6 }}>
+                <Box sx={{ flex: 1 }}>
                     <Paper
                         elevation={0}
                         sx={{
-                            p: 4,
+                            p: 5,
                             borderRadius: 4,
-                            background: 'linear-gradient(135deg, #1b5e20 0%, #43a047 100%)',
+                            bgcolor: '#0f172a', // Dark blue/black
                             color: 'white',
-                            height: '100%',
-                            minHeight: 250,
+                            height: 280,
                             position: 'relative',
                             overflow: 'hidden',
                             display: 'flex',
                             alignItems: 'center'
                         }}
                     >
-                        <Box sx={{ zIndex: 2, flex: 1 }}>
-                            <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 2, bgcolor: 'rgba(0,0,0,0.2)', width: 'fit-content', px: 2, py: 0.5, borderRadius: 2 }}>
-                                <AccessTimeIcon fontSize="small" />
-                                <Typography sx={{ fontWeight: 700, letterSpacing: 1 }}>12 : 23 : 21</Typography>
-                            </Stack>
-                            <Typography variant="h4" sx={{ fontWeight: 900, mb: 1 }}>Flash Sale</Typography>
-                            <Typography variant="body1" sx={{ opacity: 0.9, mb: 0 }}>Ending soon! Don't miss out.</Typography>
+                        <Box sx={{ position: 'absolute', top: 20, right: 30, opacity: 0.3, letterSpacing: 2, fontFamily: 'monospace' }}>
+                            10 : 42 : 15
                         </Box>
 
+                        <Box sx={{ zIndex: 2, flex: 1 }}>
+                            <Typography variant="h4" sx={{ fontWeight: 900, mb: 1, fontStyle: 'italic', display: 'flex', alignItems: 'center', gap: 1 }}>
+                                FLASH SALE
+                            </Typography>
+                            <Typography variant="body1" sx={{ mb: 3, opacity: 0.7, color: '#94a3b8' }}>
+                                Hurry! The best deals disappear fast.
+                            </Typography>
+                            <Button
+                                variant="text"
+                                endIcon={<BoltIcon sx={{ color: '#bef264' }} />}
+                                sx={{
+                                    color: '#bef264',
+                                    fontWeight: 700,
+                                    p: 0,
+                                    textTransform: 'none',
+                                    '&:hover': { color: 'white', bgcolor: 'transparent' }
+                                }}
+                            >
+                                Shop Fast
+                            </Button>
+                        </Box>
+
+                        {/* Abstract background shape for Flash Sale */}
                         <Box
-                            component="img"
-                            src="https://images.unsplash.com/photo-1594038683836-b6a21961e1bd?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80" // Perfume/Product example
                             sx={{
                                 position: 'absolute',
-                                right: 0,
-                                top: '50%',
-                                transform: 'translateY(-50%)',
-                                height: '80%',
-                                objectFit: 'contain',
-                                filter: 'drop-shadow(0 10px 20px rgba(0,0,0,0.2))'
+                                right: -50,
+                                top: -50,
+                                width: 200,
+                                height: 200,
+                                bgcolor: '#bef264',
+                                opacity: 0.05,
+                                borderRadius: '50%',
+                                filter: 'blur(40px)'
                             }}
                         />
                     </Paper>
-                </Grid>
-            </Grid>
-
-            <style>{`
-                @keyframes fadeInRight {
-                    from {
-                        opacity: 0;
-                        transform: translateX(50px);
-                    }
-                    to {
-                        opacity: 1;
-                        transform: translateX(0);
-                    }
-                }
-            `}</style>
+                </Box>
+            </Box>
         </Box>
     );
 };

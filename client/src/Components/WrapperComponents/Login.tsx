@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Box, Typography, TextField, Button, Paper, Divider, Alert } from '@mui/material';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { toast } from 'react-toastify';
 import GoogleIcon from '@mui/icons-material/Google';
 import AppleIcon from '@mui/icons-material/Apple';
 import StorefrontOutlinedIcon from '@mui/icons-material/StorefrontOutlined';
@@ -98,6 +99,7 @@ const Login = () => {
             localStorage.setItem('userProfileImage', `https://ui-avatars.com/api/?name=${encodeURIComponent(username)}&background=random`);
 
             // Redirect
+            toast.success(`Welcome back, ${username}!`);
             if (userRole === 'Admin') {
                 navigate('/admin', { replace: true });
             } else if (userRole === 'Seller') {

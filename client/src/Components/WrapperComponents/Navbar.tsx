@@ -185,6 +185,7 @@ const Navbar = () => {
                                         open={open}
                                         onClose={handleMenuClose}
                                         disableScrollLock={true}
+                                        disableRestoreFocus={true}
                                         sx={{ mt: 1 }}
                                     >
                                         <MenuItem onClick={() => {
