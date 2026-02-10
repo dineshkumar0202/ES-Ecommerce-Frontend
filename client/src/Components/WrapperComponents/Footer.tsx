@@ -11,7 +11,7 @@ const Footer = () => {
                 <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 8 }}>
                     {/* Brand & Social */}
                     <Box sx={{ width: { xs: '100%', md: '33.33%' } }}>
-                        <Typography variant="h5" sx={{ fontWeight: 900, mb: 3 }}>ATOZ.</Typography>
+                        <Typography variant="h5" sx={{ fontWeight: 900, mb: 3, color: '#B4D5DC' }}>ATOZ.</Typography>
                         <Typography variant="body2" sx={{ color: 'grey.500', mb: 3, maxWidth: 300 }}>
                             Premium e-commerce experience tailor-made for specific user needs.
                             The ultimate destination for shopping, business, and services.
@@ -28,10 +28,10 @@ const Footer = () => {
                     <Box sx={{ width: { xs: '50%', md: '16.66%' } }}>
                         <Typography variant="subtitle2" fontWeight="bold" sx={{ mb: 3, textTransform: 'uppercase' }}>Shop</Typography>
                         <Stack spacing={2} sx={{ color: 'grey.500' }}>
-                            <Typography variant="body2" sx={{ cursor: 'pointer', '&:hover': { color: 'white' } }}>New Arrivals</Typography>
-                            <Typography variant="body2" sx={{ cursor: 'pointer', '&:hover': { color: 'white' } }}>Best Sellers</Typography>
-                            <Typography variant="body2" sx={{ cursor: 'pointer', '&:hover': { color: 'white' } }}>Men</Typography>
-                            <Typography variant="body2" sx={{ cursor: 'pointer', '&:hover': { color: 'white' } }}>Women</Typography>
+                            <Typography variant="body2" sx={{ cursor: 'pointer', '&:hover': { color: '#B4D5DC' } }}>New Arrivals</Typography>
+                            <Typography variant="body2" sx={{ cursor: 'pointer', '&:hover': { color: '#B4D5DC' } }}>Best Sellers</Typography>
+                            <Typography variant="body2" sx={{ cursor: 'pointer', '&:hover': { color: '#B4D5DC' } }}>Men</Typography>
+                            <Typography variant="body2" sx={{ cursor: 'pointer', '&:hover': { color: '#B4D5DC' } }}>Women</Typography>
                         </Stack>
                     </Box>
 
@@ -39,10 +39,10 @@ const Footer = () => {
                     <Box sx={{ width: { xs: '50%', md: '16.66%' } }}>
                         <Typography variant="subtitle2" fontWeight="bold" sx={{ mb: 3, textTransform: 'uppercase' }}>Company</Typography>
                         <Stack spacing={2} sx={{ color: 'grey.500' }}>
-                            <Typography variant="body2" sx={{ cursor: 'pointer', '&:hover': { color: 'white' } }}>About Us</Typography>
-                            <Typography variant="body2" sx={{ cursor: 'pointer', '&:hover': { color: 'white' } }}>Careers</Typography>
-                            <Typography variant="body2" sx={{ cursor: 'pointer', '&:hover': { color: 'white' } }}>Press</Typography>
-                            <Typography variant="body2" sx={{ cursor: 'pointer', '&:hover': { color: 'white' } }}>Contact</Typography>
+                            <Typography variant="body2" sx={{ cursor: 'pointer', '&:hover': { color: '#B4D5DC' } }}>About Us</Typography>
+                            <Typography variant="body2" sx={{ cursor: 'pointer', '&:hover': { color: '#B4D5DC' } }}>Careers</Typography>
+                            <Typography variant="body2" sx={{ cursor: 'pointer', '&:hover': { color: '#B4D5DC' } }}>Press</Typography>
+                            <Typography variant="body2" sx={{ cursor: 'pointer', '&:hover': { color: '#B4D5DC' } }}>Contact</Typography>
                         </Stack>
                     </Box>
 
@@ -50,10 +50,10 @@ const Footer = () => {
                     <Box sx={{ width: { xs: '100%', md: '33.33%' } }}>
                         <Typography variant="subtitle2" fontWeight="bold" sx={{ mb: 3, textTransform: 'uppercase' }}>Support</Typography>
                         <Stack spacing={2} sx={{ color: 'grey.500' }}>
-                            <Typography variant="body2" sx={{ cursor: 'pointer', '&:hover': { color: 'white' } }}>Help Center</Typography>
-                            <Typography variant="body2" sx={{ cursor: 'pointer', '&:hover': { color: 'white' } }}>Returns & Exchanges</Typography>
-                            <Typography variant="body2" sx={{ cursor: 'pointer', '&:hover': { color: 'white' } }}>Shipping</Typography>
-                            <Typography variant="body2" sx={{ cursor: 'pointer', '&:hover': { color: 'white' } }}>Terms & Conditions</Typography>
+                            <Typography variant="body2" sx={{ cursor: 'pointer', '&:hover': { color: '#B4D5DC' } }}>Help Center</Typography>
+                            <Typography variant="body2" sx={{ cursor: 'pointer', '&:hover': { color: '#B4D5DC' } }}>Returns & Exchanges</Typography>
+                            <Typography variant="body2" sx={{ cursor: 'pointer', '&:hover': { color: '#B4D5DC' } }}>Shipping</Typography>
+                            <Typography variant="body2" sx={{ cursor: 'pointer', '&:hover': { color: '#B4D5DC' } }}>Terms & Conditions</Typography>
                         </Stack>
                     </Box>
                 </Box>

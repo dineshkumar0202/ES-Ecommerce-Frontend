@@ -132,7 +132,7 @@ const ProductDetails = () => {
         <Box sx={{ minHeight: '90vh', bgcolor: 'white', color: '#18181b' }}>
             <Navbar />
 
-            <Container maxWidth="xl" sx={{ py: 8 }}>
+            <Container maxWidth="xl" sx={{ py: 10 }}>
                 {/* CSS Grid Layout - 2 Columns on Desktop */}
                 <Box sx={{
                     display: 'grid',

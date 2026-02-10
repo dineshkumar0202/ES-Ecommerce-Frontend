@@ -125,7 +125,7 @@ const Login = () => {
                 <Box
                     sx={{
                         width: '50%',
-                        bgcolor: '#0a0a0a',
+                        bgcolor: '#000000',
                         color: 'white',
                         display: { xs: 'none', md: 'flex' },
                         flexDirection: 'column',
@@ -135,13 +135,13 @@ const Login = () => {
                     }}
                 >
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 6 }}>
-                        <Box sx={{ width: 40, height: 40, bgcolor: '#bef264', borderRadius: 2, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, color: 'black', fontSize: '1.2rem' }}>AZ</Box>
+                        <Box sx={{ width: 40, height: 40, bgcolor: '#B4D5DC', borderRadius: 2, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, color: 'black', fontSize: '1.2rem' }}>AZ</Box>
                         <Typography variant="h5" sx={{ fontWeight: 700 }}>AtoZ</Typography>
                     </Box>
                     <Typography variant="h2" sx={{ fontWeight: 800, mb: 3, lineHeight: 1.2 }}>
                         Join the<br />
-                        <Box component="span" sx={{ color: '#bef264' }}>Marketplace &</Box><br />
-                        <Box component="span" sx={{ color: '#bef264' }}>AI</Box> ecosystem.
+                        <Box component="span" sx={{ color: '#B4D5DC' }}>Marketplace &</Box><br />
+                        <Box component="span" sx={{ color: '#B4D5DC' }}>AI</Box> ecosystem.
                     </Typography>
                     <Typography variant="body1" sx={{ color: '#94a3b8', maxWidth: 400, lineHeight: 1.8 }}>
                         Create your account to access your personalized workspace, manage your assets, and leverage powerful AI-driven tools.
@@ -185,14 +185,14 @@ const Login = () => {
                                         }}
                                         sx={{
                                             flex: 1,
-                                            border: userType === type.id ? '2px solid #bef264' : '1px solid #e5e7eb',
+                                            border: userType === type.id ? '2px solid #B4D5DC' : '1px solid #e5e7eb',
                                             borderRadius: 2,
                                             p: 2,
                                             textAlign: 'center',
                                             cursor: 'pointer',
-                                            bgcolor: userType === type.id ? '#f7fee7' : 'white',
+                                            bgcolor: userType === type.id ? '#eaf6f8' : 'white',
                                             transition: 'all 0.2s',
-                                            '&:hover': { borderColor: '#bef264', bgcolor: '#f7fee7' }
+                                            '&:hover': { borderColor: '#B4D5DC', bgcolor: '#eaf6f8' }
                                         }}
                                     >
                                         <Box sx={{ color: '#0a0a0a', mb: 0.5 }}>{type.icon}</Box>
@@ -252,7 +252,7 @@ const Login = () => {
 
                             {!isLogin && (
                                 <Typography variant="caption" sx={{ display: 'block', mb: 3, color: '#64748b' }}>
-                                    I agree to the <Box component="span" sx={{ color: '#2563eb', cursor: 'pointer', fontWeight: 600 }}>Terms of Service</Box>
+                                    I agree to the <Box component="span" sx={{ color: '#000000', cursor: 'pointer', fontWeight: 600 }}>Terms of Service</Box>
                                 </Typography>
                             )}
 
@@ -263,9 +263,9 @@ const Login = () => {
                                 onClick={handleAuth}
                                 disabled={isLoading}
                                 sx={{
-                                    py: 1.5, bgcolor: '#bef264', color: '#0a0a0a', fontWeight: 700, mb: 3,
+                                    py: 1.5, bgcolor: '#B4D5DC', color: '#000000', fontWeight: 700, mb: 3,
                                     textTransform: 'none', borderRadius: 2, fontSize: '1rem',
-                                    boxShadow: 'none', '&:hover': { bgcolor: '#a3e635', boxShadow: 'none' }
+                                    boxShadow: 'none', '&:hover': { bgcolor: '#9cc3cd', boxShadow: 'none' }
                                 }}
                             >
                                 {isLoading ? 'Processing...' : (isLogin ? 'Sign In' : 'Register Account 🚀')}
@@ -273,7 +273,7 @@ const Login = () => {
 
                             <Typography variant="body2" align="center" sx={{ mb: 3, color: '#64748b' }}>
                                 {isLogin ? "Don't have an account? " : "Already have an account? "}
-                                <Box component="span" onClick={() => setIsLogin(!isLogin)} sx={{ color: '#2563eb', cursor: 'pointer', fontWeight: 600 }}>
+                                <Box component="span" onClick={() => setIsLogin(!isLogin)} sx={{ color: '#000000', cursor: 'pointer', fontWeight: 600 }}>
                                     {isLogin ? 'Register Here' : 'Sign In Instead'}
                                 </Box>
                             </Typography>

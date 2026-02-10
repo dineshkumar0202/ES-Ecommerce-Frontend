@@ -1,16 +1,12 @@
 import { CssBaseline } from '@mui/material';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import Home from './Components/Pages/Home';
-import ProductDetails from './Components/Pages/HomePage/ProductDetails';
+import ProductDetails from './Components/SpecifiedComponents/Retail/ProductDetails';
 import AllProducts from './Components/Pages/AllProducts';
-import OneDayOffer from './Components/Pages/OneDayOffer';
-import TShirts from './Components/Pages/TShirts';
-import KeepShopping from './Components/Pages/KeepShopping';
 import ShopByCategory from './Components/Pages/ShopByCategory';
 import CategoryPage from './Components/Pages/CategoryPage';
 import Login from './Components/WrapperComponents/Login';
-import Register from './Components/Pages/Register';
+import Register from './Components/WrapperComponents/Register';
 import Wholesale from './Components/Pages/Wholesale';
 import QuickCommerce from './Components/Pages/QuickCommerce';
 import Resale from './Components/Pages/Resale';
@@ -20,6 +16,7 @@ import AddProduct from './Components/Pages/AddProduct';
 import Retail from './Components/Pages/Retail';
 import Checkout from './Components/Pages/Checkout';
 import PaymentSuccess from './Components/Pages/PaymentSuccess';
+
 
 import Freelance from './Components/Pages/Freelance';
 import WholesaleProductDetails from './Components/SpecifiedComponents/WholeSale/Components/WholesaleProductDetails';
@@ -45,8 +42,38 @@ const theme = createTheme({
     fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
   },
   palette: {
+    primary: {
+      main: '#B4D5DC',
+      contrastText: '#000000',
+    },
+    secondary: {
+      main: '#000000',
+    },
     background: {
-      default: '#f5f5f5',
+      default: '#ffffff',
+      paper: '#ffffff',
+    },
+    text: {
+      primary: '#000000',
+      secondary: '#424242',
+    },
+  },
+  components: {
+    MuiButton: {
+      styleOverrides: {
+        root: {
+          borderRadius: 8,
+          textTransform: 'none',
+          fontWeight: 600,
+        },
+      },
+    },
+    MuiPaper: {
+      styleOverrides: {
+        root: {
+          backgroundImage: 'none',
+        },
+      },
     },
   },
 });
@@ -58,7 +85,6 @@ function App() {
       <ToastContainer position="bottom-right" autoClose={3000} />
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/wholesale" element={<Wholesale />} />
@@ -76,9 +102,6 @@ function App() {
           <Route path="/wholesale/product/:id" element={<WholesaleProductDetails />} />
           <Route path="/product/:id" element={<ProductDetails />} />
           <Route path="/products/all" element={<AllProducts />} />
-          <Route path="/products/one-day-offer" element={<OneDayOffer />} />
-          <Route path="/products/tshirt" element={<TShirts />} />
-          <Route path="/products/keep-shopping" element={<KeepShopping />} />
           <Route path="/products/categories" element={<ShopByCategory />} />
           <Route path="/category/:categoryName" element={<CategoryPage />} />
           <Route path="/quick/category/:categoryName" element={<QCategoryPage />} />

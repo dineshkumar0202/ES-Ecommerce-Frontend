@@ -267,7 +267,7 @@ const Checkout = () => {
                                     fullWidth variant="contained" size="large"
                                     disabled={isSubmitting}
                                     onClick={() => handlePlaceOrder()}
-                                    sx={{ bgcolor: 'black', color: 'white', borderRadius: 4, py: 2, mt: 4, fontWeight: 800 }}
+                                    sx={{ bgcolor: '#B4D5DC', color: 'black', borderRadius: 4, py: 2, mt: 4, fontWeight: 800, '&:hover': { bgcolor: '#9cc3cd' } }}
                                 >
                                     {isSubmitting ? 'Processing...' : 'Place Order (COD)'}
                                 </Button>

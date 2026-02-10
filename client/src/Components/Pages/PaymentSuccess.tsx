@@ -38,7 +38,7 @@ const PaymentSuccess = () => {
     if (loading) {
         return (
             <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', background: 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)' }}>
-                <CircularProgress sx={{ color: '#bef264' }} />
+                <CircularProgress sx={{ color: '#B4D5DC' }} />
             </Box>
         );
     }
@@ -63,10 +63,10 @@ const PaymentSuccess = () => {
                 >
                     <Box sx={{
                         position: 'absolute', top: 0, left: 0, right: 0, height: 8,
-                        background: 'linear-gradient(90deg, #bef264 0%, #d9f99d 100%)'
+                        background: 'linear-gradient(90deg, #B4D5DC 0%, #9cc3cd 100%)'
                     }} />
 
-                    <CheckCircleOutlineIcon sx={{ fontSize: 100, color: '#bef264', mb: 3 }} />
+                    <CheckCircleOutlineIcon sx={{ fontSize: 100, color: '#B4D5DC', mb: 3 }} />
                     <Typography variant="h3" sx={{ fontWeight: 900, mb: 1, letterSpacing: -1 }}>
                         Order Confirmed!
                     </Typography>
