@@ -1,5 +1,27 @@
-import { useEffect, useState } from 'react';
-import { Box, Typography, Paper, Stack, IconButton, List, ListItemButton, ListItemIcon, ListItemText, Chip, CircularProgress, Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField, MenuItem } from '@mui/material';
+import React, { useEffect, useState } from 'react';
+import {
+    Box,
+    Typography,
+    Paper,
+    Stack,
+    List,
+    ListItemButton,
+    ListItemIcon,
+    ListItemText,
+    IconButton,
+    CircularProgress,
+    Button,
+    TextField,
+    InputAdornment,
+    Grid,
+    Table,
+    TableBody,
+    TableCell,
+    TableContainer,
+    TableHead,
+    TableRow,
+    LinearProgress
+} from '@mui/material';
 import { toast } from 'react-toastify';
 import {
     Dashboard as DashboardIcon,
@@ -9,26 +31,22 @@ import {
     Autorenew as AutorenewIcon,
     WorkOutline as WorkOutlineIcon,
     ExitToApp as ExitToAppIcon,
-    Delete as DeleteIcon,
+    Search as SearchIcon,
     Add as AddIcon,
-    Edit as EditIcon
+    Refresh as RefreshIcon,
+    ElectricBolt as ElectricBoltIcon,
+    AccessTime as AccessTimeIcon,
+    DeliveryDining as DeliveryDiningIcon,
+    Brightness4 as ThemeIcon
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
-import { QProductService, UploadService } from '../../../services/api';
-import CloudUploadIcon from '@mui/icons-material/CloudUpload';
+import { QProductService } from '../../../services/api';
 
 const QCommerceManagement = () => {
     const navigate = useNavigate();
     const [products, setProducts] = useState<any[]>([]);
     const [isLoading, setIsLoading] = useState(true);
-
-    // Modal State
-    const [isModalOpen, setIsModalOpen] = useState(false);
-    const [newProduct, setNewProduct] = useState({
-        title: '', price: '', brand: '', unit: '', discount: '0', category: '', stock: '', image: '', images: '', description: ''
-    });
-    const [isUploading, setIsUploading] = useState(false);
-    const [editingId, setEditingId] = useState<string | null>(null);
+    const [searchQuery, setSearchQuery] = useState('');
 
     useEffect(() => {
         fetchProducts();
@@ -39,149 +57,99 @@ const QCommerceManagement = () => {
             const { data } = await QProductService.getAll();
             setProducts(data);
         } catch (error) {
-            console.error("Failed to fetch Q-products", error);
+            console.error("Failed to fetch Q-commerce products", error);
         } finally {
             setIsLoading(false);
         }
     };
 
-    const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        const files = e.target.files;
-        if (!files || files.length === 0) return;
-
-        setIsUploading(true);
-        try {
-            const uploadPromises = Array.from(files).map(async (file) => {
-                const { data } = await UploadService.uploadImage(file);
-                return data.url;
-            });
-
-            const uploadedUrls = await Promise.all(uploadPromises);
-            setNewProduct(prev => {
-                const existingImages = prev.images ? prev.images.split(',').map(img => img.trim()).filter(img => img !== '') : [];
-                const newImages = [...existingImages, ...uploadedUrls];
-                return {
-                    ...prev,
-                    image: newImages[0] || '',
-                    images: newImages.join(', ')
-                };
-            });
-            toast.success(`${uploadedUrls.length} image(s) uploaded successfully!`);
-        } catch (error) {
-            console.error("Upload failed", error);
-            toast.error('Upload failed');
-        } finally {
-            setIsUploading(false);
-        }
-    };
-
-    const removeImage = (urlToRemove: string) => {
-        setNewProduct(prev => {
-            const currentImages = prev.images.split(',').map(img => img.trim()).filter(img => img !== '');
-            const filteredImages = currentImages.filter(url => url !== urlToRemove);
-            return {
-                ...prev,
-                image: filteredImages[0] || '',
-                images: filteredImages.join(', ')
-            };
-        });
-    };
-
-    const handleAddProduct = async () => {
-        try {
-            const imageList = newProduct.images.split(',').map(img => img.trim()).filter(img => img !== '');
-            const productData = {
-                ...newProduct,
-                price: Number(newProduct.price),
-                discount: Number(newProduct.discount),
-                stock: Number(newProduct.stock),
-                image: imageList[0] || '',
-                images: imageList
-            };
-
-            if (editingId) {
-                const { data } = await QProductService.update(editingId, productData);
-                setProducts(products.map(p => p._id === editingId ? data : p));
-                toast.success('Product updated successfully!');
-            } else {
-                const { data } = await QProductService.create(productData);
-                setProducts([data, ...products]);
-                toast.success('Product created successfully!');
-            }
-
-            setIsModalOpen(false);
-            setEditingId(null);
-            setNewProduct({ title: '', price: '', brand: '', unit: '', discount: '0', category: '', stock: '', image: '', images: '', description: '' });
-        } catch (error: any) {
-            console.error("Failed to save Q-commerce product:", error.response?.data || error.message);
-            toast.error(`Failed to save product: ${error.response?.data?.message || error.message}`);
-        }
-    };
-
-    const handleEditClick = (product: any) => {
-        setEditingId(product._id);
-        setNewProduct({
-            title: product.title || product.name || '',
-            price: product.price?.toString() || '',
-            brand: product.brand || '',
-            unit: product.unit || '',
-            discount: product.discount?.toString() || '0',
-            category: product.category || '',
-            stock: product.stock?.toString() || '',
-            image: product.image || '',
-            images: product.images?.join(', ') || product.image || '',
-            description: product.description || ''
-        });
-        setIsModalOpen(true);
-    };
-
-    const handleDelete = async (id: string) => {
-        if (window.confirm("Delete this Q-commerce product?")) {
-            try {
-                await QProductService.delete(id);
-                setProducts(products.filter(p => p._id !== id));
-                toast.success("Product deleted successfully");
-            } catch (error) {
-                toast.error("Failed to delete product");
-            }
-        }
-    };
-
     const menuItems = [
-        { name: 'Overview', icon: <DashboardIcon />, path: '/admin/dashboard' },
-        { name: 'Retail', icon: <StoreIcon />, path: '/admin/retail' },
-        { name: 'Wholesale', icon: <WarehouseIcon />, path: '/admin/wholesale' },
-        { name: 'Q-Commerce', icon: <FlashOnIcon />, path: '/admin/quick', active: true },
-        { name: 'Resale', icon: <AutorenewIcon />, path: '/admin/resale' },
-        { name: 'Freelance', icon: <WorkOutlineIcon />, path: '/admin/freelance' },
+        { name: 'Overview', icon: <DashboardIcon sx={{ fontSize: 20 }} />, path: '/admin/dashboard' },
+        { name: 'Retail', icon: <StoreIcon sx={{ fontSize: 20 }} />, path: '/admin/retail' },
+        { name: 'Wholesale', icon: <WarehouseIcon sx={{ fontSize: 20 }} />, path: '/admin/wholesale' },
+        { name: 'Q-Commerce', icon: <FlashOnIcon sx={{ fontSize: 20 }} />, path: '/admin/quick', active: true },
+        { name: 'Resale', icon: <AutorenewIcon sx={{ fontSize: 20 }} />, path: '/admin/resale' },
+        { name: 'Freelance', icon: <WorkOutlineIcon sx={{ fontSize: 20 }} />, path: '/admin/freelance' },
+    ];
+
+    const stats = [
+        { title: 'Total Orders Today', value: '1,284', icon: <Box sx={{ p: 1, bgcolor: '#f1f5f9', borderRadius: 2 }}><ElectricBoltIcon sx={{ color: '#3b82f6' }} /></Box> },
+        { title: 'Avg Delivery Time', value: '14.5m', icon: <Box sx={{ p: 1, bgcolor: '#f0fdf4', borderRadius: 2 }}><AccessTimeIcon sx={{ color: '#22c55e' }} /></Box> },
+        { title: 'Active Riders', value: '82', icon: <Box sx={{ p: 1, bgcolor: '#fff7ed', borderRadius: 2 }}><DeliveryDiningIcon sx={{ color: '#f97316' }} /></Box> }
+    ];
+
+    const inventoryItems = [
+        {
+            title: 'Energy Spark XL',
+            category: 'BEVERAGES • 500ML',
+            image: 'https://images.unsplash.com/photo-1622483767028-3f66f32aef97?auto=format&fit=crop&q=80&w=400',
+            tag: 'FAST MOVING',
+            tagColor: '#22c55e',
+            storeA: 12,
+            storeB: 142
+        },
+        {
+            title: 'Kettle Cooked Chili',
+            category: 'SNACKS • 150G',
+            image: 'https://images.unsplash.com/photo-1566478989037-eec170784d0b?auto=format&fit=crop&q=80&w=400',
+            tag: 'NEW ARRIVAL',
+            tagColor: '#3b82f6',
+            storeA: 56,
+            storeB: 89
+        },
+        {
+            title: 'Single Origin Roast',
+            category: 'PANTRY • 250G',
+            image: 'https://images.unsplash.com/photo-1559056199-641a0ac8b55e?auto=format&fit=crop&q=80&w=400',
+            tag: 'LOW STOCK',
+            tagColor: '#f97316',
+            storeA: 8,
+            storeB: 3
+        },
+        {
+            title: 'Organic Whole Milk',
+            category: 'DAIRY • 1L',
+            image: 'https://images.unsplash.com/photo-1550583724-125581fe2f8a?auto=format&fit=crop&q=80&w=400',
+            tag: 'IN STOCK',
+            tagColor: '#94a3b8',
+            storeA: 214,
+            storeB: 198
+        }
+    ];
+
+    const liveOrders = [
+        { id: '#ORD-5521', product: 'Energy Spark XL x2', category: 'Beverages', destination: '42nd St, Suite 4B', eta: '04:12 min', status: 'PICKED UP', statusColor: '#f8fafc', textColor: '#1e293b' },
+        { id: '#ORD-5522', product: 'Artisan Sourdough', category: 'Bakery', destination: 'Broadway 1202', eta: '08:45 min', status: 'PREPARING', statusColor: '#f1f5f9', textColor: '#64748b' },
+        { id: '#ORD-5523', product: 'Salted Caramel Pint', category: 'Frozen', destination: 'E 14th Ave, 12', eta: '02:30 min', status: 'DELIVERING', statusColor: '#eff6ff', textColor: '#3b82f6' }
     ];
 
     return (
         <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: 'white' }}>
             {/* Sidebar */}
-            <Box sx={{ width: 260, bgcolor: 'white', borderRight: '1px solid #e2e8f0', p: 3, display: 'flex', flexDirection: 'column', height: '100vh', position: 'sticky', top: 0 }}>
-                <Stack direction="row" alignItems="center" spacing={1.5} sx={{ mb: 5, px: 2 }}>
-                    <Box sx={{ bgcolor: '#bef264', p: 0.5, borderRadius: 1, display: 'flex' }}>
-                        <FlashOnIcon sx={{ color: 'black' }} />
+            <Box sx={{ width: 260, bgcolor: 'white', borderRight: '1px solid #f1f5f9', p: 3, display: 'flex', flexDirection: 'column', height: '100vh', position: 'sticky', top: 0 }}>
+                <Stack direction="row" alignItems="center" spacing={1.5} sx={{ mb: 5, px: 1 }}>
+                    <Box sx={{ bgcolor: 'black', p: 0.8, borderRadius: 1.5, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <Box component="span" sx={{ color: 'white', fontWeight: 900, fontSize: '1.2rem', lineHeight: 1 }}>R</Box>
                     </Box>
-                    <Typography variant="h6" sx={{ fontWeight: 800 }}>q-commerce</Typography>
+                    <Typography variant="h6" sx={{ fontWeight: 800, fontSize: '1.25rem', color: '#1e293b' }}>retails</Typography>
                 </Stack>
 
-                <List disablePadding>
+                <List disablePadding sx={{ flexGrow: 1 }}>
                     {menuItems.map((item) => (
                         <ListItemButton
                             key={item.name}
-                            onClick={() => item.path !== '/admin/quick' && navigate(item.path)}
+                            onClick={() => !item.active && navigate(item.path)}
                             sx={{
                                 mb: 1,
                                 borderRadius: 3,
-                                bgcolor: item.active ? '#bef264' : 'transparent',
-                                color: item.active ? 'black' : '#64748b',
-                                '&:hover': { bgcolor: item.active ? '#bef264' : '#f1f5f9' },
-                                py: 1.5
+                                bgcolor: item.active ? '#CFE8EC' : 'transparent',
+                                color: item.active ? '#1e293b' : '#64748b',
+                                '&:hover': { bgcolor: item.active ? '#CFE8EC' : '#f8fafc' },
+                                py: 1.2,
+                                px: 2
                             }}
                         >
-                            <ListItemIcon sx={{ minWidth: 40, color: item.active ? 'black' : '#94a3b8' }}>
+                            <ListItemIcon sx={{ minWidth: 35, color: item.active ? '#1e293b' : '#64748b' }}>
                                 {item.icon}
                             </ListItemIcon>
                             <ListItemText
@@ -192,147 +160,193 @@ const QCommerceManagement = () => {
                     ))}
                 </List>
 
-                <Box sx={{ mt: 'auto' }}>
+                <Box sx={{ mt: 'auto', pt: 2 }}>
+                    <Stack direction="row" alignItems="center" spacing={2} sx={{ px: 2, mb: 3, cursor: 'pointer', color: '#64748b' }}>
+                        <ThemeIcon sx={{ fontSize: 20 }} />
+                        <Typography variant="body2" fontWeight={600}>Theme</Typography>
+                    </Stack>
                     <Stack onClick={() => { localStorage.removeItem('token'); localStorage.removeItem('userRole'); navigate('/admin/login'); }} direction="row" alignItems="center" spacing={2} sx={{ px: 2, cursor: 'pointer', color: '#ef4444' }}>
-                        <ExitToAppIcon fontSize="small" />
+                        <ExitToAppIcon sx={{ fontSize: 20 }} />
                         <Typography variant="body2" fontWeight={600}>Leave</Typography>
                     </Stack>
                 </Box>
             </Box>
 
             {/* Main Content */}
-            <Box sx={{ flexGrow: 1, p: 4, overflow: 'auto', bgcolor: 'white' }}>
-                <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 4 }}>
-                    <Typography variant="h4" sx={{ fontWeight: 800 }}>Q-Commerce Management</Typography>
-                    <Button variant="contained" onClick={() => setIsModalOpen(true)} startIcon={<AddIcon />} sx={{ bgcolor: 'black', color: 'white', borderRadius: 2, '&:hover': { bgcolor: '#333' } }}>
-                        Quick Add
-                    </Button>
+            <Box sx={{ flexGrow: 1, p: 4, bgcolor: '#f8fafc', overflow: 'auto' }}>
+                {/* Header */}
+                <Stack direction="row" justifyContent="space-between" alignItems="flex-start" sx={{ mb: 4 }}>
+                    <Box>
+                        <Typography variant="h4" sx={{ fontWeight: 800, color: '#1e293b', mb: 0.5 }}>Q-Commerce Inventory</Typography>
+                        <Typography variant="body2" sx={{ color: '#64748b', fontWeight: 500 }}>Real-time rapid delivery management</Typography>
+                    </Box>
+                    <Stack direction="row" spacing={2}>
+                        <TextField
+                            size="small"
+                            placeholder="Search dark store..."
+                            sx={{
+                                width: 280,
+                                '& .MuiOutlinedInput-root': {
+                                    bgcolor: 'white',
+                                    borderRadius: 3,
+                                    '& fieldset': { border: 'none' },
+                                    boxShadow: '0 2px 10px rgba(0,0,0,0.03)'
+                                }
+                            }}
+                            InputProps={{
+                                startAdornment: (
+                                    <InputAdornment position="start">
+                                        <SearchIcon sx={{ color: '#94a3b8', fontSize: 20 }} />
+                                    </InputAdornment>
+                                ),
+                            }}
+                        />
+                        <Button
+                            variant="contained"
+                            startIcon={<AddIcon />}
+                            sx={{
+                                bgcolor: '#CFE8EC',
+                                color: '#1e293b',
+                                borderRadius: 3,
+                                px: 3,
+                                fontWeight: 700,
+                                textTransform: 'none',
+                                boxShadow: 'none',
+                                '&:hover': { bgcolor: '#b8dbe2', boxShadow: 'none' }
+                            }}
+                        >
+                            Create Entry
+                        </Button>
+                    </Stack>
                 </Stack>
 
-                {isLoading ? (
-                    <Box sx={{ display: 'flex', justifyContent: 'center', p: 5 }}><CircularProgress sx={{ color: '#bef264' }} /></Box>
-                ) : (
-                    <Box>
-                        <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 3 }}>
-                            <Typography variant="caption" sx={{ fontWeight: 700, color: '#94a3b8', letterSpacing: 1, display: 'block' }}>INVENTORY STATUS ({products.length} Items)</Typography>
-                        </Stack>
-
-                        <Stack direction="row" flexWrap="wrap" spacing={3}>
-                            {products.map((product) => (
-                                <Box key={product._id} sx={{ width: { xs: '100%', md: 'calc(50% - 12px)' } }}>
-                                    <Paper
-                                        elevation={0}
-                                        sx={{
-                                            p: 2,
-                                            borderRadius: 3,
-                                            border: '1px solid #f1f5f9',
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'space-between',
-                                            bgcolor: '#f8fafc'
-                                        }}
-                                    >
-                                        <Stack direction="row" alignItems="center" spacing={2}>
-                                            <Box
-                                                component="img"
-                                                src={product.image}
-                                                alt={product.title}
-                                                sx={{ width: 64, height: 64, borderRadius: 2, objectFit: 'cover', bgcolor: '#f1f5f9' }}
-                                            />
-                                            <Box>
-                                                <Typography variant="subtitle2" sx={{ fontWeight: 800 }}>{product.title}</Typography>
-                                                <Typography variant="caption" sx={{ color: '#64748b', display: 'block' }}>{product.category} • {product.unit}</Typography>
-                                            </Box>
-                                        </Stack>
-                                        <Stack direction="row" alignItems="center" spacing={3}>
-                                            <Box sx={{ textAlign: 'right' }}>
-                                                <Typography variant="subtitle1" sx={{ fontWeight: 900 }}>₹{product.price}</Typography>
-                                                {product.discount > 0 && (
-                                                    <Chip label={`${product.discount}% OFF`} size="small" sx={{ height: 18, fontSize: '0.6rem', bgcolor: '#bef264', color: 'black', fontWeight: 800 }} />
-                                                )}
-                                            </Box>
-                                            <IconButton size="small" onClick={() => handleEditClick(product)} sx={{ color: '#64748b' }}>
-                                                <EditIcon fontSize="small" />
-                                            </IconButton>
-                                            <IconButton size="small" onClick={() => handleDelete(product._id)} sx={{ color: '#ef4444' }}>
-                                                <DeleteIcon fontSize="small" />
-                                            </IconButton>
-                                        </Stack>
-                                    </Paper>
+                {/* Stats Cards */}
+                <Grid container spacing={3} sx={{ mb: 6 }}>
+                    {stats.map((stat, i) => (
+                        <Grid key={i} size={{ xs: 12, md: 4 }}>
+                            <Paper elevation={0} sx={{ p: 3, borderRadius: 5, bgcolor: 'white', display: 'flex', alignItems: 'center' }}>
+                                {stat.icon}
+                                <Box sx={{ ml: 2 }}>
+                                    <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 700, display: 'block', mb: 0.5 }}>{stat.title}</Typography>
+                                    <Typography variant="h4" sx={{ fontWeight: 900, color: '#1e293b' }}>{stat.value}</Typography>
                                 </Box>
-                            ))}
-                            {products.length === 0 && <Typography sx={{ m: 2 }}>No quick commerce products found.</Typography>}
+                            </Paper>
+                        </Grid>
+                    ))}
+                </Grid>
+
+                {/* Instant Inventory */}
+                <Box sx={{ mb: 6 }}>
+                    <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 3 }}>
+                        <Stack direction="row" alignItems="center" spacing={2}>
+                            <Typography variant="h6" sx={{ fontWeight: 800, color: '#1e293b' }}>Instant Inventory</Typography>
+                            <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 700 }}>Dark Stores: 08</Typography>
                         </Stack>
-                    </Box>
-                )}
+                        <Button startIcon={<RefreshIcon />} sx={{ color: '#94a3b8', textTransform: 'none', fontWeight: 700 }}>Refresh Feed</Button>
+                    </Stack>
 
-                {/* Add Product Modal */}
-                <Dialog open={isModalOpen} onClose={() => { setIsModalOpen(false); setEditingId(null); }} maxWidth="sm" fullWidth>
-                    <DialogTitle sx={{ fontWeight: 800 }}>{editingId ? 'Edit Quick Item' : 'Quick Add Item'}</DialogTitle>
-                    <DialogContent dividers>
-                        <Stack spacing={2.5} sx={{ py: 1 }}>
-                            <TextField fullWidth label="Product Title" value={newProduct.title} onChange={(e) => setNewProduct({ ...newProduct, title: e.target.value })} />
+                    <Grid container spacing={3}>
+                        {inventoryItems.map((item, i) => (
+                            <Grid key={i} size={{ xs: 12, sm: 6, md: 3 }}>
+                                <Paper elevation={0} sx={{ borderRadius: 5, overflow: 'hidden', bgcolor: 'white', border: '1px solid #f1f5f9' }}>
+                                    <Box sx={{ position: 'relative', height: 180 }}>
+                                        <Box component="img" src={item.image} sx={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                        <Box sx={{ position: 'absolute', top: 12, left: 12, bgcolor: item.tagColor, px: 1, py: 0.5, borderRadius: 1.5 }}>
+                                            <Typography sx={{ color: 'white', fontSize: '0.65rem', fontWeight: 900 }}>{item.tag}</Typography>
+                                        </Box>
+                                    </Box>
+                                    <Box sx={{ p: 2.5 }}>
+                                        <Typography variant="subtitle1" sx={{ fontWeight: 800, color: '#1e293b', mb: 0.5 }}>{item.title}</Typography>
+                                        <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 700, display: 'block', mb: 2 }}>{item.category}</Typography>
 
-                            <Stack direction="row" spacing={2}>
-                                <TextField fullWidth type="number" label="Price" value={newProduct.price} onChange={(e) => setNewProduct({ ...newProduct, price: e.target.value })} />
-                                <TextField fullWidth label="Unit (e.g. 500g, 1L)" value={newProduct.unit} onChange={(e) => setNewProduct({ ...newProduct, unit: e.target.value })} />
-                            </Stack>
-
-                            <Stack direction="row" spacing={2}>
-                                <TextField fullWidth type="number" label="Discount %" value={newProduct.discount} onChange={(e) => setNewProduct({ ...newProduct, discount: e.target.value })} />
-                                <TextField fullWidth type="number" label="Stock" value={newProduct.stock} onChange={(e) => setNewProduct({ ...newProduct, stock: e.target.value })} />
-                            </Stack>
-                            <TextField fullWidth select label="Category" value={newProduct.category} onChange={(e) => setNewProduct({ ...newProduct, category: e.target.value })}>
-                                {['Fruits & Veg', 'Dairy & Eggs', 'Bakery', 'Snacks', 'Beverages', 'Instant Food'].map(cat => <MenuItem key={cat} value={cat}>{cat}</MenuItem>)}
-                            </TextField>
-                            <TextField fullWidth label="Brand" value={newProduct.brand} onChange={(e) => setNewProduct({ ...newProduct, brand: e.target.value })} />
-                            <Box sx={{ mt: 1 }}>
-                                <Typography variant="caption" sx={{ fontWeight: 700, color: '#64748b', mb: 1, display: 'block' }}>
-                                    QUICK ITEM IMAGES ({newProduct.images ? newProduct.images.split(',').length : 0}/3)
-                                </Typography>
-                                <Stack direction="row" spacing={2} sx={{ mb: 2, flexWrap: 'wrap', gap: 1 }}>
-                                    {newProduct.images.split(',').map((img, idx) => {
-                                        const trimmedImg = img.trim();
-                                        if (!trimmedImg) return null;
-                                        return (
-                                            <Box key={idx} sx={{ position: 'relative', width: 80, height: 80, borderRadius: 2, overflow: 'hidden', border: '1px solid #e2e8f0' }}>
-                                                <Box component="img" src={trimmedImg} sx={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                                                <IconButton
-                                                    size="small"
-                                                    onClick={() => removeImage(trimmedImg)}
-                                                    sx={{ position: 'absolute', top: 2, right: 2, bgcolor: 'rgba(255,255,255,0.8)', '&:hover': { bgcolor: 'white' }, p: 0.5 }}
-                                                >
-                                                    <DeleteIcon sx={{ fontSize: 14, color: '#ef4444' }} />
-                                                </IconButton>
+                                        <Stack spacing={2} sx={{ mb: 3 }}>
+                                            <Box>
+                                                <Stack direction="row" justifyContent="space-between" sx={{ mb: 0.5 }}>
+                                                    <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 600 }}>Dark Store A</Typography>
+                                                    <Typography variant="caption" sx={{ color: item.storeA < 10 ? '#ef4444' : '#1e293b', fontWeight: 800 }}>{item.storeA} left</Typography>
+                                                </Stack>
+                                                <LinearProgress variant="determinate" value={item.storeA} sx={{ height: 6, borderRadius: 3, bgcolor: '#f1f5f9', '& .MuiLinearProgress-bar': { bgcolor: item.storeA < 10 ? '#ef4444' : '#22c55e', borderRadius: 3 } }} />
                                             </Box>
-                                        );
-                                    })}
-                                </Stack>
-                                <Button
-                                    variant="outlined"
-                                    component="label"
-                                    fullWidth
-                                    startIcon={isUploading ? <CircularProgress size={20} /> : <CloudUploadIcon />}
-                                    disabled={isUploading || (newProduct.images ? newProduct.images.split(',').length >= 3 : false)}
-                                    sx={{ borderRadius: 2, textTransform: 'none', py: 1.5, borderStyle: 'dashed', borderWidth: 2 }}
-                                >
-                                    {isUploading ? 'Uploading...' : 'Upload Images (Max 3)'}
-                                    <input type="file" hidden accept="image/*" multiple onChange={handleFileUpload} />
-                                </Button>
-                                <Typography variant="caption" sx={{ color: '#94a3b8', mt: 1, display: 'block' }}>
-                                    Tip: Q-commerce items support up to 3 images.
-                                </Typography>
-                            </Box>
-                            <TextField fullWidth multiline rows={2} label="Short Description" value={newProduct.description} onChange={(e) => setNewProduct({ ...newProduct, description: e.target.value })} />
+                                            <Box>
+                                                <Stack direction="row" justifyContent="space-between" sx={{ mb: 0.5 }}>
+                                                    <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 600 }}>Dark Store B</Typography>
+                                                    <Typography variant="caption" sx={{ color: '#1e293b', fontWeight: 800 }}>{item.storeB} left</Typography>
+                                                </Stack>
+                                                <LinearProgress variant="determinate" value={Math.min(100, item.storeB / 2)} sx={{ height: 6, borderRadius: 3, bgcolor: '#f1f5f9', '& .MuiLinearProgress-bar': { bgcolor: '#CFE8EC', borderRadius: 3 } }} />
+                                            </Box>
+                                        </Stack>
+
+                                        <Button
+                                            fullWidth
+                                            variant="contained"
+                                            startIcon={<RefreshIcon sx={{ fontSize: 16 }} />}
+                                            sx={{
+                                                bgcolor: '#CFE8EC',
+                                                color: '#1e293b',
+                                                boxShadow: 'none',
+                                                borderRadius: 2.5,
+                                                fontWeight: 800,
+                                                textTransform: 'none',
+                                                '&:hover': { bgcolor: '#b8dbe2', boxShadow: 'none' }
+                                            }}
+                                        >
+                                            Restock
+                                        </Button>
+                                    </Box>
+                                </Paper>
+                            </Grid>
+                        ))}
+                    </Grid>
+                </Box>
+
+                {/* Live Order Feed */}
+                <Box>
+                    <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 3 }}>
+                        <Typography variant="h6" sx={{ fontWeight: 800, color: '#1e293b' }}>Live Order Feed</Typography>
+                        <Stack direction="row" alignItems="center" spacing={1}>
+                            <Box sx={{ width: 8, height: 8, bgcolor: '#22c55e', borderRadius: '50%' }} />
+                            <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 700 }}>Tracking 42 active orders</Typography>
                         </Stack>
-                    </DialogContent>
-                    <DialogActions sx={{ p: 2.5 }}>
-                        <Button onClick={() => { setIsModalOpen(false); setEditingId(null); }} sx={{ color: '#64748b' }}>Cancel</Button>
-                        <Button variant="contained" onClick={handleAddProduct} sx={{ bgcolor: 'black', color: 'white', borderRadius: 2 }}>
-                            {editingId ? 'Save Changes' : 'Confirm Add'}
-                        </Button>
-                    </DialogActions>
-                </Dialog>
+                    </Stack>
+
+                    <TableContainer component={Paper} elevation={0} sx={{ borderRadius: 5, border: '1px solid #f1f5f9' }}>
+                        <Table>
+                            <TableHead sx={{ bgcolor: '#fcfdfe' }}>
+                                <TableRow>
+                                    <TableCell sx={{ color: '#94a3b8', fontWeight: 700, fontSize: '0.75rem', textTransform: 'uppercase', py: 2.5 }}>Order ID</TableCell>
+                                    <TableCell sx={{ color: '#94a3b8', fontWeight: 700, fontSize: '0.75rem', textTransform: 'uppercase' }}>Product</TableCell>
+                                    <TableCell sx={{ color: '#94a3b8', fontWeight: 700, fontSize: '0.75rem', textTransform: 'uppercase' }}>Destination</TableCell>
+                                    <TableCell sx={{ color: '#94a3b8', fontWeight: 700, fontSize: '0.75rem', textTransform: 'uppercase' }}>ETA</TableCell>
+                                    <TableCell sx={{ color: '#94a3b8', fontWeight: 700, fontSize: '0.75rem', textTransform: 'uppercase', textAlign: 'right' }}>Status</TableCell>
+                                </TableRow>
+                            </TableHead>
+                            <TableBody>
+                                {liveOrders.map((order, i) => (
+                                    <TableRow key={i} sx={{ '&:last-child td': { border: 0 } }}>
+                                        <TableCell sx={{ fontWeight: 800, color: '#64748b', fontSize: '0.85rem' }}>{order.id}</TableCell>
+                                        <TableCell>
+                                            <Stack direction="row" alignItems="center" spacing={2}>
+                                                <Box sx={{ width: 32, height: 32, bgcolor: '#f1f5f9', borderRadius: 1.5, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                                    <StoreIcon sx={{ fontSize: 16, color: '#64748b' }} />
+                                                </Box>
+                                                <Box>
+                                                    <Typography variant="body2" sx={{ fontWeight: 800, color: '#1e293b' }}>{order.product}</Typography>
+                                                </Box>
+                                            </Stack>
+                                        </TableCell>
+                                        <TableCell sx={{ color: '#64748b', fontWeight: 600, fontSize: '0.85rem' }}>{order.destination}</TableCell>
+                                        <TableCell sx={{ color: '#1e293b', fontWeight: 800, fontSize: '0.85rem' }}>{order.eta}</TableCell>
+                                        <TableCell sx={{ textAlign: 'right' }}>
+                                            <Box sx={{ display: 'inline-block', bgcolor: order.statusColor, px: 1.5, py: 0.5, borderRadius: 2 }}>
+                                                <Typography sx={{ color: order.textColor, fontWeight: 900, fontSize: '0.65rem' }}>{order.status}</Typography>
+                                            </Box>
+                                        </TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </TableContainer>
+                </Box>
             </Box>
         </Box>
     );

@@ -10,6 +10,11 @@ import Profile from './Components/Pages/Profile';
 import Checkout from './Components/Pages/Checkout';
 import PaymentSuccess from './Components/Pages/PaymentSuccess';
 import AdminDashboard from './Components/SpecifiedComponents/Admin/AdminDashboard';
+import RetailManagement from './Components/SpecifiedComponents/Admin/RetailManagement';
+import WholesaleManagement from './Components/SpecifiedComponents/Admin/WholesaleManagement';
+import QCommerceManagement from './Components/SpecifiedComponents/Admin/QCommerceManagement';
+import ResaleManagement from './Components/SpecifiedComponents/Admin/ResaleManagement';
+import FreelanceManagement from './Components/SpecifiedComponents/Admin/FreelanceManagement';
 import SellerProfile from './Components/Pages/SellerProfile';
 import CategoryPage from './Components/Pages/CategoryPage';
 import ShopByCategory from './Components/Pages/ShopByCategory';
@@ -68,6 +73,12 @@ function App() {
 
                 {/* Admin Section */}
                 <Route path="/admin" element={<AdminDashboard />} />
+                <Route path="/admin/dashboard" element={<AdminDashboard />} />
+                <Route path="/admin/retail" element={<RetailManagement />} />
+                <Route path="/admin/wholesale" element={<WholesaleManagement />} />
+                <Route path="/admin/quick" element={<QCommerceManagement />} />
+                <Route path="/admin/resale" element={<ResaleManagement />} />
+                <Route path="/admin/freelance" element={<FreelanceManagement />} />
 
                 {/* Catch-all Routing */}
                 <Route path="*" element={<Navigate to="/retail" replace />} />

@@ -11,7 +11,7 @@ import PersonOutlineIcon from '@mui/icons-material/PersonOutline';
 import StorefrontIcon from '@mui/icons-material/Storefront';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
-import Navbar from './Navbar';
+import Navbar from './Navbar'; 
 import { AuthService } from '../../services/api';
 import GoogleAuthButton from './GoogleAuthButton';
 
@@ -48,10 +48,51 @@ const Login = () => {
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
 
+    const validateEmail = (email: string) => {
+        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    };
+
+    const validateMobile = (mobile: string) => {
+        return /^\d{10}$/.test(mobile);
+    };
+
+    // Simple check for PAN (10 chars) or GST (15 chars)
+    const validateTaxId = (id: string) => {
+        return id.length >= 10;
+    };
+
     const handleAuth = async (e?: React.FormEvent) => {
         if (e) e.preventDefault();
-        setIsLoading(true);
         setError('');
+
+        // --- VALIDATION ---
+        if (isLogin) {
+            // LOGIN VALIDATION
+            if (!mobile.trim()) {
+                setError('Please enter your login credential (Mobile/Email/ID).');
+                return;
+            }
+            if (!password) {
+                setError('Please enter your password.');
+                return;
+            }
+        } else {
+            // BUYER REGISTRATION VALIDATION
+            if (!name.trim()) {
+                setError('Full Name is required.');
+                return;
+            }
+            if (!validateMobile(mobile.trim())) {
+                setError('Please enter a valid 10-digit mobile number.');
+                return;
+            }
+            if (password.length < 6) {
+                setError('Password must be at least 6 characters long.');
+                return;
+            }
+        }
+
+        setIsLoading(true);
 
         try {
             let response;
@@ -105,10 +146,39 @@ const Login = () => {
 
     const handleSellerSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        setIsLoading(true);
         setError('');
 
+        // --- SELLER REGISTRATION VALIDATION ---
+        if (!sellerData.fullName.trim()) {
+            setError('Full Name is required.');
+            return;
+        }
+        if (!validateEmail(sellerData.email)) {
+            setError('Please enter a valid email address.');
+            return;
+        }
+        if (!validateMobile(sellerData.phoneNumber)) {
+            setError('Please enter a valid 10-digit phone number.');
+            return;
+        }
+        if (sellerData.password.length < 6) {
+            setError('Password must be at least 6 characters long.');
+            return;
+        }
+        if (!sellerData.businessName.trim()) {
+            setError('Business Name is required.');
+            return;
+        }
+        if (!sellerData.businessAddress.trim()) {
+            setError('Business Address is required.');
+            return;
+        }
+        if (!validateTaxId(sellerData.taxId)) {
+            setError('Please enter a valid Tax ID / PAN (min 10 characters).');
+            return;
+        }
 
+        setIsLoading(true);
 
         try {
             const response = await AuthService.registerSeller({
@@ -422,6 +492,10 @@ const Login = () => {
 
                         <Stack spacing={3} sx={{ mb: 6 }}>
                             <Box sx={{ p: 3, bgcolor: '#f8fafc', borderRadius: 4, border: '1px dashed #adc9d1' }}>
+                                <Typography variant="caption" sx={{ fontWeight: 800, color: '#64748b', display: 'block', mb: 1 }}>YOUR UNIQUE SELLER ID</Typography>
+                                <Typography variant="h5" sx={{ fontWeight: 900, color: '#0f172a', letterSpacing: 2 }}>{registrationSuccess.id}</Typography>
+                            </Box>
+                            <Box sx={{ p: 3, bgcolor: '#f8fafc', borderRadius: 4, border: '1px dashed #adc9d1' }}>
                                 <Typography variant="caption" sx={{ fontWeight: 800, color: '#64748b', display: 'block', mb: 1 }}>YOUR PASSWORD</Typography>
                                 <Typography variant="h5" sx={{ fontWeight: 900, color: '#0f172a', letterSpacing: 2 }}>{registrationSuccess.pass}</Typography>
                             </Box>
@@ -433,7 +507,7 @@ const Login = () => {
                             onClick={() => {
                                 setAuthStep('USER_AUTH');
                                 setIsLogin(true);
-                                setMobile(sellerData.email || sellerData.phoneNumber); // Autofill with email or mobile since ID is hidden
+                                setMobile(registrationSuccess.id); // Autofill with Unique ID
                                 setRegistrationSuccess(null);
                             }}
                             sx={{ py: 2, bgcolor: '#0f172a', color: 'white', fontWeight: 900, borderRadius: 4 }}
