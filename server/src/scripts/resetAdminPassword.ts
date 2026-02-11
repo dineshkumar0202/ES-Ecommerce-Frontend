@@ -7,7 +7,7 @@ import path from 'path';
 // Adjust path as needed based on where you run it from
 dotenv.config({ path: path.join(__dirname, '../../.env') });
 
-const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/ecommerce';
+const MONGO_URI = process.env.MONGO_URI || 'mongodb+srv://aestheticdinesh02_db_user:atoz@atoz.songs6i.mongodb.net/?appName=atoz';
 
 async function resetAdminPassword() {
     try {
@@ -18,11 +18,11 @@ async function resetAdminPassword() {
         const email = 'admin@atoz.com';
         const newPassword = 'admin987';
 
-        const admin = await Admin.findOne({ email });
+        const admin = await Admin.find({ email });
 
-        if (!admin) {
+        if (admin.length === 0) {
             console.log(`Admin with email ${email} not found. Creating one...`);
-            await Admin.create({
+            const created = await Admin.create({
                 username: 'Super Admin',
                 email,
                 password: newPassword,
@@ -32,14 +32,16 @@ async function resetAdminPassword() {
                     avatar: 'https://ui-avatars.com/api/?name=Admin+User&background=0D8ABC&color=fff'
                 }
             });
-            console.log(`Admin created with password: ${newPassword}`);
+            console.log(`Admin created with ID: ${created._id}`);
         } else {
-            console.log(`Admin found. Resetting password for ${email}...`);
-            admin.password = newPassword;
-            await admin.save(); // This triggers the pre-save hook to hash the password
-            console.log(`Password reset successfully to: ${newPassword}`);
+            console.log(`Admin found (count=${admin.length}). Resetting password for ${email}...`);
+            const targetAdmin = admin[0];
+            targetAdmin.password = newPassword;
+            await targetAdmin.save();
+            console.log(`Password reset successfully for existing admin: ${targetAdmin._id}`);
         }
 
+        console.log('DONE: Admin credentials ensured.');
         process.exit(0);
     } catch (error) {
         console.error('Error:', error);

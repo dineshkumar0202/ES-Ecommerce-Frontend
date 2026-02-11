@@ -18,30 +18,43 @@ passport.deserializeUser(async (id: string, done) => {
 passport.use(
     new GoogleStrategy(
         {
-            clientID: process.env.GOOGLE_CLIENT_ID!,
-            clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-            callbackURL: process.env.GOOGLE_CALLBACK_URL!,
+            clientID: process.env.GOOGLE_CLIENT_ID || '',
+            clientSecret: process.env.GOOGLE_CLIENT_SECRET || '',
+            callbackURL: process.env.GOOGLE_CALLBACK_URL || '/api/auth/google/callback',
         },
         async (accessToken, refreshToken, profile, done) => {
             try {
                 // Check if user already exists
-                let user = await Buyer.findOne({ email: profile.emails?.[0].value });
+                const email = profile.emails && profile.emails[0] ? profile.emails[0].value : undefined;
+
+                if (!email) {
+                    return done(new Error('No email found directly from Google'), undefined);
+                }
+
+                let user = await Buyer.findOne({ email });
 
                 if (!user) {
                     // Create new user with Google account
                     user = await Buyer.create({
-                        username: profile.displayName || profile.emails?.[0].value.split('@')[0],
-                        email: profile.emails?.[0].value,
-                        mobile: '', // Will be updated by user later if needed
-                        password: Math.random().toString(36).slice(-8), // Random password
+                        username: profile.displayName || email.split('@')[0],
+                        email: email,
+                        mobile: undefined, // Let sparse index handle uniqueness if needed, or leave empty
+                        password: undefined, // No password for Google users
                         role: 'Buyer',
                         profile: {
                             name: profile.displayName,
-                            avatar: profile.photos?.[0].value,
+                            avatar: profile.photos && profile.photos[0] ? profile.photos[0].value : undefined,
                         },
                         googleId: profile.id,
                         isVerified: true, // Auto-verify Google users
                     });
+                } else {
+                    // Update existing user with googleId if not present (linking accounts)
+                    if (!user.googleId) {
+                        user.googleId = profile.id;
+                        user.isVerified = true;
+                        await user.save();
+                    }
                 }
 
                 return done(null, user);

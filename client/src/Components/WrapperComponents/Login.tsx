@@ -57,8 +57,19 @@ const Login = () => {
             let response;
             if (isLogin) {
                 if (userType === 0) {
-                    // Seller Login using Unique ID
-                    response = await AuthService.loginSeller({ uniqueId: mobile.trim(), password });
+                    // Seller Login: Detect if input is email, unique ID, or mobile
+                    const input = mobile.trim();
+                    const loginPayload: any = { password };
+
+                    if (input.includes('@')) {
+                        loginPayload.email = input;
+                    } else if (/^\d{10}$/.test(input)) { // Simple check for mobile number (10 digits)
+                        loginPayload.mobile = input;
+                    } else {
+                        loginPayload.uniqueId = input;
+                    }
+                    console.log('Seller Login Payload:', loginPayload);
+                    response = await AuthService.loginSeller(loginPayload);
                 } else if (userType === 2) {
                     // Admin Login
                     response = await AuthService.loginAdmin({ email: mobile.trim(), password });
@@ -112,11 +123,22 @@ const Login = () => {
                 }
             });
 
-            // Use Unique ID returned from backend
-            const generatedId = response.data.uniqueId;
+            console.log('Seller Registration Response:', response.data);
+
+            // Use Unique ID returned from backend (handle both cases if structure varies)
+            // It should be 'uniqueId' per backend, but let's be safe
+            const generatedId = response.data.uniqueId || response.data._id; // Fallback to _id if uniqueId is missing
+
+            console.log('Generated ID for display:', generatedId);
+
             const generatedPass = sellerData.password;
 
-            setRegistrationSuccess({ id: generatedId, pass: generatedPass });
+            if (!generatedId) {
+                console.error("Unique ID missing from response:", response.data);
+                toast.error("Account created, but Unique ID not received. Please login with Email/Mobile.");
+            }
+
+            setRegistrationSuccess({ id: generatedId || "CHECK EMAIL", pass: generatedPass });
             // toast.success("Seller registration successful! Credentials generated.");
         } catch (err: any) {
             setError(err.response?.data?.message || 'Registration failed');
@@ -325,11 +347,11 @@ const Login = () => {
                                 )}
                                 <Box>
                                     <Typography variant="caption" sx={{ fontWeight: 800, color: '#64748b', mb: 1, display: 'block' }}>
-                                        {userType === 0 ? 'UNIQUE SELLER ID' : userType === 2 ? 'ADMIN ID' : 'MOBILE NUMBER'}
+                                        {userType === 0 ? 'SELLER LOGIN (Unique ID / Email / Mobile)' : userType === 2 ? 'ADMIN ID' : 'MOBILE NUMBER'}
                                     </Typography>
                                     <TextField
                                         fullWidth variant="standard"
-                                        placeholder={userType === 0 ? "SEL-XXXXXX" : userType === 2 ? "Enter Admin ID" : "Enter your mobile"}
+                                        placeholder={userType === 0 ? "Unique ID, Email or Mobile" : userType === 2 ? "Enter Admin ID" : "Enter your mobile"}
                                         value={mobile}
                                         onChange={(e) => setMobile(e.target.value)}
                                         InputProps={{ disableUnderline: true, sx: { py: 1, borderBottom: '1px solid #e2e8f0' } }}

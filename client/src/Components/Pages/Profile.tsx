@@ -21,17 +21,18 @@ import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import KeyboardArrowLeftIcon from '@mui/icons-material/KeyboardArrowLeft';
 import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
 
-import { CartService, WishlistService, OrderService } from '../../services/api';
+import { CartService, WishlistService, OrderService, AuthService } from '../../services/api';
 
 const Profile = () => {
     const navigate = useNavigate();
-    const [userData, setUserData] = useState({
+    const [userData, setUserData] = useState<any>({
         name: 'Dinesh Kumar M',
         role: 'Verified Member',
         lastLogin: '2 hours ago',
         avatar: '',
         totalInvestment: '₹24,840',
-        memberPercentile: 'TOP 2% OF ELITE MEMBERS'
+        memberPercentile: 'TOP 2% OF ELITE MEMBERS',
+        uniqueId: ''
     });
 
     const [cartCount, setCartCount] = useState(2);
@@ -50,7 +51,7 @@ const Profile = () => {
     };
 
     const handleEditSave = () => {
-        setUserData(prev => ({ ...prev, name: editName, avatar: editAvatar }));
+        setUserData((prev: any) => ({ ...prev, name: editName, avatar: editAvatar }));
         localStorage.setItem('userName', editName);
         localStorage.setItem('userProfileImage', editAvatar);
         setIsEditOpen(false);
@@ -59,19 +60,30 @@ const Profile = () => {
     useEffect(() => {
         const savedName = localStorage.getItem('userName');
         const savedAvatar = localStorage.getItem('userProfileImage');
-        if (savedName) setUserData(prev => ({ ...prev, name: savedName }));
-        if (savedAvatar) setUserData(prev => ({ ...prev, avatar: savedAvatar }));
+        if (savedName) setUserData((prev: any) => ({ ...prev, name: savedName }));
+        if (savedAvatar) setUserData((prev: any) => ({ ...prev, avatar: savedAvatar }));
 
         fetchData();
     }, []);
 
     const fetchData = async () => {
         try {
-            const [cartRes, wishlistRes, ordersRes] = await Promise.all([
+            const [cartRes, wishlistRes, ordersRes, userRes] = await Promise.all([
                 CartService.getCart().catch(() => ({ data: { cartItems: [] } })),
                 WishlistService.getWishlist().catch(() => ({ data: { products: [] } })),
-                OrderService.getMyOrders().catch(() => ({ data: [] }))
+                OrderService.getMyOrders().catch(() => ({ data: [] })),
+                AuthService.getMe().catch(() => ({ data: null }))
             ]);
+
+            if (userRes && userRes.data) {
+                setUserData((prev: any) => ({
+                    ...prev,
+                    name: userRes.data.username || userRes.data.profile?.name || prev.name,
+                    role: userRes.data.role || prev.role,
+                    uniqueId: userRes.data.uniqueId || userRes.data._id,
+                    avatar: userRes.data.profile?.avatar || prev.avatar
+                }));
+            }
 
             setCartCount(cartRes.data?.cartItems?.length || 0);
             setWishlistCount(wishlistRes.data?.products?.length || 0);
@@ -204,6 +216,11 @@ const Profile = () => {
                                         {userData.role}
                                     </Typography>
                                 </Stack>
+                                {userData.uniqueId && (
+                                    <Stack direction="row" alignItems="center" spacing={0.5} sx={{ bgcolor: '#f1f5f9', px: 1, borderRadius: 1 }}>
+                                        <Typography variant="caption" sx={{ fontWeight: 900, color: '#0f172a' }}>ID: {userData.uniqueId}</Typography>
+                                    </Stack>
+                                )}
                                 <Typography variant="subtitle2" sx={{ color: '#94a3b8', fontWeight: 500 }}>
                                     Last login: {userData.lastLogin}
                                 </Typography>
