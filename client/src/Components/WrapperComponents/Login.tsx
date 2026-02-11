@@ -38,10 +38,7 @@ const Login = () => {
         businessAddress: '',
         taxId: '',
         websiteUrl: '',
-        accountHolder: '',
-        ifsc: '',
-        accountNumber: '',
-        verifyAccountNumber: '',
+
         password: ''
     });
 
@@ -63,7 +60,7 @@ const Login = () => {
                     response = await AuthService.loginSeller({ uniqueId: mobile.trim(), password });
                 } else if (userType === 2) {
                     // Admin Login
-                    response = await AuthService.loginAdmin({ mobile: mobile.trim(), password });
+                    response = await AuthService.loginAdmin({ email: mobile.trim(), password });
                 } else {
                     response = await AuthService.loginBuyer({ mobile: mobile.trim(), password });
                 }
@@ -98,11 +95,7 @@ const Login = () => {
         setIsLoading(true);
         setError('');
 
-        if (sellerData.accountNumber !== sellerData.verifyAccountNumber) {
-            setError('Bank account numbers do not match');
-            setIsLoading(false);
-            return;
-        }
+
 
         try {
             const response = await AuthService.registerSeller({
@@ -501,35 +494,10 @@ const Login = () => {
                                 </Grid>
                             </Box>
 
-                            {/* Section 3: Payout & Identity */}
                             <Box>
-                                <Typography variant="subtitle1" sx={{ fontWeight: 900, mb: 3, pb: 1, borderBottom: '1.5px solid #adc9d1', display: 'inline-block' }}>Payout & Identity</Typography>
+                                <Typography variant="subtitle1" sx={{ fontWeight: 900, mb: 3, pb: 1, borderBottom: '1.5px solid #adc9d1', display: 'inline-block' }}>Verification</Typography>
                                 <Grid container spacing={3}>
-                                    <Grid size={{ xs: 12, sm: 6 }}>
-                                        <Typography variant="caption" sx={{ fontWeight: 800, color: '#64748b', mb: 1, display: 'block' }}>ACCOUNT HOLDER NAME *</Typography>
-                                        <TextField fullWidth placeholder="John Doe" variant="outlined" sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }} value={sellerData.accountHolder} onChange={(e) => setSellerData({ ...sellerData, accountHolder: e.target.value })} />
-                                    </Grid>
-                                    <Grid size={{ xs: 12, sm: 6 }}>
-                                        <Typography variant="caption" sx={{ fontWeight: 800, color: '#64748b', mb: 1, display: 'block' }}>IFSC / SWIFT CODE *</Typography>
-                                        <TextField fullWidth placeholder="ICIC0001234" variant="outlined" sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }} value={sellerData.ifsc} onChange={(e) => setSellerData({ ...sellerData, ifsc: e.target.value })} />
-                                    </Grid>
-                                    <Grid size={{ xs: 12, sm: 6 }}>
-                                        <Typography variant="caption" sx={{ fontWeight: 800, color: '#64748b', mb: 1, display: 'block' }}>BANK ACCOUNT NUMBER *</Typography>
-                                        <TextField fullWidth placeholder="•••• •••• •••• 1234" variant="outlined" sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }} value={sellerData.accountNumber} onChange={(e) => setSellerData({ ...sellerData, accountNumber: e.target.value })} />
-                                    </Grid>
-                                    <Grid size={{ xs: 12, sm: 6 }}>
-                                        <Typography variant="caption" sx={{ fontWeight: 800, color: '#64748b', mb: 1, display: 'block' }}>VERIFY ACCOUNT NUMBER *</Typography>
-                                        <TextField fullWidth placeholder="•••• •••• •••• 1234" variant="outlined" sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }} value={sellerData.verifyAccountNumber} onChange={(e) => setSellerData({ ...sellerData, verifyAccountNumber: e.target.value })} />
-                                    </Grid>
-
-                                    <Grid size={{ xs: 12, sm: 6 }}>
-                                        <Paper variant="outlined" sx={{ p: 4, borderRadius: 3, textAlign: 'center', borderStyle: 'dashed' }}>
-                                            <CloudUploadIcon sx={{ color: '#adc9d1', mb: 2, fontSize: 32 }} />
-                                            <Typography variant="body2" fontWeight="bold">Aadhaar Card / Gov ID (Front)</Typography>
-                                            <Typography variant="caption" color="textSecondary">PDF, JPG, PNG (Max 5MB)</Typography>
-                                        </Paper>
-                                    </Grid>
-                                    <Grid size={{ xs: 12, sm: 6 }}>
+                                    <Grid size={{ xs: 12 }}>
                                         <Paper variant="outlined" sx={{ p: 4, borderRadius: 3, textAlign: 'center', borderStyle: 'dashed' }}>
                                             <CloudUploadIcon sx={{ color: '#adc9d1', mb: 2, fontSize: 32 }} />
                                             <Typography variant="body2" fontWeight="bold">PAN Card / Tax ID</Typography>
@@ -538,6 +506,8 @@ const Login = () => {
                                     </Grid>
                                 </Grid>
                             </Box>
+
+
 
                             {error && <Alert severity="error">{error}</Alert>}
 
