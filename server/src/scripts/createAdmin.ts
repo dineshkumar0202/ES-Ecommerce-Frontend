@@ -40,7 +40,7 @@ async function createAdminUser() {
             const newAdmin = await Admin.create({
                 username: 'Super Admin',
                 email: testEmail,
-                password: 'password123', // Will be hashed by pre-save hook
+                password: 'admin987', // Will be hashed by pre-save hook
                 role: 'Admin',
                 profile: {
                     name: 'System Administrator',

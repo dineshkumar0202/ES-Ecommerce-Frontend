@@ -28,7 +28,7 @@ This is the backend server for the E-commerce frontend.
 
 ## Admin Credentials
 - **Email:** `admin@atoz.com`
-- **Password:** `8`
+- **Password:** `admin pannel`
 
 ## API Endpoints
 
