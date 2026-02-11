@@ -24,7 +24,7 @@ const WholesaleFeed = () => {
                     ...p,
                     id: p._id
                 }));
-                setProducts(formatted);
+                setProducts(formatted || []);
             } catch (error) {
                 console.error("Failed to fetch wholesale products", error);
             }
@@ -41,22 +41,54 @@ const WholesaleFeed = () => {
     const displayedProducts = products.slice((page - 1) * itemsPerPage, page * itemsPerPage);
 
     return (
-        <Stack spacing={3}>
-            {displayedProducts.map((item) => (
-                <ProductCard key={item.id} item={item} />
-            ))}
-
-            <Box sx={{ display: 'flex', justifyContent: 'center', pt: 4 }}>
-                <Pagination
-                    count={count}
-                    page={page}
-                    onChange={handleChange}
-                    color="primary"
-                    showFirstButton
-                    showLastButton
-                />
+        <Box sx={{ py: 6 }}>
+            {/* Header Section */}
+            <Box sx={{ mb: 6 }}>
+                <Typography
+                    variant="h3"
+                    sx={{
+                        fontWeight: 800,
+                        color: '#1a202c',
+                        mb: 1,
+                        fontSize: { xs: '2rem', md: '2.5rem' }
+                    }}
+                >
+                    Wholesale Product Feed
+                </Typography>
+                <Typography
+                    variant="body1"
+                    sx={{
+                        color: '#718096',
+                        fontSize: '1.1rem'
+                    }}
+                >
+                    Discover premium supplies for your retail business.
+                </Typography>
             </Box>
-        </Stack>
+
+            <Stack spacing={4}>
+                {displayedProducts.length > 0 ? (
+                    displayedProducts.map((item) => (
+                        <ProductCard key={item.id} item={item} />
+                    ))
+                ) : (
+                    <Box sx={{ textAlign: 'center', py: 10 }}>
+                        <Typography variant="h6" color="text.secondary">No products found</Typography>
+                    </Box>
+                )}
+
+                <Box sx={{ display: 'flex', justifyContent: 'center', pt: 4 }}>
+                    <Pagination
+                        count={count}
+                        page={page}
+                        onChange={handleChange}
+                        color="primary"
+                        showFirstButton
+                        showLastButton
+                    />
+                </Box>
+            </Stack>
+        </Box>
     );
 };
 
@@ -66,13 +98,13 @@ const ProductCard = ({ item }: { item: any }) => {
     const [isWishlisted, setIsWishlisted] = useState(false);
     const navigate = useNavigate();
 
-    const imagesList = item.images || [item.image || "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=400&q=80"];
+    const imagesList = item.images || [item.image || "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=800&q=80"];
 
     useEffect(() => {
         if (imagesList.length <= 1 || isHovered) return;
         const interval = setInterval(() => {
             setActiveImageIndex((prev) => (prev + 1) % imagesList.length);
-        }, 3000);
+        }, 4000);
         return () => clearInterval(interval);
     }, [imagesList.length, isHovered]);
 
@@ -104,167 +136,190 @@ const ProductCard = ({ item }: { item: any }) => {
                 cursor: 'pointer',
                 display: 'flex',
                 flexDirection: { xs: 'column', md: 'row' },
-                p: 0,
-                borderRadius: 2,
-                border: '1px solid #e2e8f0',
-                overflow: 'hidden',
-                transition: 'all 0.3s ease',
+                p: { xs: 2, md: 4 },
+                borderRadius: 4,
+                bgcolor: 'white',
+                border: '1px solid #f1f5f9',
+                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                 position: 'relative',
+                boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05)',
                 '&:hover': {
-                    boxShadow: '0 10px 30px -10px rgba(0,0,0,0.1)',
-                    borderColor: '#cbd5e1'
+                    boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)',
+                    transform: 'translateY(-4px)'
                 }
             }}
         >
-            <IconButton
-                onClick={handleWishlist}
-                sx={{
-                    position: 'absolute',
-                    top: 10,
-                    right: 10,
-                    zIndex: 2,
-                    bgcolor: 'white',
-                    boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-                    '&:hover': { bgcolor: '#f1f5f9' }
-                }}
-            >
-                {isWishlisted ? <FavoriteIcon sx={{ color: '#ef4444' }} /> : <FavoriteBorderIcon />}
-            </IconButton>
-
+            {/* Image Container */}
             <Box
                 sx={{
-                    width: { xs: '100%', md: '300px' },
-                    bgcolor: '#f8fafc',
+                    width: { xs: '100%', md: '320px' },
+                    height: { xs: '240px', md: '300px' },
+                    borderRadius: 3,
+                    overflow: 'hidden',
+                    position: 'relative',
+                    bgcolor: '#f3e8df', // Soft beige from image
                     display: 'flex',
-                    flexDirection: 'column',
-                    p: 2,
-                    borderRight: { md: '1px solid #e2e8f0' },
-                    borderBottom: { xs: '1px solid #e2e8f0', md: 'none' }
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    p: 2
                 }}
+                onMouseEnter={() => setIsHovered(true)}
+                onMouseLeave={() => setIsHovered(false)}
             >
+                <IconButton
+                    onClick={handleWishlist}
+                    sx={{
+                        position: 'absolute',
+                        top: 12,
+                        right: 12,
+                        zIndex: 2,
+                        bgcolor: 'white',
+                        boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                        '&:hover': { bgcolor: '#f8fafc' }
+                    }}
+                >
+                    {isWishlisted ? (
+                        <FavoriteIcon sx={{ color: '#ef4444', fontSize: 20 }} />
+                    ) : (
+                        <FavoriteBorderIcon sx={{ color: '#64748b', fontSize: 20 }} />
+                    )}
+                </IconButton>
+
                 <Box
+                    component="img"
+                    src={activeImage}
+                    alt={item.title}
                     sx={{
                         width: '100%',
-                        height: '220px',
-                        borderRadius: 2,
-                        overflow: 'hidden',
-                        border: '1px solid #e2e8f0',
-                        position: 'relative',
-                        bgcolor: 'white'
+                        height: '100%',
+                        objectFit: 'contain',
+                        transition: 'transform 0.5s ease',
+                        transform: isHovered ? 'scale(1.05)' : 'scale(1)'
                     }}
-                    onMouseEnter={() => setIsHovered(true)}
-                    onMouseLeave={() => setIsHovered(false)}
-                >
-                    <Box
-                        component="img"
-                        src={activeImage}
-                        alt={item.title}
-                        sx={{
-                            width: '100%',
-                            height: '100%',
-                            objectFit: 'contain',
-                            transition: 'opacity 0.3s'
-                        }}
-                    />
-                    {imagesList.length > 1 && (
-                        <Box sx={{ position: 'absolute', bottom: 10, left: 0, right: 0, display: 'flex', justifyContent: 'center', gap: 0.5 }}>
-                            {imagesList.map((_: any, index: number) => (
-                                <Box
-                                    key={index}
-                                    sx={{
-                                        width: 6,
-                                        height: 6,
-                                        borderRadius: '50%',
-                                        bgcolor: activeImageIndex === index ? '#bef264' : 'rgba(0,0,0,0.2)',
-                                        transition: 'background-color 0.3s'
-                                    }}
-                                />
-                            ))}
-                        </Box>
-                    )}
-                </Box>
+                />
             </Box>
 
-            <Box sx={{ flex: 1, p: 3, display: 'flex', flexDirection: 'column' }}>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
+            {/* Content Container */}
+            <Box sx={{ flex: 1, pl: { md: 4 }, pt: { xs: 3, md: 0 }, display: 'flex', flexDirection: 'column' }}>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1.5 }}>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <BusinessIcon sx={{ color: '#2563eb', fontSize: 18 }} />
-                        <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#2563eb' }}>
-                            {item.companyName || "Verified Seller"}
+                        <BusinessIcon sx={{ color: '#cbd5e1', fontSize: 18 }} />
+                        <Typography
+                            variant="caption"
+                            sx={{
+                                fontWeight: 700,
+                                color: '#94a3b8',
+                                letterSpacing: 1.5,
+                                textTransform: 'uppercase'
+                            }}
+                        >
+                            {item.companyName || "XYZ INDUSTRIES"}
                         </Typography>
                     </Box>
-                    {item.inStock && (
+                    {item.inStock !== false && (
                         <Chip
                             label="IN STOCK"
                             size="small"
                             sx={{
-                                bgcolor: '#dcfce7',
-                                color: '#166534',
-                                fontWeight: 700,
-                                fontSize: '0.7rem',
-                                height: '24px',
-                                borderRadius: 1
+                                bgcolor: '#f0fff4',
+                                color: '#38a169',
+                                fontWeight: 800,
+                                fontSize: '0.65rem',
+                                height: '22px',
+                                borderRadius: 1.5,
+                                letterSpacing: 0.5
                             }}
                         />
                     )}
                 </Box>
 
-                <Typography variant="h6" sx={{ fontWeight: 800, color: '#0f172a', mb: 1, lineHeight: 1.3 }}>
-                    {item.title}
+                <Typography
+                    variant="h5"
+                    sx={{
+                        fontWeight: 800,
+                        color: '#1a202c',
+                        mb: 1.5,
+                        lineHeight: 1.2,
+                        fontSize: '1.5rem'
+                    }}
+                >
+                    {item.title || "Modern Minimalist Photo Frame"}
                 </Typography>
 
-                <Typography variant="body2" sx={{ color: '#64748b', mb: 2, lineHeight: 1.6, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
-                    {item.description}
+                <Typography
+                    variant="body2"
+                    sx={{
+                        color: '#718096',
+                        mb: 3,
+                        lineHeight: 1.6,
+                        maxWidth: '90%',
+                        display: '-webkit-box',
+                        WebkitLineClamp: 2,
+                        WebkitBoxOrient: 'vertical',
+                        overflow: 'hidden'
+                    }}
+                >
+                    {item.description || "Hand-crafted wooden finish with premium glass protector. Available in multiple finishes."}
                 </Typography>
 
-                <Box sx={{ display: 'flex', gap: 4, mb: 3, p: 2, bgcolor: '#f8fafc', borderRadius: 2 }}>
+                {/* Price and Details Grid */}
+                <Box
+                    sx={{
+                        display: 'flex',
+                        gap: { xs: 2, md: 6 },
+                        mb: 4,
+                        p: 2.5,
+                        bgcolor: '#f8fafc',
+                        borderRadius: 3,
+                        border: '1px solid #f1f5f9'
+                    }}
+                >
+
                     <Box>
-                        <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 700, display: 'block', mb: 0.5 }}>
-                            PRICE PER UNIT
-                        </Typography>
-                        <Typography variant="subtitle1" sx={{ fontWeight: 900, color: '#0f172a' }}>
-                            ₹{item.pricePerUnit || item.price || 0}
-                        </Typography>
-                    </Box>
-                    <Box>
-                        <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 700, display: 'block', mb: 0.5 }}>
+                        <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 700, display: 'block', mb: 0.8, letterSpacing: 0.5 }}>
                             PACK SIZE
                         </Typography>
-                        <Typography variant="subtitle1" sx={{ fontWeight: 800, color: '#0f172a' }}>
-                            {item.packSize || 1} Units
+                        <Typography variant="h5" sx={{ fontWeight: 800, color: '#1a202c' }}>
+                            {item.packSize || 12} Units
                         </Typography>
                     </Box>
                 </Box>
 
-                <Box sx={{ display: 'flex', gap: 3, mb: 3 }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                        <LocationOnIcon sx={{ color: '#94a3b8', fontSize: 16 }} />
-                        <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 600 }}>
-                            {item.location}
+                {/* Location and Contact */}
+                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3, mb: 4 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <LocationOnIcon sx={{ color: '#cbd5e1', fontSize: 18 }} />
+                        <Typography variant="body2" sx={{ color: '#64748b', fontWeight: 500 }}>
+                            {item.location || "Erode, Tamil Nadu"}
                         </Typography>
                     </Box>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                        <EmailIcon sx={{ color: '#94a3b8', fontSize: 16 }} />
-                        <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 600 }}>
-                            {item.email || "N/A"}
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <EmailIcon sx={{ color: '#cbd5e1', fontSize: 18 }} />
+                        <Typography variant="body2" sx={{ color: '#64748b', fontWeight: 500 }}>
+                            {item.email || "sales@xyz-corp.com"}
                         </Typography>
                     </Box>
                 </Box>
 
+                {/* Action Buttons */}
                 <Box sx={{ mt: 'auto', display: 'flex', alignItems: 'center', gap: 2 }}>
                     <Button
                         variant="contained"
                         startIcon={<PhoneIcon />}
                         sx={{
                             flex: 1,
-                            height: '50px',
-                            bgcolor: '#bef264',
-                            color: 'black',
+                            height: '54px',
+                            bgcolor: '#adc9d1', // Soft teal from image
+                            color: '#1a202c',
                             textTransform: 'none',
-                            fontWeight: 900,
+                            fontWeight: 800,
                             borderRadius: '12px',
-                            boxShadow: '0 4px 14px 0 rgba(190, 242, 100, 0.39)',
-                            '&:hover': { bgcolor: '#d9f99d', boxShadow: '0 6px 20px rgba(190, 242, 100, 0.5)' }
+                            boxShadow: 'none',
+                            fontSize: '1rem',
+                            '&:hover': {
+                                bgcolor: '#9bbec9',
+                                boxShadow: '0 4px 12px rgba(173, 201, 209, 0.4)'
+                            }
                         }}
                         onClick={(e) => {
                             e.stopPropagation();
@@ -279,13 +334,19 @@ const ProductCard = ({ item }: { item: any }) => {
                         startIcon={<ShoppingCartOutlinedIcon />}
                         sx={{
                             flex: 1,
-                            height: '50px',
+                            height: '54px',
                             borderColor: '#e2e8f0',
-                            color: '#0f172a',
+                            color: '#1a202c',
                             textTransform: 'none',
-                            fontWeight: 900,
+                            fontWeight: 800,
                             borderRadius: '12px',
-                            '&:hover': { bgcolor: '#f8fafc', borderColor: '#cbd5e1' }
+                            fontSize: '1rem',
+                            borderWidth: '1.5px',
+                            '&:hover': {
+                                bgcolor: '#f8fafc',
+                                borderColor: '#cbd5e1',
+                                borderWidth: '1.5px'
+                            }
                         }}
                         onClick={async (e) => {
                             e.stopPropagation();

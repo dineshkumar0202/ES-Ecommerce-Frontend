@@ -1,128 +1,77 @@
-import { CssBaseline } from '@mui/material';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import ProductDetails from './Components/SpecifiedComponents/Retail/ProductDetails';
-import AllProducts from './Components/Pages/AllProducts';
-import ShopByCategory from './Components/Pages/ShopByCategory';
-import CategoryPage from './Components/Pages/CategoryPage';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import Retail from './Components/Pages/Retail';
+import Wholesale from './Components/Pages/Wholesale';
+import QCommerce from './Components/Pages/Q_Commrece';
+import Resale from './Components/Pages/Resale';
+import Freelance from './Components/Pages/Freelance';
 import Login from './Components/WrapperComponents/Login';
 import Register from './Components/WrapperComponents/Register';
-import Wholesale from './Components/Pages/Wholesale';
-import QuickCommerce from './Components/Pages/QuickCommerce';
-import Resale from './Components/Pages/Resale';
 import Profile from './Components/Pages/Profile';
-import SellerProfile from './Components/Pages/SellerProfile';
-import AddProduct from './Components/Pages/AddProduct';
-import Retail from './Components/Pages/Retail';
 import Checkout from './Components/Pages/Checkout';
 import PaymentSuccess from './Components/Pages/PaymentSuccess';
-
-
-import Freelance from './Components/Pages/Freelance';
-import WholesaleProductDetails from './Components/SpecifiedComponents/WholeSale/Components/WholesaleProductDetails';
-import QCategoryPage from './Components/Pages/QCategoryPage';
-import QAllProducts from './Components/Pages/QAllProducts';
-import QProductDetails from './Components/SpecifiedComponents/Q-Commerces/Components/QProductDetails';
-import QAddProduct from './Components/Pages/QAddProduct';
-import ResaleProductDetails from './Components/SpecifiedComponents/Second-hand/Components/ResaleProductDetails';
 import AdminDashboard from './Components/SpecifiedComponents/Admin/AdminDashboard';
-import RetailManagement from './Components/SpecifiedComponents/Admin/RetailManagement';
-import WholesaleManagement from './Components/SpecifiedComponents/Admin/WholesaleManagement';
-import QCommerceManagement from './Components/SpecifiedComponents/Admin/QCommerceManagement';
-import ResaleManagement from './Components/SpecifiedComponents/Admin/ResaleManagement';
-import FreelanceManagement from './Components/SpecifiedComponents/Admin/FreelanceManagement';
-import ProtectedAdminRoute from './Components/SpecifiedComponents/Admin/ProtectedAdminRoute';
+import SellerProfile from './Components/Pages/SellerProfile';
+import CategoryPage from './Components/Pages/CategoryPage';
+import ShopByCategory from './Components/Pages/ShopByCategory';
+import AllProducts from './Components/Pages/AllProducts';
+import AddProduct from './Components/Pages/AddProduct';
+import KeepShopping from './Components/Pages/KeepShopping';
+import OneDayOffer from './Components/Pages/OneDayOffer';
 
-import { ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
-import './App.css';
-
-const theme = createTheme({
-  typography: {
-    fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
-  },
-  palette: {
-    primary: {
-      main: '#B4D5DC',
-      contrastText: '#000000',
-    },
-    secondary: {
-      main: '#000000',
-    },
-    background: {
-      default: '#ffffff',
-      paper: '#ffffff',
-    },
-    text: {
-      primary: '#000000',
-      secondary: '#424242',
-    },
-  },
-  components: {
-    MuiButton: {
-      styleOverrides: {
-        root: {
-          borderRadius: 8,
-          textTransform: 'none',
-          fontWeight: 600,
-        },
-      },
-    },
-    MuiPaper: {
-      styleOverrides: {
-        root: {
-          backgroundImage: 'none',
-        },
-      },
-    },
-  },
-});
+// Import specific detail components and rename them to avoid conflict
+import RetailProductDetails from './Components/SpecifiedComponents/Retail/ProductDetails';
+import QCommerceProductDetails from './Components/SpecifiedComponents/Q-Commerces/ProductDetails';
+import WholesaleProductDetails from './Components/SpecifiedComponents/WholeSale/Components/WholesaleProductDetails';
+import ResaleProductDetails from './Components/SpecifiedComponents/Second-hand/Components/ResaleProductDetails';
 
 function App() {
-  return (
-    <ThemeProvider theme={theme}>
-      <CssBaseline />
-      <ToastContainer position="bottom-right" autoClose={3000} />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="/wholesale" element={<Wholesale />} />
-          <Route path="/quick" element={<QuickCommerce />} />
-          <Route path="/resale" element={<Resale />} />
-          <Route path="/retail" element={<Retail />} />
-          <Route path="/resale/product/:id" element={<ResaleProductDetails />} />
-          <Route path="/freelance" element={<Freelance />} />
-          <Route path="/profile" element={<Profile />} />
-          <Route path="/seller/profile" element={<SellerProfile />} />
-          <Route path="/seller/add-product" element={<AddProduct />} />
-          <Route path="/checkout" element={<Checkout />} />
-          <Route path="/payment-success" element={<PaymentSuccess />} />
+    return (
+        <Router>
+            <Routes>
+                {/* Landing Page */}
+                <Route path="/" element={<Navigate to="/retail" replace />} />
 
-          <Route path="/wholesale/product/:id" element={<WholesaleProductDetails />} />
-          <Route path="/product/:id" element={<ProductDetails />} />
-          <Route path="/products/all" element={<AllProducts />} />
-          <Route path="/products/categories" element={<ShopByCategory />} />
-          <Route path="/category/:categoryName" element={<CategoryPage />} />
-          <Route path="/quick/category/:categoryName" element={<QCategoryPage />} />
-          <Route path="/quick/all" element={<QAllProducts />} />
-          <Route path="/quick/product/:id" element={<QProductDetails />} />
+                {/* Core Marketplace Sections */}
+                <Route path="/retail" element={<Retail />} />
+                <Route path="/wholesale" element={<Wholesale />} />
+                <Route path="/quick" element={<QCommerce />} />
+                <Route path="/resale" element={<Resale />} />
+                <Route path="/freelance" element={<Freelance />} />
 
+                {/* Auth & User Management */}
+                <Route path="/login" element={<Login />} />
+                <Route path="/register" element={<Register />} />
+                <Route path="/profile" element={<Profile />} />
+                <Route path="/seller/profile" element={<SellerProfile />} />
 
-          {/* Admin Routes */}
-          <Route path="/admin/login" element={<Login />} />
-          <Route path="/admin" element={<ProtectedAdminRoute><AdminDashboard /></ProtectedAdminRoute>} />
-          <Route path="/admin/dashboard" element={<ProtectedAdminRoute><AdminDashboard /></ProtectedAdminRoute>} />
-          <Route path="/admin/retail" element={<ProtectedAdminRoute><RetailManagement /></ProtectedAdminRoute>} />
-          <Route path="/admin/wholesale" element={<ProtectedAdminRoute><WholesaleManagement /></ProtectedAdminRoute>} />
-          <Route path="/admin/quick" element={<ProtectedAdminRoute><QCommerceManagement /></ProtectedAdminRoute>} />
-          <Route path="/admin/quick/add" element={<ProtectedAdminRoute><QAddProduct /></ProtectedAdminRoute>} />
-          <Route path="/admin/resale" element={<ProtectedAdminRoute><ResaleManagement /></ProtectedAdminRoute>} />
-          <Route path="/admin/freelance" element={<ProtectedAdminRoute><FreelanceManagement /></ProtectedAdminRoute>} />
-        </Routes>
-      </BrowserRouter>
-    </ThemeProvider>
-  );
+                {/* Shopping Flow */}
+                <Route path="/checkout" element={<Checkout />} />
+                <Route path="/payment-success" element={<PaymentSuccess />} />
+                <Route path="/cart" element={<Profile />} />
+
+                {/* Product Details - Dynamic Routes */}
+                <Route path="/product/:id" element={<RetailProductDetails />} />
+                <Route path="/retail/product/:id" element={<RetailProductDetails />} />
+                <Route path="/quick/product/:id" element={<QCommerceProductDetails />} />
+                <Route path="/wholesale/product/:id" element={<WholesaleProductDetails />} />
+                <Route path="/resale/product/:id" element={<ResaleProductDetails />} />
+
+                {/* Category & Exploration */}
+                <Route path="/category/:categoryName" element={<CategoryPage />} />
+                <Route path="/shop-by-category" element={<ShopByCategory />} />
+                <Route path="/all-products" element={<AllProducts />} />
+                <Route path="/add-product" element={<AddProduct />} />
+                <Route path="/keep-shopping" element={<KeepShopping />} />
+                <Route path="/one-day-offer" element={<OneDayOffer />} />
+
+                {/* Admin Section */}
+                <Route path="/admin" element={<AdminDashboard />} />
+
+                {/* Catch-all Routing */}
+                <Route path="*" element={<Navigate to="/retail" replace />} />
+            </Routes>
+        </Router>
+    );
 }
 
 export default App;

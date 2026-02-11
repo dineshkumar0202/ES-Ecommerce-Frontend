@@ -1,294 +1,559 @@
 import { useState } from 'react';
-import { Box, Typography, TextField, Button, Paper, Divider, Alert } from '@mui/material';
-import { useNavigate, useLocation } from 'react-router-dom';
+import {
+    Box, Typography, TextField, Button, Paper, Divider, Alert,
+    Stack, Container, IconButton, Fade, Checkbox, FormControlLabel,
+    CircularProgress, Stepper, Step, StepLabel, Grid
+} from '@mui/material';
+import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import GoogleIcon from '@mui/icons-material/Google';
 import AppleIcon from '@mui/icons-material/Apple';
-import StorefrontOutlinedIcon from '@mui/icons-material/StorefrontOutlined';
-import ShoppingCartOutlinedIcon from '@mui/icons-material/ShoppingCartOutlined';
-import AdminPanelSettingsOutlinedIcon from '@mui/icons-material/AdminPanelSettingsOutlined';
+import PersonOutlineIcon from '@mui/icons-material/PersonOutline';
+import StorefrontIcon from '@mui/icons-material/Storefront';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import Navbar from './Navbar';
 import { AuthService } from '../../services/api';
 
+type AuthStep = 'SELECT' | 'USER_AUTH' | 'SELLER_REG';
+
 const Login = () => {
     const navigate = useNavigate();
-    const location = useLocation();
 
-    // 0 = Seller, 1 = Buyer, 2 = Admin
-    const [userType, setUserType] = useState(location.pathname.includes('/admin') ? 2 : 1); // Default to Buyer (1)
-    const [isLogin, setIsLogin] = useState(false); // Toggle between Login and Register
+    const [authStep, setAuthStep] = useState<AuthStep>('SELECT');
+    const [userType, setUserType] = useState<number>(1); // 1 = Buyer/User, 0 = Seller
+    const [isLogin, setIsLogin] = useState(true);
 
-    // Form State
+    // Form State for User
     const [name, setName] = useState('');
     const [mobile, setMobile] = useState('');
-    const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+
+    // Form State for Seller (Detailed)
+    const [sellerData, setSellerData] = useState({
+        fullName: '',
+        email: '',
+        phoneNumber: '',
+        designation: '',
+        businessName: '',
+        businessAddress: '',
+        taxId: '',
+        websiteUrl: '',
+        accountHolder: '',
+        ifsc: '',
+        accountNumber: '',
+        verifyAccountNumber: '',
+        password: ''
+    });
+
+    const [registrationSuccess, setRegistrationSuccess] = useState<{ id: string, pass: string } | null>(null);
+
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
 
     const handleAuth = async (e?: React.FormEvent) => {
         if (e) e.preventDefault();
-        setError('');
         setIsLoading(true);
+        setError('');
 
         try {
-            const trimmedName = name.trim();
-            const trimmedMobile = mobile.trim();
-            const trimmedEmail = email.trim();
-
             let response;
             if (isLogin) {
-                // Login API
-                if (userType === 2) {
-                    if (!trimmedEmail || !password) {
-                        setError('Email and Password are required');
-                        setIsLoading(false);
-                        return;
-                    }
-                    response = await AuthService.loginAdmin({ email: trimmedEmail, password });
-                } else if (userType === 0) {
-                    if (!trimmedMobile || !password) {
-                        setError('Mobile and Password are required');
-                        setIsLoading(false);
-                        return;
-                    }
-                    response = await AuthService.loginSeller({ mobile: trimmedMobile, password });
-                } else {
-                    if (!trimmedMobile || !password) {
-                        setError('Mobile and Password are required');
-                        setIsLoading(false);
-                        return;
-                    }
-                    response = await AuthService.loginBuyer({ mobile: trimmedMobile, password });
-                }
-            } else {
-                // Register API
-                if (userType === 2) {
-                    setError('Admin registration is not allowed');
-                    setIsLoading(false);
-                    return;
-                }
-
-                if (!trimmedName || !trimmedMobile || !password) {
-                    setError('Name, Mobile, and Password are required');
-                    setIsLoading(false);
-                    return;
-                }
-
-                const registerPayload: any = {
-                    username: trimmedName,
-                    mobile: trimmedMobile,
-                    password,
-                    email: trimmedEmail || undefined
-                };
-
                 if (userType === 0) {
-                    response = await AuthService.registerSeller(registerPayload);
+                    // Seller Login using Unique ID
+                    response = await AuthService.loginSeller({ uniqueId: mobile.trim(), password });
                 } else {
-                    response = await AuthService.registerBuyer(registerPayload);
+                    response = await AuthService.loginBuyer({ mobile: mobile.trim(), password });
                 }
-            }
-
-            const { token, username, role: userRole } = response.data;
-
-            // Store in LocalStorage
-            localStorage.setItem('token', token);
-            localStorage.setItem('userRole', userRole);
-            localStorage.setItem('userName', username);
-            // Optional: Profile image fallback
-            localStorage.setItem('userProfileImage', `https://ui-avatars.com/api/?name=${encodeURIComponent(username)}&background=random`);
-
-            // Redirect
-            toast.success(`Welcome back, ${username}!`);
-            if (userRole === 'Admin') {
-                navigate('/admin', { replace: true });
-            } else if (userRole === 'Seller') {
-                navigate('/seller/profile', { replace: true });
             } else {
-                navigate('/profile', { replace: true });
+                response = await AuthService.registerBuyer({ username: name.trim(), mobile: mobile.trim(), password });
             }
 
+            const { token, username, role } = response.data;
+            localStorage.setItem('token', token);
+            localStorage.setItem('userRole', role);
+            localStorage.setItem('userName', username);
+
+            toast.success(`Welcome, ${username}!`);
+            navigate(role === 'Admin' ? '/admin' : '/freelance');
         } catch (err: any) {
-            console.error("Auth Error Details:", err.response?.data || err.message);
-            console.error("Auth Error Full:", err);
-            setError(err.response?.data?.message || 'Authentication failed. Please try again.');
+            setError(err.response?.data?.message || 'Authentication failed');
         } finally {
             setIsLoading(false);
         }
     };
 
-    return (
-        <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', bgcolor: '#f5f5f5' }}>
-            <Navbar />
-            <Box sx={{ flex: 1, display: 'flex' }}>
-                {/* Left Side - Dark Branding (Keep as is) */}
-                <Box
-                    sx={{
-                        width: '50%',
-                        bgcolor: '#000000',
-                        color: 'white',
-                        display: { xs: 'none', md: 'flex' },
-                        flexDirection: 'column',
-                        justifyContent: 'center',
-                        p: 8,
-                        position: 'relative'
-                    }}
-                >
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 6 }}>
-                        <Box sx={{ width: 40, height: 40, bgcolor: '#B4D5DC', borderRadius: 2, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, color: 'black', fontSize: '1.2rem' }}>AZ</Box>
-                        <Typography variant="h5" sx={{ fontWeight: 700 }}>AtoZ</Typography>
-                    </Box>
-                    <Typography variant="h2" sx={{ fontWeight: 800, mb: 3, lineHeight: 1.2 }}>
-                        Join the<br />
-                        <Box component="span" sx={{ color: '#B4D5DC' }}>Marketplace &</Box><br />
-                        <Box component="span" sx={{ color: '#B4D5DC' }}>AI</Box> ecosystem.
-                    </Typography>
-                    <Typography variant="body1" sx={{ color: '#94a3b8', maxWidth: 400, lineHeight: 1.8 }}>
-                        Create your account to access your personalized workspace, manage your assets, and leverage powerful AI-driven tools.
-                    </Typography>
-                    <Typography variant="caption" sx={{ position: 'absolute', bottom: 40, color: '#64748b' }}>
-                        © 2024 AtoZ Technologies Inc. All rights reserved.
-                    </Typography>
-                </Box>
+    const handleSellerSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setIsLoading(true);
+        setError('');
 
-                {/* Right Side - Form */}
-                <Box sx={{ width: { xs: '100%', md: '50%' }, display: 'flex', alignItems: 'center', justifyContent: 'center', p: 4 }}>
-                    <Paper elevation={0} sx={{ width: '100%', maxWidth: 480, p: 5, borderRadius: 3, bgcolor: 'white', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
+        if (sellerData.accountNumber !== sellerData.verifyAccountNumber) {
+            setError('Bank account numbers do not match');
+            setIsLoading(false);
+            return;
+        }
 
-                        {/* Header */}
-                        <Box sx={{ mb: 4 }}>
-                            <Typography variant="h5" sx={{ fontWeight: 800, color: '#0a0a0a', mb: 1 }}>
-                                {isLogin ? 'Welcome Back' : 'Create Account'}
-                            </Typography>
-                            <Typography variant="body2" sx={{ color: '#64748b' }}>
-                                {isLogin ? 'Enter your credentials to access your account.' : 'Select your account type and fill in your details to get started.'}
-                            </Typography>
-                        </Box>
+        try {
+            const response = await AuthService.registerSeller({
+                username: sellerData.fullName,
+                mobile: sellerData.phoneNumber,
+                email: sellerData.email,
+                password: sellerData.password,
+                businessDetails: {
+                    name: sellerData.businessName,
+                    address: sellerData.businessAddress,
+                    taxId: sellerData.taxId
+                }
+            });
 
-                        {/* Role Selection */}
-                        <Box sx={{ mb: 3 }}>
-                            <Typography variant="caption" sx={{ display: 'block', mb: 1.5, fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: 0.5 }}>
-                                Select User Type
-                            </Typography>
-                            <Box sx={{ display: 'flex', gap: 2 }}>
-                                {[
-                                    { id: 1, label: 'Buyer', icon: <ShoppingCartOutlinedIcon /> },
-                                    { id: 0, label: 'Seller', icon: <StorefrontOutlinedIcon /> },
-                                    { id: 2, label: 'Admin', icon: <AdminPanelSettingsOutlinedIcon /> }
-                                ].map((type) => (
-                                    <Box
-                                        key={type.id}
-                                        onClick={() => {
-                                            setUserType(type.id);
-                                            setError('');
-                                            if (type.id === 2) setIsLogin(true);
-                                        }}
-                                        sx={{
-                                            flex: 1,
-                                            border: userType === type.id ? '2px solid #B4D5DC' : '1px solid #e5e7eb',
-                                            borderRadius: 2,
-                                            p: 2,
-                                            textAlign: 'center',
-                                            cursor: 'pointer',
-                                            bgcolor: userType === type.id ? '#eaf6f8' : 'white',
-                                            transition: 'all 0.2s',
-                                            '&:hover': { borderColor: '#B4D5DC', bgcolor: '#eaf6f8' }
-                                        }}
-                                    >
-                                        <Box sx={{ color: '#0a0a0a', mb: 0.5 }}>{type.icon}</Box>
-                                        <Typography variant="body2" sx={{ fontWeight: 600 }}>{type.label}</Typography>
+            // Simulate Unique ID generation (In real app, this comes from backend)
+            const generatedId = `SEL-${Math.floor(100000 + Math.random() * 900000)}`;
+            const generatedPass = sellerData.password; // or a truly generated one
+
+            setRegistrationSuccess({ id: generatedId, pass: generatedPass });
+            toast.success("Seller registration successful! Credentials generated.");
+        } catch (err: any) {
+            setError(err.response?.data?.message || 'Registration failed');
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    // Render Selection Step
+    if (authStep === 'SELECT') {
+        return (
+            <Box sx={{ minHeight: '100vh', bgcolor: '#f8fafc', display: 'flex', flexDirection: 'column' }}>
+                <Navbar />
+                <Container maxWidth="md" sx={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', py: 8 }}>
+                    <Typography variant="h4" align="center" sx={{ fontWeight: 900, mb: 1, color: '#0f172a' }}>
+                        Join ATOZ.IN community 👋
+                    </Typography>
+                    <Typography variant="body1" align="center" sx={{ color: '#64748b', mb: 8 }}>
+                        Select how you want to use the platform to get started
+                    </Typography>
+
+                    <Stack direction={{ xs: 'column', sm: 'row' }} spacing={4} justifyContent="center" alignItems="stretch">
+                        {/* USER Choice */}
+                        <Paper
+                            onClick={() => setUserType(1)}
+                            elevation={0}
+                            sx={{
+                                flex: 1,
+                                p: 5,
+                                borderRadius: 6,
+                                cursor: 'pointer',
+                                border: '2px solid',
+                                borderColor: userType === 1 ? '#B4D5DC' : 'transparent',
+                                bgcolor: 'white',
+                                transition: 'all 0.3s ease',
+                                position: 'relative',
+                                '&:hover': { transform: 'translateY(-4px)', boxShadow: '0 20px 40px rgba(0,0,0,0.05)' }
+                            }}
+                        >
+                            {userType === 1 && <CheckCircleIcon sx={{ position: 'absolute', top: 20, right: 20, color: '#B4D5DC' }} />}
+                            <Stack alignItems="center" spacing={3}>
+                                <Box sx={{ width: 80, height: 80, bgcolor: '#f1f5f9', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                    <PersonOutlineIcon sx={{ fontSize: 40, color: '#0f172a' }} />
+                                </Box>
+                                <Box textAlign="center">
+                                    <Typography variant="h6" sx={{ fontWeight: 900, mb: 1, textTransform: 'uppercase', letterSpacing: 1 }}>User</Typography>
+                                    <Typography variant="body2" sx={{ color: '#64748b', lineHeight: 1.6 }}>
+                                        Shop curated collections and manage your personal orders.
+                                    </Typography>
+                                </Box>
+                                {userType === 1 && (
+                                    <Box sx={{ display: 'flex', alignItems: 'center', color: '#B4D5DC', fontWeight: 900 }}>
+                                        <Typography variant="caption" sx={{ fontWeight: 900, textTransform: 'uppercase' }}>SELECTED</Typography>
+                                        <CheckCircleIcon sx={{ fontSize: 16, ml: 0.5 }} />
                                     </Box>
-                                ))}
-                            </Box>
+                                )}
+                            </Stack>
+                        </Paper>
+
+                        {/* SELLER Choice */}
+                        <Paper
+                            onClick={() => setUserType(0)}
+                            elevation={0}
+                            sx={{
+                                flex: 1,
+                                p: 5,
+                                borderRadius: 6,
+                                cursor: 'pointer',
+                                border: '2px solid',
+                                borderColor: userType === 0 ? '#B4D5DC' : 'transparent',
+                                bgcolor: 'white',
+                                transition: 'all 0.3s ease',
+                                position: 'relative',
+                                '&:hover': { transform: 'translateY(-4px)', boxShadow: '0 20px 40px rgba(0,0,0,0.05)' }
+                            }}
+                        >
+                            {userType === 0 && <CheckCircleIcon sx={{ position: 'absolute', top: 20, right: 20, color: '#B4D5DC' }} />}
+                            <Stack alignItems="center" spacing={3}>
+                                <Box sx={{ width: 80, height: 80, bgcolor: '#e0f2f1', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                    <StorefrontIcon sx={{ fontSize: 40, color: '#00695c' }} />
+                                </Box>
+                                <Box textAlign="center">
+                                    <Typography variant="h6" sx={{ fontWeight: 900, mb: 1, textTransform: 'uppercase', letterSpacing: 1 }}>Seller</Typography>
+                                    <Typography variant="body2" sx={{ color: '#64748b', lineHeight: 1.6 }}>
+                                        Grow your brand and manage global inventory seamlessly.
+                                    </Typography>
+                                </Box>
+                                {userType === 0 && (
+                                    <Box sx={{ display: 'flex', alignItems: 'center', color: '#B4D5DC', fontWeight: 900 }}>
+                                        <Typography variant="caption" sx={{ fontWeight: 900, textTransform: 'uppercase' }}>SELECTED</Typography>
+                                        <CheckCircleIcon sx={{ fontSize: 16, ml: 0.5 }} />
+                                    </Box>
+                                )}
+                            </Stack>
+                        </Paper>
+                    </Stack>
+
+                    <Button
+                        variant="contained"
+                        fullWidth
+                        onClick={() => {
+                            if (userType === 0) {
+                                // For seller, if they click continue, we show reg form
+                                setAuthStep('SELLER_REG');
+                                setIsLogin(false);
+                            } else {
+                                setAuthStep('USER_AUTH');
+                            }
+                        }}
+                        sx={{
+                            mt: 8,
+                            py: 2,
+                            bgcolor: '#0f172a',
+                            color: 'white',
+                            fontWeight: 900,
+                            borderRadius: 4,
+                            '&:hover': { bgcolor: '#1e293b' }
+                        }}
+                    >
+                        Continue to {userType === 1 ? 'Login / Register' : 'Seller Registration'}
+                    </Button>
+
+                    {userType === 0 && (
+                        <Typography
+                            variant="body2"
+                            align="center"
+                            onClick={() => {
+                                setAuthStep('USER_AUTH');
+                                setIsLogin(true);
+                            }}
+                            sx={{ mt: 3, color: '#64748b', cursor: 'pointer', fontWeight: 700, '&:hover': { color: '#0f172a' } }}
+                        >
+                            Already a seller? Login with Unique ID
+                        </Typography>
+                    )}
+                </Container>
+            </Box>
+        );
+    }
+
+    // Render User Auth Step (Split Layout)
+    if (authStep === 'USER_AUTH') {
+        return (
+            <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+                <Navbar />
+                <Box sx={{ flex: 1, display: 'flex' }}>
+                    {/* Left: Branding Image */}
+                    <Box sx={{
+                        flex: 1.2,
+                        display: { xs: 'none', lg: 'block' },
+                        position: 'relative',
+                        backgroundImage: 'url("https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=1200&q=80")',
+                        backgroundSize: 'cover',
+                        backgroundPosition: 'center'
+                    }}>
+                        <Box sx={{ position: 'absolute', inset: 0, bgcolor: 'rgba(0,0,0,0.4)', p: 8, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end' }}>
+                            <Box sx={{ width: 40, height: 4, bgcolor: 'white', mb: 4 }} />
+                            <Typography variant="h2" sx={{ color: 'white', fontWeight: 900, mb: 2, lineHeight: 1.1 }}>
+                                Welcome Back to <br /> the Community.
+                            </Typography>
+                            <Typography variant="h6" sx={{ color: 'rgba(255,255,255,0.8)', mb: 4, fontWeight: 500, maxWidth: 460 }}>
+                                Connect, collaborate, and create with professionals around the globe.
+                            </Typography>
+                            <Typography variant="caption" sx={{ color: 'grey.400' }}>
+                                © {new Date().getFullYear()} ATOZ.IN • Privacy Policy
+                            </Typography>
                         </Box>
+                    </Box>
 
-                        {error && (<Alert severity="error" sx={{ mb: 3 }}>{error}</Alert>)}
-
-                        {/* Standard Login/Register for Buyer/Seller/Admin */}
-                        <Box component="form" onSubmit={handleAuth} noValidate>
-                            {/* Name - Only for Register */}
-                            {!isLogin && (
-                                <TextField
-                                    margin="normal"
-                                    required
-                                    fullWidth
-                                    label="Full Name"
-                                    name="name"
-                                    autoComplete="name"
-                                    value={name}
-                                    onChange={(e) => setName(e.target.value)}
-                                    sx={{ mb: 2, '& .MuiOutlinedInput-root': { borderRadius: 2, bgcolor: '#f9fafb' } }}
-                                />
-                            )}
-
-                            {/* Mobile or Email - Primary ID */}
-                            <TextField
-                                margin="normal"
-                                required
-                                fullWidth
-                                label={userType === 2 ? "Email Address" : "Mobile Number"}
-                                name={userType === 2 ? "email" : "mobile"}
-                                type={userType === 2 ? "email" : "tel"}
-                                autoComplete={userType === 2 ? "email" : "tel"}
-                                value={userType === 2 ? email : mobile}
-                                onChange={(e) => userType === 2 ? setEmail(e.target.value) : setMobile(e.target.value)}
-                                sx={{ mb: 2, '& .MuiOutlinedInput-root': { borderRadius: 2, bgcolor: '#f9fafb' } }}
-                            />
-
-
-                            {/* Password */}
-                            <TextField
-                                margin="normal"
-                                required
-                                fullWidth
-                                name="password"
-                                label="Password"
-                                type="password"
-                                autoComplete="current-password"
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                                sx={{ mb: 3, '& .MuiOutlinedInput-root': { borderRadius: 2, bgcolor: '#f9fafb' } }}
-                            />
-
-                            {!isLogin && (
-                                <Typography variant="caption" sx={{ display: 'block', mb: 3, color: '#64748b' }}>
-                                    I agree to the <Box component="span" sx={{ color: '#000000', cursor: 'pointer', fontWeight: 600 }}>Terms of Service</Box>
-                                </Typography>
-                            )}
-
+                    {/* Right: Auth Form */}
+                    <Box sx={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', p: 4, bgcolor: 'white' }}>
+                        <Box sx={{ width: '100%', maxWidth: 440 }}>
                             <Button
-                                fullWidth
-                                variant="contained"
-                                size="large"
-                                onClick={handleAuth}
-                                disabled={isLoading}
-                                sx={{
-                                    py: 1.5, bgcolor: '#B4D5DC', color: '#000000', fontWeight: 700, mb: 3,
-                                    textTransform: 'none', borderRadius: 2, fontSize: '1rem',
-                                    boxShadow: 'none', '&:hover': { bgcolor: '#9cc3cd', boxShadow: 'none' }
-                                }}
+                                onClick={() => setAuthStep('SELECT')}
+                                sx={{ mb: 4, color: '#64748b', fontWeight: 700, textTransform: 'none' }}
+                                startIcon={<span>←</span>}
                             >
-                                {isLoading ? 'Processing...' : (isLogin ? 'Sign In' : 'Register Account 🚀')}
+                                Back to selection
                             </Button>
 
-                            <Typography variant="body2" align="center" sx={{ mb: 3, color: '#64748b' }}>
-                                {isLogin ? "Don't have an account? " : "Already have an account? "}
-                                <Box component="span" onClick={() => setIsLogin(!isLogin)} sx={{ color: '#000000', cursor: 'pointer', fontWeight: 600 }}>
-                                    {isLogin ? 'Register Here' : 'Sign In Instead'}
-                                </Box>
+                            <Typography variant="h4" sx={{ fontWeight: 900, mb: 1, color: '#0f172a' }}>
+                                {isLogin ? 'Login' : 'Create Account'}
+                            </Typography>
+                            <Typography variant="body2" sx={{ color: '#64748b', mb: 6 }}>
+                                {isLogin ? 'Please enter your details to access your account.' : 'Join thousands of users in our community.'}
                             </Typography>
 
-                            <Divider sx={{ mb: 3, color: '#94a3b8', fontSize: '0.85rem' }}>Or continue with</Divider>
+                            {error && <Alert severity="error" sx={{ mb: 4, borderRadius: 2 }}>{error}</Alert>}
 
-                            <Box sx={{ display: 'flex', gap: 2 }}>
-                                <Button fullWidth variant="outlined" startIcon={<GoogleIcon />} sx={{ py: 1.5, color: '#0a0a0a', borderColor: '#e5e7eb', textTransform: 'none', borderRadius: 2 }}>Google</Button>
-                                <Button fullWidth variant="outlined" startIcon={<AppleIcon />} sx={{ py: 1.5, color: '#0a0a0a', borderColor: '#e5e7eb', textTransform: 'none', borderRadius: 2 }}>Apple</Button>
-                            </Box>
+                            <Stack spacing={3} component="form" onSubmit={handleAuth}>
+                                {!isLogin && (
+                                    <Box>
+                                        <Typography variant="caption" sx={{ fontWeight: 800, color: '#64748b', mb: 1, display: 'block' }}>FULL NAME</Typography>
+                                        <TextField
+                                            fullWidth variant="standard"
+                                            placeholder="Enter your name"
+                                            value={name}
+                                            onChange={(e) => setName(e.target.value)}
+                                            InputProps={{ disableUnderline: true, sx: { py: 1, borderBottom: '1px solid #e2e8f0' } }}
+                                        />
+                                    </Box>
+                                )}
+                                <Box>
+                                    <Typography variant="caption" sx={{ fontWeight: 800, color: '#64748b', mb: 1, display: 'block' }}>
+                                        {userType === 0 ? 'UNIQUE SELLER ID' : 'MOBILE NUMBER'}
+                                    </Typography>
+                                    <TextField
+                                        fullWidth variant="standard"
+                                        placeholder={userType === 0 ? "SEL-XXXXXX" : "Enter your mobile"}
+                                        value={mobile}
+                                        onChange={(e) => setMobile(e.target.value)}
+                                        InputProps={{ disableUnderline: true, sx: { py: 1, borderBottom: '1px solid #e2e8f0' } }}
+                                    />
+                                </Box>
+                                <Box>
+                                    <Stack direction="row" justifyContent="space-between" alignItems="center">
+                                        <Typography variant="caption" sx={{ fontWeight: 800, color: '#64748b', mb: 1, display: 'block' }}>PASSWORD</Typography>
+                                        {isLogin && <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 700, cursor: 'pointer' }}>Forgot Password?</Typography>}
+                                    </Stack>
+                                    <TextField
+                                        fullWidth variant="standard"
+                                        type="password"
+                                        placeholder="••••••••"
+                                        value={password}
+                                        onChange={(e) => setPassword(e.target.value)}
+                                        InputProps={{ disableUnderline: true, sx: { py: 1, borderBottom: '1px solid #e2e8f0' } }}
+                                    />
+                                </Box>
+
+                                <Button
+                                    fullWidth
+                                    variant="contained"
+                                    type="submit"
+                                    disabled={isLoading}
+                                    sx={{
+                                        py: 2, mt: 2, bgcolor: '#B4D5DC', color: '#0f172a',
+                                        fontWeight: 900, borderRadius: 3, boxShadow: 'none',
+                                        '&:hover': { bgcolor: '#9bbec9', boxShadow: 'none' }
+                                    }}
+                                >
+                                    {isLoading ? <CircularProgress size={24} color="inherit" /> : (isLogin ? 'Login' : 'Create Account')}
+                                </Button>
+
+                                <Divider sx={{ my: 2 }}><Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 700 }}>OR CONTINUE WITH</Typography></Divider>
+
+                                <Stack direction="row" spacing={2}>
+                                    <IconButton sx={{ flex: 1, border: '1px solid #e2e8f0', borderRadius: 2 }}><GoogleIcon /></IconButton>
+                                    <IconButton sx={{ flex: 1, border: '1px solid #e2e8f0', borderRadius: 2 }}><AppleIcon /></IconButton>
+                                </Stack>
+
+                                <Typography variant="body2" sx={{ textAlign: 'center', mt: 4, color: '#64748b' }}>
+                                    {isLogin ? "Don't have an account?" : "Already have an account?"} <Box component="span" onClick={() => setIsLogin(!isLogin)} sx={{ color: '#0f172a', fontWeight: 900, cursor: 'pointer' }}>{isLogin ? 'Sign up for free' : 'Login instead'}</Box>
+                                </Typography>
+                            </Stack>
                         </Box>
-                    </Paper>
+                    </Box>
                 </Box>
             </Box>
-        </Box>
+        );
+    }
+
+    // Render Success Screen for Seller
+    if (registrationSuccess) {
+        return (
+            <Box sx={{ minHeight: '100vh', bgcolor: '#f8fafc', display: 'flex', flexDirection: 'column' }}>
+                <Navbar />
+                <Container maxWidth="sm" sx={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', py: 8 }}>
+                    <Paper elevation={0} sx={{ p: 6, borderRadius: 8, border: '1px solid #adc9d1', textAlign: 'center', width: '100%' }}>
+                        <Box sx={{ width: 80, height: 80, bgcolor: '#ecfdf5', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', mx: 'auto', mb: 4 }}>
+                            <CheckCircleIcon sx={{ fontSize: 40, color: '#10b981' }} />
+                        </Box>
+                        <Typography variant="h4" sx={{ fontWeight: 900, mb: 2, color: '#0f172a' }}>Registration Successful!</Typography>
+                        <Typography variant="body1" sx={{ color: '#64748b', mb: 6 }}>
+                            Your seller account has been created. A copy of these credentials has been sent to <strong>{sellerData.email}</strong>.
+                        </Typography>
+
+                        <Stack spacing={3} sx={{ mb: 6 }}>
+                            <Box sx={{ p: 3, bgcolor: '#f8fafc', borderRadius: 4, border: '1px dashed #adc9d1' }}>
+                                <Typography variant="caption" sx={{ fontWeight: 800, color: '#64748b', display: 'block', mb: 1 }}>YOUR UNIQUE SELLER ID</Typography>
+                                <Typography variant="h5" sx={{ fontWeight: 900, color: '#0f172a', letterSpacing: 2 }}>{registrationSuccess.id}</Typography>
+                            </Box>
+                            <Box sx={{ p: 3, bgcolor: '#f8fafc', borderRadius: 4, border: '1px dashed #adc9d1' }}>
+                                <Typography variant="caption" sx={{ fontWeight: 800, color: '#64748b', display: 'block', mb: 1 }}>YOUR PASSWORD</Typography>
+                                <Typography variant="h5" sx={{ fontWeight: 900, color: '#0f172a', letterSpacing: 2 }}>{registrationSuccess.pass}</Typography>
+                            </Box>
+                        </Stack>
+
+                        <Button
+                            fullWidth
+                            variant="contained"
+                            onClick={() => {
+                                setAuthStep('USER_AUTH');
+                                setIsLogin(true);
+                                setMobile(registrationSuccess.id);
+                                setRegistrationSuccess(null);
+                            }}
+                            sx={{ py: 2, bgcolor: '#0f172a', color: 'white', fontWeight: 900, borderRadius: 4 }}
+                        >
+                            Proceed to Login
+                        </Button>
+                    </Paper>
+                </Container>
+            </Box>
+        );
+    }
+
+    // Render Seller Registration (Detailed Form)
+    return (
+        <Fade in={true}>
+            <Box sx={{ minHeight: '100vh', bgcolor: '#f8fafc', display: 'flex', flexDirection: 'column' }}>
+                <Navbar />
+                <Container maxWidth="md" sx={{ py: 10 }}>
+                    <Box sx={{ mb: 6, textAlign: 'center' }}>
+                        <Stepper activeStep={0} sx={{ mb: 8, '& .MuiStepIcon-root.Mui-active': { color: '#B4D5DC' } }}>
+                            {['PROFILE', 'STORE', 'PAYOUT'].map((label) => <Step key={label}><StepLabel>{label}</StepLabel></Step>)}
+                        </Stepper>
+                        <Typography variant="h4" sx={{ fontWeight: 900, mb: 1, color: '#0f172a' }}>Become a Verified Seller</Typography>
+                        <Typography variant="body1" sx={{ color: '#64748b' }}>Join thousands of merchants growing their business on our multi-channel platform.</Typography>
+                    </Box>
+
+                    <Paper elevation={0} sx={{ p: 6, borderRadius: 6, border: '1px solid #f1f5f9' }}>
+                        <Stack spacing={6} component="form" onSubmit={handleSellerSubmit}>
+                            {/* Section 1: Personal Information */}
+                            <Box>
+                                <Typography variant="subtitle1" sx={{ fontWeight: 900, mb: 3, pb: 1, borderBottom: '1.5px solid #adc9d1', display: 'inline-block' }}>Personal Information</Typography>
+                                <Grid container spacing={3}>
+                                    <Grid size={{ xs: 12, sm: 6 }}>
+                                        <Typography variant="caption" sx={{ fontWeight: 800, color: '#64748b', mb: 1, display: 'block' }}>FULL NAME *</Typography>
+                                        <TextField fullWidth placeholder="John Doe" variant="outlined" sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }} value={sellerData.fullName} onChange={(e) => setSellerData({ ...sellerData, fullName: e.target.value })} />
+                                    </Grid>
+                                    <Grid size={{ xs: 12, sm: 6 }}>
+                                        <Typography variant="caption" sx={{ fontWeight: 800, color: '#64748b', mb: 1, display: 'block' }}>EMAIL ADDRESS *</Typography>
+                                        <TextField fullWidth placeholder="john@example.com" variant="outlined" sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }} value={sellerData.email} onChange={(e) => setSellerData({ ...sellerData, email: e.target.value })} />
+                                    </Grid>
+                                    <Grid size={{ xs: 12, sm: 6 }}>
+                                        <Typography variant="caption" sx={{ fontWeight: 800, color: '#64748b', mb: 1, display: 'block' }}>PHONE NUMBER *</Typography>
+                                        <TextField fullWidth placeholder="+1 123 456 7890" variant="outlined" sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }} value={sellerData.phoneNumber} onChange={(e) => setSellerData({ ...sellerData, phoneNumber: e.target.value })} />
+                                    </Grid>
+                                    <Grid size={{ xs: 12, sm: 6 }}>
+                                        <Typography variant="caption" sx={{ fontWeight: 800, color: '#64748b', mb: 1, display: 'block' }}>PASSWORD *</Typography>
+                                        <TextField fullWidth type="password" placeholder="••••••••" variant="outlined" sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }} value={sellerData.password} onChange={(e) => setSellerData({ ...sellerData, password: e.target.value })} />
+                                    </Grid>
+                                </Grid>
+                            </Box>
+
+                            {/* Section 2: Business Details */}
+                            <Box>
+                                <Typography variant="subtitle1" sx={{ fontWeight: 900, mb: 3, pb: 1, borderBottom: '1.5px solid #adc9d1', display: 'inline-block' }}>Business Details</Typography>
+                                <Grid container spacing={3}>
+                                    <Grid size={{ xs: 12 }}>
+                                        <Typography variant="caption" sx={{ fontWeight: 800, color: '#64748b', mb: 1, display: 'block' }}>REGISTERED BUSINESS NAME *</Typography>
+                                        <TextField fullWidth placeholder="Acme Corporation LLC" variant="outlined" sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }} value={sellerData.businessName} onChange={(e) => setSellerData({ ...sellerData, businessName: e.target.value })} />
+                                    </Grid>
+                                    <Grid size={{ xs: 12 }}>
+                                        <Typography variant="caption" sx={{ fontWeight: 800, color: '#64748b', mb: 1, display: 'block' }}>BUSINESS ADDRESS *</Typography>
+                                        <TextField fullWidth multiline rows={2} placeholder="Street, City, State, ZIP" variant="outlined" sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }} value={sellerData.businessAddress} onChange={(e) => setSellerData({ ...sellerData, businessAddress: e.target.value })} />
+                                    </Grid>
+                                    <Grid size={{ xs: 12, sm: 6 }}>
+                                        <Typography variant="caption" sx={{ fontWeight: 800, color: '#64748b', mb: 1, display: 'block' }}>GST / TAX IDENTIFICATION NUMBER *</Typography>
+                                        <TextField fullWidth placeholder="GSTIN-123456789" variant="outlined" sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }} value={sellerData.taxId} onChange={(e) => setSellerData({ ...sellerData, taxId: e.target.value })} />
+                                    </Grid>
+                                    <Grid size={{ xs: 12, sm: 6 }}>
+                                        <Typography variant="caption" sx={{ fontWeight: 800, color: '#64748b', mb: 1, display: 'block' }}>WEBSITE URL (OPTIONAL)</Typography>
+                                        <TextField fullWidth placeholder="https://www.yourstore.com" variant="outlined" sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }} value={sellerData.websiteUrl} onChange={(e) => setSellerData({ ...sellerData, websiteUrl: e.target.value })} />
+                                    </Grid>
+                                </Grid>
+                            </Box>
+
+                            {/* Section 3: Payout & Identity */}
+                            <Box>
+                                <Typography variant="subtitle1" sx={{ fontWeight: 900, mb: 3, pb: 1, borderBottom: '1.5px solid #adc9d1', display: 'inline-block' }}>Payout & Identity</Typography>
+                                <Grid container spacing={3}>
+                                    <Grid size={{ xs: 12, sm: 6 }}>
+                                        <Typography variant="caption" sx={{ fontWeight: 800, color: '#64748b', mb: 1, display: 'block' }}>ACCOUNT HOLDER NAME *</Typography>
+                                        <TextField fullWidth placeholder="John Doe" variant="outlined" sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }} value={sellerData.accountHolder} onChange={(e) => setSellerData({ ...sellerData, accountHolder: e.target.value })} />
+                                    </Grid>
+                                    <Grid size={{ xs: 12, sm: 6 }}>
+                                        <Typography variant="caption" sx={{ fontWeight: 800, color: '#64748b', mb: 1, display: 'block' }}>IFSC / SWIFT CODE *</Typography>
+                                        <TextField fullWidth placeholder="ICIC0001234" variant="outlined" sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }} value={sellerData.ifsc} onChange={(e) => setSellerData({ ...sellerData, ifsc: e.target.value })} />
+                                    </Grid>
+                                    <Grid size={{ xs: 12, sm: 6 }}>
+                                        <Typography variant="caption" sx={{ fontWeight: 800, color: '#64748b', mb: 1, display: 'block' }}>BANK ACCOUNT NUMBER *</Typography>
+                                        <TextField fullWidth placeholder="•••• •••• •••• 1234" variant="outlined" sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }} value={sellerData.accountNumber} onChange={(e) => setSellerData({ ...sellerData, accountNumber: e.target.value })} />
+                                    </Grid>
+                                    <Grid size={{ xs: 12, sm: 6 }}>
+                                        <Typography variant="caption" sx={{ fontWeight: 800, color: '#64748b', mb: 1, display: 'block' }}>VERIFY ACCOUNT NUMBER *</Typography>
+                                        <TextField fullWidth placeholder="•••• •••• •••• 1234" variant="outlined" sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }} value={sellerData.verifyAccountNumber} onChange={(e) => setSellerData({ ...sellerData, verifyAccountNumber: e.target.value })} />
+                                    </Grid>
+
+                                    <Grid size={{ xs: 12, sm: 6 }}>
+                                        <Paper variant="outlined" sx={{ p: 4, borderRadius: 3, textAlign: 'center', borderStyle: 'dashed' }}>
+                                            <CloudUploadIcon sx={{ color: '#adc9d1', mb: 2, fontSize: 32 }} />
+                                            <Typography variant="body2" fontWeight="bold">Aadhaar Card / Gov ID (Front)</Typography>
+                                            <Typography variant="caption" color="textSecondary">PDF, JPG, PNG (Max 5MB)</Typography>
+                                        </Paper>
+                                    </Grid>
+                                    <Grid size={{ xs: 12, sm: 6 }}>
+                                        <Paper variant="outlined" sx={{ p: 4, borderRadius: 3, textAlign: 'center', borderStyle: 'dashed' }}>
+                                            <CloudUploadIcon sx={{ color: '#adc9d1', mb: 2, fontSize: 32 }} />
+                                            <Typography variant="body2" fontWeight="bold">PAN Card / Tax ID</Typography>
+                                            <Typography variant="caption" color="textSecondary">PDF, JPG, PNG (Max 5MB)</Typography>
+                                        </Paper>
+                                    </Grid>
+                                </Grid>
+                            </Box>
+
+                            {error && <Alert severity="error">{error}</Alert>}
+
+                            <FormControlLabel
+                                control={<Checkbox defaultChecked sx={{ color: '#B4D5DC', '&.Mui-checked': { color: '#B4D5DC' } }} />}
+                                label={<Typography variant="caption" color="textSecondary">I hereby certify that the information provided above is true and accurate. I agree to the <Box component="span" sx={{ color: '#0f172a', fontWeight: 900 }}>Seller Agreement</Box> and <Box component="span" sx={{ color: '#0f172a', fontWeight: 900 }}>Privacy Policy</Box>.</Typography>}
+                            />
+
+                            <Stack direction="row" spacing={3} sx={{ pt: 4 }}>
+                                <Button fullWidth variant="contained" type="submit" disabled={isLoading} sx={{ py: 2, bgcolor: '#B4D5DC', color: '#0f172a', fontWeight: 900, borderRadius: 3, boxShadow: 'none', '&:hover': { bgcolor: '#9bbec9' } }}>
+                                    {isLoading ? <CircularProgress size={24} color="inherit" /> : 'SUBMIT FOR VERIFICATION'}
+                                </Button>
+                                <Button fullWidth variant="outlined" sx={{ py: 2, color: '#64748b', borderColor: '#e2e8f0', fontWeight: 900, borderRadius: 3 }}>SAVE AS DRAFT</Button>
+                            </Stack>
+
+                            <Typography
+                                variant="body2"
+                                align="center"
+                                onClick={() => {
+                                    setAuthStep('USER_AUTH');
+                                    setIsLogin(true);
+                                }}
+                                sx={{ mt: 3, color: '#64748b', cursor: 'pointer', fontWeight: 700, '&:hover': { color: '#0f172a' } }}
+                            >
+                                Already registered? <Box component="span" sx={{ color: '#0f172a', fontWeight: 900 }}>Login instead</Box>
+                            </Typography>
+                        </Stack>
+                    </Paper>
+
+                    <Stack direction="row" justifyContent="center" spacing={6} sx={{ mt: 8, color: '#64748b' }}>
+                        <Stack direction="row" alignItems="center" spacing={1}><CheckCircleIcon sx={{ fontSize: 16 }} /><Typography variant="caption" fontWeight="bold">Enterprise Security</Typography></Stack>
+                        <Stack direction="row" alignItems="center" spacing={1}><CheckCircleIcon sx={{ fontSize: 16 }} /><Typography variant="caption" fontWeight="bold">Quick Approval</Typography></Stack>
+                        <Stack direction="row" alignItems="center" spacing={1}><CheckCircleIcon sx={{ fontSize: 16 }} /><Typography variant="caption" fontWeight="bold">24/7 Seller Support</Typography></Stack>
+                    </Stack>
+                </Container>
+            </Box>
+        </Fade>
     );
 };
 

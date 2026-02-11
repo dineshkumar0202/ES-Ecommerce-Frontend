@@ -12,12 +12,14 @@ import WorkOutlineIcon from '@mui/icons-material/WorkOutline';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
+import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh';
+import RocketLaunchIcon from '@mui/icons-material/RocketLaunch';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import { useState, useEffect } from 'react';
 import { UserService, AuthService, UploadService } from '../../../../services/api';
 
 interface FreelancerSidebarProps {
-    onPost: (newPost: any) => void;
+    // onPost removed as per user request to remove posting functionality
 }
 
 const SKILL_TESTS: any = {
@@ -63,7 +65,7 @@ const SKILL_TESTS: any = {
     }
 };
 
-const FreelancerSidebar = ({ onPost }: FreelancerSidebarProps) => {
+const FreelancerSidebar = () => {
     // Register State
     const [openRegisterDialog, setOpenRegisterDialog] = useState(false);
     const [isRegistered, setIsRegistered] = useState(false);
@@ -179,8 +181,6 @@ const FreelancerSidebar = ({ onPost }: FreelancerSidebarProps) => {
     const [prompt, setPrompt] = useState('');
     const [isGenerating, setIsGenerating] = useState(false);
     const [generatedImage, setGeneratedImage] = useState<string | null>(null);
-    const [openPostDialog, setOpenPostDialog] = useState(false);
-    const [formData, setFormData] = useState({ name: '', productName: '', contact: '', location: '' });
 
     const handleGenerate = async () => {
         if (!prompt) return;
@@ -206,37 +206,7 @@ const FreelancerSidebar = ({ onPost }: FreelancerSidebarProps) => {
         }
     };
 
-    const handleOpenPostDialog = () => {
-        if (!generatedImage) return;
-        setOpenPostDialog(true);
-        setFormData({ ...formData, productName: prompt.substring(0, 30), name: registerData.name || '' });
-    };
-
     const userRole = localStorage.getItem('userRole');
-
-    const handleConfirmPost = () => {
-        const isBuyer = userRole === 'Buyer';
-        const newPost = {
-            id: Date.now(),
-            title: formData.productName || (isBuyer ? "Looking for Service" : "New Service"),
-            description: isBuyer
-                ? `${formData.name} is looking for ${formData.productName} services in ${formData.location}. Contact: ${formData.contact}.`
-                : `${formData.name} is offering services in ${formData.location}. Contact: ${formData.contact}.`,
-            price: Math.floor(Math.random() * 200) + 50,
-            currency: "$",
-            status: isBuyer ? "REQUEST" : "NEW",
-            tagColor: isBuyer ? "#f472b6" : "#3b82f6", // Pink for requests, Blue for services
-            tagTextColor: "white",
-            views: "0 views",
-            time: "Just now",
-            image: generatedImage,
-            nameDisplay: formData.name
-        };
-        onPost(newPost);
-        setOpenPostDialog(false);
-        setPrompt('');
-        setGeneratedImage(null);
-    };
 
     return (
         <Stack spacing={3}>
@@ -435,39 +405,60 @@ const FreelancerSidebar = ({ onPost }: FreelancerSidebarProps) => {
                 </Paper>
             )}
 
-            {/* AI Image Generation Tool - Hidden for Sellers */}
+            {/* AI Image Generation Tool - PREMIUM REDESIGN */}
             {userRole !== 'Seller' && (
                 <Paper
                     elevation={0}
                     sx={{
-                        bgcolor: 'black',
-                        color: 'white',
-                        p: 3,
-                        borderRadius: 4,
+                        bgcolor: 'white',
+                        color: '#1a202c',
+                        p: 4,
+                        borderRadius: 8,
                         overflow: 'hidden',
                         display: 'flex',
-                        flexDirection: 'column'
+                        flexDirection: 'column',
+                        position: 'relative',
+                        boxShadow: '0 20px 50px rgba(0,0,0,0.05)',
+                        border: '1px solid #f1f5f9'
                     }}
                 >
-                    <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 3 }}>
-                        <AutoAwesomeIcon sx={{ color: '#d9f99d' }} />
-                        <Typography variant="h6" sx={{ fontWeight: 700 }}>AI Image Generation</Typography>
+                    {/* Header */}
+                    <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 4 }}>
+                        <Box sx={{
+                            width: 40,
+                            height: 40,
+                            bgcolor: '#0f172a',
+                            borderRadius: 2.5,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            color: 'white'
+                        }}>
+                            <AutoFixHighIcon sx={{ fontSize: 20 }} />
+                        </Box>
+                        <Box>
+                            <Typography variant="subtitle1" sx={{ fontWeight: 900, lineHeight: 1.1, color: '#0f172a' }}>
+                                AI Visual Studio
+                            </Typography>
+                            <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 800, letterSpacing: 1.5, fontSize: '0.6rem' }}>
+                                PRO GENERATOR
+                            </Typography>
+                        </Box>
                     </Stack>
 
                     {/* Image Preview Area */}
                     <Box
                         sx={{
-                            bgcolor: '#1e1e1e',
-                            borderRadius: 3,
-                            mb: 2,
+                            bgcolor: '#f8fafc',
+                            borderRadius: 5,
+                            mb: 3,
                             position: 'relative',
-                            height: 250,
-                            flexShrink: 0,
+                            aspectRatio: '1/1',
                             overflow: 'hidden',
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
-                            border: '1px dashed #333'
+                            border: '1px solid #f1f5f9'
                         }}
                     >
                         {generatedImage ? (
@@ -475,110 +466,71 @@ const FreelancerSidebar = ({ onPost }: FreelancerSidebarProps) => {
                                 <Box
                                     component="img"
                                     src={generatedImage}
-                                    sx={{
-                                        width: '100%',
-                                        height: '100%',
-                                        objectFit: 'cover',
-                                    }}
+                                    sx={{ width: '100%', height: '100%', objectFit: 'cover' }}
                                 />
                             </Fade>
                         ) : (
-                            <Stack alignItems="center" spacing={1} sx={{ color: '#444' }}>
-                                <ImageOutlinedIcon sx={{ fontSize: 40 }} />
-                                <Typography variant="caption">Preview Area</Typography>
+                            <Stack alignItems="center" spacing={1.5} sx={{ color: '#cbd5e1' }}>
+                                <ImageOutlinedIcon sx={{ fontSize: 32 }} />
+                                <Typography variant="caption" sx={{ fontWeight: 700 }}>Preview Area</Typography>
                             </Stack>
                         )}
 
                         {isGenerating && (
-                            <Box sx={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: 'rgba(0,0,0,0.7)', zIndex: 5 }}>
-                                <CircularProgress sx={{ color: '#d9f99d' }} />
+                            <Box sx={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: 'rgba(255,255,255,0.8)', zIndex: 5, backdropFilter: 'blur(4px)' }}>
+                                <CircularProgress sx={{ color: '#adc9d1' }} />
                             </Box>
                         )}
                     </Box>
 
                     {/* Prompt Input */}
-                    <Box sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', mb: 2 }}>
-                        <Typography variant="caption" sx={{ color: '#888', mb: 1, fontWeight: 600 }}>PROMPT</Typography>
+                    <Box sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', mb: 3 }}>
+                        <Typography variant="caption" sx={{ color: '#94a3b8', mb: 1, fontWeight: 800 }}>PROMPT</Typography>
                         <TextField
                             multiline
+                            rows={3}
                             placeholder="Describe the image..."
                             value={prompt}
                             onChange={(e) => setPrompt(e.target.value)}
-                            variant="outlined"
                             fullWidth
                             sx={{
-                                bgcolor: '#111',
-                                borderRadius: 2,
                                 '& .MuiOutlinedInput-root': {
-                                    color: 'white',
-                                    '& fieldset': { borderColor: '#333' },
-                                    '&:hover fieldset': { borderColor: '#555' },
-                                    '&.Mui-focused fieldset': { borderColor: '#bef264' },
-                                },
-                                '& .MuiInputBase-input': { fontSize: '0.95rem', lineHeight: 1.5 }
+                                    bgcolor: '#f8fafc',
+                                    borderRadius: 3,
+                                    fontSize: '0.85rem',
+                                    '& fieldset': { borderColor: '#e2e8f0' },
+                                    '&:hover fieldset': { borderColor: '#cbd5e1' },
+                                    '&.Mui-focused fieldset': { borderColor: '#adc9d1' },
+                                }
                             }}
                         />
                     </Box>
 
-                    <Stack direction="row" spacing={2}>
-                        <Button
-                            fullWidth
-                            onClick={handleGenerate}
-                            disabled={isGenerating || !prompt}
-                            sx={{
-                                bgcolor: '#333',
-                                color: 'white',
-                                borderRadius: 2,
-                                fontWeight: 700,
-                                textTransform: 'none',
-                                py: 1.5,
-                                '&:hover': { bgcolor: '#444' },
-                                '&:disabled': { bgcolor: '#222', color: '#555' }
-                            }}
-                        >
-                            {isGenerating ? '...' : 'GENERATE'}
-                        </Button>
-                        <Button
-                            fullWidth
-                            onClick={handleOpenPostDialog}
-                            disabled={!generatedImage}
-                            sx={{
-                                bgcolor: '#bef264',
-                                color: 'black',
-                                borderRadius: 2,
-                                fontWeight: 800,
-                                textTransform: 'none',
-                                py: 1.5,
-                                '&:hover': { bgcolor: '#a3e635' },
-                                '&:disabled': { bgcolor: '#333', color: '#555' }
-                            }}
-                        >
-                            POST
-                        </Button>
-                    </Stack>
+                    <Button
+                        fullWidth
+                        onClick={handleGenerate}
+                        disabled={isGenerating || !prompt}
+                        startIcon={!isGenerating && <RocketLaunchIcon />}
+                        sx={{
+                            bgcolor: '#adc9d1',
+                            color: '#0f172a',
+                            borderRadius: 4,
+                            fontWeight: 900,
+                            textTransform: 'uppercase',
+                            py: 2.2,
+                            letterSpacing: 1,
+                            fontSize: '0.95rem',
+                            boxShadow: '0 10px 20px rgba(173, 201, 209, 0.2)',
+                            '&:hover': { bgcolor: '#9bbec9', boxShadow: '0 15px 25px rgba(173, 201, 209, 0.3)' },
+                            '&:disabled': { bgcolor: '#f1f5f9', color: '#cbd5e1' }
+                        }}
+                    >
+                        {isGenerating ? 'Synthesizing...' : 'Generate Masterpiece'}
+                    </Button>
                 </Paper>
             )}
 
-            {/* Post Dialog */}
-            <Dialog
-                open={openPostDialog}
-                onClose={() => setOpenPostDialog(false)}
-                PaperProps={{ sx: { borderRadius: 3, bgcolor: 'white', minWidth: 400, p: 1 } }}
-            >
-                <DialogTitle sx={{ fontWeight: 800 }}>Complete Your Post</DialogTitle>
-                <DialogContent>
-                    <Stack spacing={2} sx={{ mt: 1 }}>
-                        <TextField label="Your Name" fullWidth value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} />
-                        <TextField label="Service Name" fullWidth value={formData.productName} onChange={(e) => setFormData({ ...formData, productName: e.target.value })} />
-                        <TextField label="Contact" fullWidth value={formData.contact} onChange={(e) => setFormData({ ...formData, contact: e.target.value })} />
-                        <TextField label="Location" fullWidth value={formData.location} onChange={(e) => setFormData({ ...formData, location: e.target.value })} />
-                    </Stack>
-                </DialogContent>
-                <DialogActions sx={{ p: 3 }}>
-                    <Button onClick={() => setOpenPostDialog(false)} sx={{ color: '#64748b' }}>Cancel</Button>
-                    <Button variant="contained" onClick={handleConfirmPost} disabled={!formData.name} sx={{ bgcolor: 'black', color: 'white', fontWeight: 700, px: 3 }}>Post Now</Button>
-                </DialogActions>
-            </Dialog>
+
 
             {/* Freelancer Registration Dialog */}
             <Dialog

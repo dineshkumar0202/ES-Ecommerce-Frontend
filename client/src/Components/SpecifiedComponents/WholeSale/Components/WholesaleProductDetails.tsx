@@ -4,25 +4,27 @@ import {
     Container,
     Typography,
     Button,
-    Divider,
     Stack,
     Paper,
     CircularProgress,
     IconButton,
-    Chip
+    Chip,
+    TextField,
+    MenuItem,
+    Breadcrumbs,
+    Link
 } from '@mui/material';
 import { useParams, useNavigate } from 'react-router-dom';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import FavoriteIcon from '@mui/icons-material/Favorite';
-import BusinessIcon from '@mui/icons-material/Business';
-import LocationOnIcon from '@mui/icons-material/LocationOn';
-import EmailIcon from '@mui/icons-material/Email';
-import PhoneIcon from '@mui/icons-material/Phone';
-import ShoppingCartOutlinedIcon from '@mui/icons-material/ShoppingCartOutlined';
+import LocationOnOutlinedIcon from '@mui/icons-material/LocationOnOutlined';
+import EmailOutlinedIcon from '@mui/icons-material/EmailOutlined';
+import PhoneEnabledOutlinedIcon from '@mui/icons-material/PhoneEnabledOutlined';
+import NavigateNextIcon from '@mui/icons-material/NavigateNext';
 
 import Navbar from '../../../WrapperComponents/Navbar';
 import Footer from '../../../WrapperComponents/Footer';
-import { WholesaleService, WishlistService, CartService } from '../../../../services/api';
+import { WholesaleService, WishlistService } from '../../../../services/api';
 import { toast } from 'react-toastify';
 
 const WholesaleProductDetails = () => {
@@ -32,6 +34,17 @@ const WholesaleProductDetails = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [selectedImage, setSelectedImage] = useState(0);
     const [isFavorite, setIsFavorite] = useState(false);
+
+    // Quote Selection State
+    const [quoteData, setQuoteData] = useState({
+        quantity: '',
+        timeline: 'Immediate',
+        notes: ''
+    });
+
+    const handleQuoteChange = (field: string, value: string) => {
+        setQuoteData(prev => ({ ...prev, [field]: value }));
+    };
 
     useEffect(() => {
         const fetchProduct = async () => {
@@ -63,18 +76,7 @@ const WholesaleProductDetails = () => {
         }
     };
 
-    const handleAddToCart = async () => {
-        try {
-            await CartService.addToCart({
-                productId: product._id,
-                quantity: product.packSize || 1,
-                type: 'Wholesale'
-            });
-            toast.success('Added to Wholesale Cart!');
-        } catch (error) {
-            toast.error('Login to add to cart');
-        }
-    };
+
 
     if (isLoading) {
         return (
@@ -104,215 +106,240 @@ const WholesaleProductDetails = () => {
     const images = product.images || [product.image];
 
     return (
-        <Box sx={{ bgcolor: '#f8fafc', minHeight: '100vh' }}>
+        <Box sx={{ bgcolor: '#ffffff', minHeight: '100vh' }}>
             <Navbar />
 
-            <Container maxWidth="xl" sx={{ mt: 4, mb: 8 }}>
-                <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 4 }}>
+            <Container maxWidth="xl" sx={{ mt: 3, mb: 8 }}>
+                {/* Header: Breadcrumbs and Status */}
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+                    <Breadcrumbs
+                        separator={<NavigateNextIcon fontSize="small" />}
+                        sx={{ '& .MuiTypography-root': { fontSize: '0.85rem', color: '#64748b' } }}
+                    >
+                        <Link href="/" underline="hover" color="inherit">Home</Link>
+                        <Link href="/wholesale" underline="hover" color="inherit">{product.category || 'Wholesale'}</Link>
+                        <Typography color="text.primary" sx={{ fontWeight: 600 }}>{product.title}</Typography>
+                    </Breadcrumbs>
 
-                    {/* Left Column: Images */}
-                    <Box sx={{ width: { xs: '100%', md: '45%' }, position: { md: 'sticky' }, top: 120, alignSelf: 'flex-start' }}>
-                        <Paper
-                            elevation={0}
+                    <Stack direction="row" spacing={2} alignItems="center">
+                        <Chip
+                            label="IN STOCK"
+                            size="small"
                             sx={{
-                                border: '1px solid #e2e8f0',
-                                borderRadius: 4,
-                                p: 2,
-                                mb: 2,
+                                bgcolor: '#dcfce7',
+                                color: '#166534',
+                                fontWeight: 800,
+                                borderRadius: 1.5,
+                                fontSize: '0.7rem'
+                            }}
+                        />
+                        <Typography sx={{ fontSize: '0.75rem', color: '#94a3b8', fontWeight: 600 }}>
+                            ID: {product._id?.slice(-8).toUpperCase() || 'XYZ-88022'}
+                        </Typography>
+                    </Stack>
+                </Box>
+
+                <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 6 }}>
+                    {/* Left Side: Image Gallery */}
+                    <Box sx={{ flex: 1, minWidth: 0 }}>
+                        <Box sx={{ position: 'sticky', top: 100 }}>
+                            <Box sx={{
+                                borderRadius: 6,
+                                bgcolor: '#fdf2f2', // Matching the pale peach/pinkish bg in image
                                 display: 'flex',
                                 justifyContent: 'center',
                                 alignItems: 'center',
-                                height: { xs: '350px', md: '500px' },
-                                bgcolor: 'white',
+                                height: '600px',
                                 position: 'relative',
+                                mb: 3,
                                 overflow: 'hidden'
-                            }}
-                        >
-                            <img
-                                src={images[selectedImage]}
-                                alt={product.title}
-                                style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }}
-                            />
-                            <IconButton
-                                onClick={handleToggleWishlist}
-                                sx={{ position: 'absolute', top: 20, right: 20, bgcolor: 'white', boxShadow: '0 4px 12px rgba(0,0,0,0.1)', '&:hover': { bgcolor: '#f1f5f9' } }}
-                            >
-                                {isFavorite ? <FavoriteIcon sx={{ color: '#ef4444' }} /> : <FavoriteBorderIcon />}
-                            </IconButton>
-                        </Paper>
+                            }}>
+                                <img
+                                    src={images[selectedImage]}
+                                    alt={product.title}
+                                    style={{ width: '80%', height: '80%', objectFit: 'contain' }}
+                                />
+                                <IconButton
+                                    onClick={handleToggleWishlist}
+                                    sx={{
+                                        position: 'absolute',
+                                        top: 24,
+                                        right: 24,
+                                        bgcolor: 'white',
+                                        p: 1.5,
+                                        boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
+                                        '&:hover': { bgcolor: '#f8fafc' }
+                                    }}
+                                >
+                                    {isFavorite ? <FavoriteIcon sx={{ color: '#ef4444' }} /> : <FavoriteBorderIcon />}
+                                </IconButton>
+                            </Box>
 
-                        {/* Thumbnails */}
-                        {images.length > 1 && (
-                            <Stack direction="row" spacing={2} sx={{ justifyContent: 'center', mb: 4, overflowX: 'auto', py: 1 }}>
+                            {/* Thumbnails */}
+                            <Stack direction="row" spacing={2} sx={{ overflowX: 'auto', pb: 1 }}>
                                 {images.map((img: string, index: number) => (
                                     <Box
                                         key={index}
                                         onClick={() => setSelectedImage(index)}
                                         sx={{
-                                            width: 70,
-                                            height: 70,
-                                            border: `2px solid ${selectedImage === index ? '#bef264' : '#e2e8f0'}`,
-                                            borderRadius: 2,
+                                            width: 120,
+                                            height: 120,
+                                            borderRadius: 4,
+                                            border: `2px solid ${selectedImage === index ? '#b2d8d8' : 'transparent'}`,
+                                            bgcolor: '#f1f5f9',
                                             cursor: 'pointer',
-                                            p: 0.5,
+                                            p: 1,
                                             flexShrink: 0,
-                                            bgcolor: 'white',
-                                            '&:hover': { borderColor: '#bef264' }
+                                            display: 'flex',
+                                            justifyContent: 'center',
+                                            alignItems: 'center',
+                                            transition: 'all 0.2s',
+                                            '&:hover': { bgcolor: '#e2e8f0' }
                                         }}
                                     >
-                                        <img
-                                            src={img}
-                                            alt={`thumb-${index}`}
-                                            style={{ width: '100%', height: '100%', objectFit: 'contain' }}
-                                        />
+                                        <img src={img} alt="thumb" style={{ width: '80%', height: '80%', objectFit: 'contain' }} />
                                     </Box>
                                 ))}
                             </Stack>
-                        )}
 
-                        {/* Action Buttons */}
-                        <Box sx={{ display: 'flex', gap: 2 }}>
-                            <Button
-                                variant="contained"
-                                fullWidth
-                                onClick={() => window.location.href = `tel:${product.phoneNumber || "+919876543210"}`}
-                                startIcon={<PhoneIcon />}
-                                sx={{
-                                    bgcolor: '#bef264',
-                                    color: 'black',
-                                    py: 2,
-                                    borderRadius: 3,
-                                    fontWeight: 800,
-                                    textTransform: 'none',
-                                    '&:hover': { bgcolor: '#d9f99d' }
-                                }}
-                            >
-                                Contact Seller
-                            </Button>
-                            <Button
-                                variant="outlined"
-                                fullWidth
-                                onClick={handleAddToCart}
-                                startIcon={<ShoppingCartOutlinedIcon />}
-                                sx={{
-                                    borderColor: '#cbd5e1',
-                                    color: '#334155',
-                                    py: 2,
-                                    borderRadius: 3,
-                                    fontWeight: 800,
-                                    textTransform: 'none',
-                                    '&:hover': { bgcolor: '#f1f5f9', borderColor: '#94a3b8' }
-                                }}
-                            >
-                                Add to Cart
-                            </Button>
+                            <Box sx={{ mt: 6 }}>
+                                <Typography variant="h6" sx={{ fontWeight: 800, mb: 2, color: '#1e293b' }}>Product Description</Typography>
+                                <Typography sx={{ color: '#475569', lineHeight: 1.8, fontSize: '1.05rem' }}>
+                                    {product.description}
+                                </Typography>
+                            </Box>
                         </Box>
                     </Box>
 
-                    {/* Right Column: Details */}
-                    <Box sx={{ width: { xs: '100%', md: '55%' } }}>
-                        <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 2 }}>
-                            <BusinessIcon sx={{ color: '#2563eb', fontSize: 20 }} />
-                            <Typography variant="subtitle2" sx={{ fontWeight: 800, color: '#2563eb', letterSpacing: 1 }}>
-                                {product.companyName || "VERIFIED WHOLESALE SUPPLIER"}
+                    {/* Right Side: Details and Forms */}
+                    <Box sx={{ flex: 1, minWidth: 0 }}>
+                        <Box>
+                            <Typography variant="h2" sx={{ fontWeight: 900, mb: 1, color: '#0f172a', fontSize: '3.5rem' }}>
+                                {product.title}
                             </Typography>
-                        </Stack>
+                            <Typography variant="h6" sx={{ color: '#94a3b8', fontWeight: 600, mb: 4 }}>
+                                Bulk Wholesale Supply
+                            </Typography>
 
-                        <Typography variant="h3" component="h1" gutterBottom sx={{ fontWeight: 900, mb: 2, color: '#0f172a' }}>
-                            {product.title}
-                        </Typography>
+                            {/* Order Info Cards */}
+                            <Stack direction="row" spacing={2} sx={{ mb: 4 }}>
+                                <Paper elevation={0} sx={{ flex: 1, p: 3, bgcolor: '#f8fafc', borderRadius: 4, textAlign: 'center' }}>
+                                    <Typography variant="caption" sx={{ fontWeight: 800, color: '#94a3b8', fontSize: '0.65rem' }}>MIN. ORDER</Typography>
+                                    <Typography variant="h5" sx={{ fontWeight: 900, mt: 0.5 }}>{product.packSize || 12} Units</Typography>
+                                </Paper>
+                                <Paper elevation={0} sx={{ flex: 1, p: 3, bgcolor: '#f8fafc', borderRadius: 4, textAlign: 'center' }}>
+                                    <Typography variant="caption" sx={{ fontWeight: 800, color: '#94a3b8', fontSize: '0.65rem' }}>STANDARD PACK</Typography>
+                                    <Typography variant="h5" sx={{ fontWeight: 900, mt: 0.5 }}>Carton Box</Typography>
+                                </Paper>
+                            </Stack>
 
-                        <Stack direction="row" spacing={2} sx={{ mb: 4 }}>
-                            {product.category && <Chip label={product.category} sx={{ bgcolor: '#f1f5f9', color: '#475569', fontWeight: 700 }} />}
-                            {product.inStock && <Chip label="In Stock" sx={{ bgcolor: '#dcfce7', color: '#166534', fontWeight: 800 }} />}
-                        </Stack>
+                            {/* Quote Form */}
+                            <Paper elevation={0} sx={{
+                                p: 4,
+                                borderRadius: 6,
+                                border: '1px solid #e2e8f0',
+                                boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.04)'
+                            }}>
+                                <Typography variant="h6" sx={{ fontWeight: 800, mb: 1 }}>Request for Bulk Quote</Typography>
+                                <Typography variant="body2" sx={{ color: '#64748b', mb: 4 }}>
+                                    Enter your details to receive our latest wholesale price list and lead times.
+                                </Typography>
 
-                        <Paper elevation={0} sx={{ p: 4, bgcolor: 'white', borderRadius: 4, border: '1px solid #e2e8f0', mb: 4 }}>
-                            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
-                                <Box sx={{ flex: '1 1 200px' }}>
-                                    <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 700, display: 'block', mb: 1 }}>
-                                        WHOLESALE PRICE
-                                    </Typography>
-                                    <Typography variant="h3" sx={{ fontWeight: 900, color: '#0f172a' }}>
-                                        ₹{product.pricePerUnit || product.price || 0}
-                                        <Typography component="span" variant="subtitle1" sx={{ color: '#94a3b8', fontWeight: 600, ml: 1 }}>
-                                            / Unit
-                                        </Typography>
-                                    </Typography>
-                                </Box>
-                                <Box sx={{ flex: '1 1 200px' }}>
-                                    <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 700, display: 'block', mb: 1 }}>
-                                        MINIMUM ORDER QUANTITY
-                                    </Typography>
-                                    <Typography variant="h4" sx={{ fontWeight: 800, color: '#0f172a' }}>
-                                        {product.packSize || 1} Units
-                                        <Typography component="span" variant="subtitle2" sx={{ color: '#94a3b8', fontWeight: 600, ml: 1, display: 'block' }}>
-                                            (Standard Pack)
-                                        </Typography>
-                                    </Typography>
-                                </Box>
+                                <Stack spacing={3}>
+                                    <Stack direction="row" spacing={2}>
+                                        <Box sx={{ flex: 1 }}>
+                                            <Typography variant="caption" sx={{ fontWeight: 800, mb: 1, display: 'block', color: '#475569' }}>QUANTITY NEEDED</Typography>
+                                            <TextField
+                                                fullWidth
+                                                placeholder="e.g. 100"
+                                                value={quoteData.quantity}
+                                                onChange={(e) => handleQuoteChange('quantity', e.target.value)}
+                                                sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3, bgcolor: '#f8fafc' } }}
+                                            />
+                                        </Box>
+                                        <Box sx={{ flex: 1 }}>
+                                            <Typography variant="caption" sx={{ fontWeight: 800, mb: 1, display: 'block', color: '#475569' }}>TIMELINE</Typography>
+                                            <TextField
+                                                select
+                                                fullWidth
+                                                value={quoteData.timeline}
+                                                onChange={(e) => handleQuoteChange('timeline', e.target.value)}
+                                                sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3, bgcolor: '#f8fafc' } }}
+                                            >
+                                                <MenuItem value="Immediate">Immediate</MenuItem>
+                                                <MenuItem value="15 Days">Within 15 Days</MenuItem>
+                                                <MenuItem value="30 Days">30+ Days</MenuItem>
+                                            </TextField>
+                                        </Box>
+                                    </Stack>
+
+                                    <Box>
+                                        <Typography variant="caption" sx={{ fontWeight: 800, mb: 1, display: 'block', color: '#475569' }}>NOTES / REQUIREMENTS</Typography>
+                                        <TextField
+                                            fullWidth
+                                            multiline
+                                            rows={3}
+                                            placeholder="Specific size requests or branding..."
+                                            value={quoteData.notes}
+                                            onChange={(e) => handleQuoteChange('notes', e.target.value)}
+                                            sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3, bgcolor: '#f8fafc' } }}
+                                        />
+                                    </Box>
+
+                                    <Button
+                                        variant="contained"
+                                        fullWidth
+                                        sx={{
+                                            bgcolor: '#b2d8d8',
+                                            color: '#1e293b',
+                                            py: 2,
+                                            borderRadius: 4,
+                                            fontWeight: 900,
+                                            fontSize: '1rem',
+                                            boxShadow: 'none',
+                                            '&:hover': { bgcolor: '#9bc4c4', boxShadow: 'none' }
+                                        }}
+                                    >
+                                        Get Custom Quote
+                                    </Button>
+
+
+                                </Stack>
+                            </Paper>
+
+                            {/* Vendor Information */}
+                            <Box sx={{ mt: 4, p: 4, bgcolor: '#f8fafc', borderRadius: 6 }}>
+                                <Typography variant="h6" sx={{ fontWeight: 800, mb: 4, color: '#1e293b' }}>VENDOR INFORMATION</Typography>
+                                <Stack spacing={4}>
+                                    <Stack direction="row" spacing={3} alignItems="center">
+                                        <Box sx={{ bgcolor: 'white', p: 1.5, borderRadius: 3, display: 'flex' }}>
+                                            <LocationOnOutlinedIcon sx={{ color: '#94a3b8' }} />
+                                        </Box>
+                                        <Box>
+                                            <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 800, display: 'block' }}>Location</Typography>
+                                            <Typography variant="subtitle2" sx={{ fontWeight: 800 }}>{product.location || 'Erode, Tamil Nadu, India'}</Typography>
+                                        </Box>
+                                    </Stack>
+                                    <Stack direction="row" spacing={3} alignItems="center">
+                                        <Box sx={{ bgcolor: 'white', p: 1.5, borderRadius: 3, display: 'flex' }}>
+                                            <EmailOutlinedIcon sx={{ color: '#94a3b8' }} />
+                                        </Box>
+                                        <Box>
+                                            <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 800, display: 'block' }}>Email Address</Typography>
+                                            <Typography variant="subtitle2" sx={{ fontWeight: 800 }}>{product.email || 'wholesale@decorhub.xyz'}</Typography>
+                                        </Box>
+                                    </Stack>
+                                    <Stack direction="row" spacing={3} alignItems="center">
+                                        <Box sx={{ bgcolor: 'white', p: 1.5, borderRadius: 3, display: 'flex' }}>
+                                            <PhoneEnabledOutlinedIcon sx={{ color: '#94a3b8' }} />
+                                        </Box>
+                                        <Box>
+                                            <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 800, display: 'block' }}>Direct Line</Typography>
+                                            <Typography variant="subtitle2" sx={{ fontWeight: 800 }}>{product.phoneNumber || '+91 80802 21133'}</Typography>
+                                        </Box>
+                                    </Stack>
+                                </Stack>
                             </Box>
-                        </Paper>
-
-                        <Box sx={{ mb: 4 }}>
-                            <Typography variant="h6" sx={{ mb: 2, fontWeight: 800 }}>Product Description</Typography>
-                            <Typography variant="body1" sx={{ color: '#475569', lineHeight: 1.8 }}>
-                                {product.description}
-                            </Typography>
-                        </Box>
-
-                        <Box sx={{ mb: 4, p: 3, bgcolor: '#f1f5f9', borderRadius: 4, border: '1px solid #e2e8f0' }}>
-                            <Typography variant="h6" sx={{ mb: 3, fontWeight: 800 }}>Vendor Information</Typography>
-                            <Stack spacing={2.5}>
-                                <Stack direction="row" alignItems="center" spacing={2}>
-                                    <Box sx={{ bgcolor: 'white', p: 1, borderRadius: 2, border: '1px solid #e2e8f0' }}>
-                                        <LocationOnIcon sx={{ color: '#64748b' }} />
-                                    </Box>
-                                    <Box>
-                                        <Typography variant="caption" sx={{ color: '#94a3b8', display: 'block' }}>Location</Typography>
-                                        <Typography variant="body2" sx={{ fontWeight: 700 }}>{product.location}</Typography>
-                                    </Box>
-                                </Stack>
-                                <Stack direction="row" alignItems="center" spacing={2}>
-                                    <Box sx={{ bgcolor: 'white', p: 1, borderRadius: 2, border: '1px solid #e2e8f0' }}>
-                                        <EmailIcon sx={{ color: '#64748b' }} />
-                                    </Box>
-                                    <Box>
-                                        <Typography variant="caption" sx={{ color: '#94a3b8', display: 'block' }}>Email Address</Typography>
-                                        <Typography variant="body2" sx={{ fontWeight: 700 }}>{product.email || "Contact for Email"}</Typography>
-                                    </Box>
-                                </Stack>
-                                <Stack direction="row" alignItems="center" spacing={2}>
-                                    <Box sx={{ bgcolor: 'white', p: 1, borderRadius: 2, border: '1px solid #e2e8f0' }}>
-                                        <PhoneIcon sx={{ color: '#64748b' }} />
-                                    </Box>
-                                    <Box>
-                                        <Typography variant="caption" sx={{ color: '#94a3b8', display: 'block' }}>Phone Number</Typography>
-                                        <Typography variant="body2" sx={{ fontWeight: 700 }}>{product.phoneNumber || "Contact for Phone"}</Typography>
-                                    </Box>
-                                </Stack>
-                            </Stack>
-                        </Box>
-
-                        <Divider sx={{ my: 4 }} />
-
-                        <Box sx={{ mb: 4 }}>
-                            <Typography variant="h6" sx={{ mb: 2, fontWeight: 800 }}>Bulk Quantity Discounts</Typography>
-                            <Typography variant="body2" sx={{ color: '#64748b', mb: 2 }}>Contact seller for additional discounts on orders larger than 500 units.</Typography>
-                            <Stack direction="row" spacing={2}>
-                                <Paper sx={{ p: 2, textAlign: 'center', border: '1px solid #e2e8f0', flex: 1 }}>
-                                    <Typography variant="subtitle2" fontWeight={800}>10-50 Units</Typography>
-                                    <Typography variant="h6" color="#22c55e">5% Off</Typography>
-                                </Paper>
-                                <Paper sx={{ p: 2, textAlign: 'center', border: '1px solid #e2e8f0', flex: 1 }}>
-                                    <Typography variant="subtitle2" fontWeight={800}>50-100 Units</Typography>
-                                    <Typography variant="h6" color="#22c55e">10% Off</Typography>
-                                </Paper>
-                                <Paper sx={{ p: 2, textAlign: 'center', border: '1px solid #e2e8f0', flex: 1 }}>
-                                    <Typography variant="subtitle2" fontWeight={800}>100+ Units</Typography>
-                                    <Typography variant="h6" color="#22c55e">15% Off</Typography>
-                                </Paper>
-                            </Stack>
                         </Box>
                     </Box>
                 </Box>

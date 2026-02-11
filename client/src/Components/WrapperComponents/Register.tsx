@@ -31,22 +31,43 @@ const Register = () => {
 
     const validate = () => {
         let tempErrors: any = {};
-        if (!formData.name.trim()) tempErrors.name = "Full Name is required";
-        else if (formData.name.length < 3) tempErrors.name = "Name must be at least 3 characters";
 
-        if (formData.email && !/\S+@\S+\.\S+/.test(formData.email)) {
-            tempErrors.email = "Email is invalid";
+        // Name validation
+        if (!formData.name.trim()) {
+            tempErrors.name = "Full Name is required";
+        } else if (formData.name.length < 3) {
+            tempErrors.name = "Name must be at least 3 characters";
         }
 
-        if (!/^\d{10}$/.test(formData.mobile)) {
-            tempErrors.mobile = "Enter a valid 10-digit mobile number";
+        // Email validation (optional but must be valid if provided)
+        if (formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+            tempErrors.email = "Please enter a valid email address";
         }
 
-        if (formData.password.length < 6) {
-            tempErrors.password = "Password must be at least 6 characters";
+        // Mobile validation - Indian format
+        if (!formData.mobile.trim()) {
+            tempErrors.mobile = "Mobile number is required";
+        } else if (!/^[6-9]\d{9}$/.test(formData.mobile)) {
+            tempErrors.mobile = "Enter a valid 10-digit mobile number starting with 6-9";
         }
 
-        if (formData.password !== formData.confirmPassword) {
+        // Password validation - Strong requirements
+        if (!formData.password) {
+            tempErrors.password = "Password is required";
+        } else if (formData.password.length < 8) {
+            tempErrors.password = "Password must be at least 8 characters";
+        } else if (!/[A-Z]/.test(formData.password)) {
+            tempErrors.password = "Password must contain at least one uppercase letter";
+        } else if (!/[a-z]/.test(formData.password)) {
+            tempErrors.password = "Password must contain at least one lowercase letter";
+        } else if (!/[0-9]/.test(formData.password)) {
+            tempErrors.password = "Password must contain at least one number";
+        }
+
+        // Confirm password validation
+        if (!formData.confirmPassword) {
+            tempErrors.confirmPassword = "Please confirm your password";
+        } else if (formData.password !== formData.confirmPassword) {
             tempErrors.confirmPassword = "Passwords do not match";
         }
 
@@ -99,7 +120,7 @@ const Register = () => {
             if (userRole === 'Seller') {
                 navigate('/seller/profile');
             } else {
-                navigate('/profile');
+                navigate('/freelance');
             }
 
         } catch (err: any) {
@@ -236,7 +257,7 @@ const Register = () => {
                                 value={formData.password}
                                 onChange={handleInputChange}
                                 error={!!errors.password}
-                                helperText={errors.password}
+                                helperText={errors.password || "Min 8 characters, 1 uppercase, 1 lowercase, 1 number"}
                                 InputProps={{
                                     endAdornment: (
                                         <InputAdornment position="end">

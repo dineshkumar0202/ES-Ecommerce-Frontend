@@ -97,21 +97,31 @@ const Navbar = () => {
                 <Box sx={{ bgcolor: '#B4D5DC', py: 1.5, borderBottom: '1px solid rgba(0,0,0,0.05)' }}>
                     <Container maxWidth="xl">
                         <Stack direction="row" alignItems="center" spacing={4}>
-                            {/* Logo */}
-                            <Typography
-                                variant="h5"
-                                onClick={() => navigate('/')}
-                                sx={{
-                                    fontWeight: 900,
-                                    color: 'black',
-                                    letterSpacing: -1,
-                                    cursor: 'pointer',
+                            <Stack direction="row" alignItems="center" spacing={1} onClick={() => navigate('/')} sx={{ cursor: 'pointer' }}>
+                                <Box sx={{
+                                    bgcolor: 'black',
+                                    width: 32,
+                                    height: 32,
+                                    borderRadius: 1,
                                     display: 'flex',
-                                    alignItems: 'baseline'
-                                }}
-                            >
-                                MODERN<Box component="span" sx={{ fontWeight: 500, opacity: 0.7 }}>RETAIL</Box>
-                            </Typography>
+                                    alignItems: 'center',
+                                    justifyContent: 'center'
+                                }}>
+                                    <RocketLaunchIcon sx={{ color: '#B4D5DC', fontSize: 18 }} />
+                                </Box>
+                                <Typography
+                                    variant="h5"
+                                    sx={{
+                                        fontWeight: 900,
+                                        color: 'black',
+                                        letterSpacing: 1,
+                                        display: 'flex',
+                                        alignItems: 'baseline'
+                                    }}
+                                >
+                                    ATOZ<Box component="span" sx={{ color: '#64748b', fontWeight: 500, fontSize: '1rem' }}>.IN</Box>
+                                </Typography>
+                            </Stack>
 
                             {/* Search Area */}
                             <Box sx={{ flex: 1, display: 'flex', justifyContent: 'center' }}>

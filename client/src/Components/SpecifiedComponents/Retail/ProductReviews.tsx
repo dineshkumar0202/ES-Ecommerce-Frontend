@@ -1,4 +1,4 @@
-import { Box, Typography, Stack, Rating, TextField, Button, Avatar, Divider } from '@mui/material';
+import { Box, Typography, Stack, Rating, TextField, Button, Avatar, Divider, Paper } from '@mui/material';
 import { useState } from 'react';
 
 interface Review {
@@ -22,64 +22,64 @@ const ProductReviews = ({ reviews, averageRating, totalReviews }: ProductReviews
     const [rating, setRating] = useState<number | null>(5);
 
     return (
-        <Box sx={{ mt: 4 }}>
-            <Typography variant="h5" sx={{ fontWeight: 800, mb: 4, textTransform: 'uppercase' }}>
-                Customer Reviews ({totalReviews})
+        <Box sx={{ mt: 8 }}>
+            <Typography variant="h5" sx={{ fontWeight: 900, mb: 6, color: '#1a202c' }}>
+                CUSTOMER REVIEWS ({totalReviews})
             </Typography>
 
-            <Stack direction={{ xs: 'column', md: 'row' }} spacing={8}>
+            <Stack direction={{ xs: 'column', md: 'row' }} spacing={8} alignItems="flex-start">
                 {/* Review Stats */}
-                <Box sx={{ minWidth: 250 }}>
-                    <Box sx={{ p: 4, bgcolor: '#f4f4f5', borderRadius: 4, textAlign: 'center' }}>
-                        <Typography variant="h2" sx={{ fontWeight: 900, mb: 1 }}>
+                <Box sx={{ width: { xs: '100%', md: '300px' } }}>
+                    <Box sx={{
+                        p: 6,
+                        bgcolor: '#f8fafc',
+                        borderRadius: 4,
+                        textAlign: 'center',
+                        border: '1px solid #f1f5f9'
+                    }}>
+                        <Typography variant="h1" sx={{ fontWeight: 900, mb: 1, color: '#1a202c', fontSize: '4.5rem' }}>
                             {averageRating.toFixed(1)}
                         </Typography>
-                        <Rating value={averageRating} readOnly precision={0.1} sx={{ color: 'black', mb: 1 }} />
-                        <Typography variant="body2" sx={{ color: '#71717a', fontWeight: 600 }}>
+                        <Rating value={averageRating} readOnly precision={0.1} sx={{ color: '#fbbf24', mb: 1.5, fontSize: '1.5rem' }} />
+                        <Typography variant="body2" sx={{ color: '#64748b', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5 }}>
                             Based on {totalReviews} reviews
                         </Typography>
                     </Box>
+
+                    {/* Simple Message if no reviews */}
+                    {reviews.length === 0 && (
+                        <Typography sx={{ mt: 4, color: '#94a3b8', fontStyle: 'italic', textAlign: 'center' }}>
+                            No reviews yet. Be the first to review!
+                        </Typography>
+                    )}
                 </Box>
 
-                {/* Reviews List */}
-                <Box sx={{ flex: 1 }}>
-                    <Stack spacing={4}>
-                        {reviews.length > 0 ? reviews.map((review) => (
-                            <Box key={review._id}>
-                                <Stack direction="row" spacing={2} sx={{ mb: 2 }}>
-                                    <Avatar sx={{ bgcolor: 'black' }}>{review.userName?.[0] || 'U'}</Avatar>
-                                    <Box>
-                                        <Typography variant="subtitle1" sx={{ fontWeight: 800 }}>{review.userName}</Typography>
-                                        <Rating value={review.rating} readOnly size="small" sx={{ color: 'black' }} />
-                                    </Box>
-                                    <Typography variant="caption" sx={{ ml: 'auto', color: '#a1a1aa' }}>
-                                        {new Date(review.createdAt).toLocaleDateString()}
-                                    </Typography>
-                                </Stack>
-                                <Typography sx={{ color: '#3f3f46', lineHeight: 1.6 }}>
-                                    {review.comment}
-                                </Typography>
-                                <Divider sx={{ mt: 4 }} />
-                            </Box>
-                        )) : (
-                            <Typography sx={{ color: '#71717a' }}>No reviews yet. Be the first to review!</Typography>
-                        )}
-                    </Stack>
-
+                {/* Right Side: Review Form & List */}
+                <Box sx={{ flex: 1, width: '100%' }}>
                     {/* Add Review Form */}
-                    <Box sx={{ mt: 8, p: 4, border: '1px solid #e4e4e7', borderRadius: 4 }}>
-                        <Typography variant="h6" sx={{ fontWeight: 800, mb: 3 }}>WRITE A REVIEW</Typography>
-                        <Stack spacing={3}>
+                    <Paper
+                        elevation={0}
+                        sx={{
+                            p: 4,
+                            border: '1px solid #f1f5f9',
+                            borderRadius: 4,
+                            bgcolor: 'white',
+                            mb: 8,
+                            boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.05)'
+                        }}
+                    >
+                        <Typography variant="h6" sx={{ fontWeight: 900, mb: 4, color: '#1a202c' }}>WRITE A REVIEW</Typography>
+                        <Stack spacing={4}>
                             <Box>
-                                <Typography variant="caption" sx={{ fontWeight: 800, display: 'block', mb: 1 }}>RATING</Typography>
+                                <Typography variant="caption" sx={{ fontWeight: 800, display: 'block', mb: 1.5, color: '#94a3b8' }}>RATING</Typography>
                                 <Rating
                                     value={rating}
                                     onChange={(_event, newValue) => setRating(newValue)}
-                                    sx={{ color: 'black' }}
+                                    sx={{ color: '#fbbf24', fontSize: '2rem' }}
                                 />
                             </Box>
                             <Box>
-                                <Typography variant="caption" sx={{ fontWeight: 800, display: 'block', mb: 1 }}>YOUR COMMENT</Typography>
+                                <Typography variant="caption" sx={{ fontWeight: 800, display: 'block', mb: 1.5, color: '#94a3b8' }}>YOUR COMMENT</Typography>
                                 <TextField
                                     fullWidth
                                     multiline
@@ -87,23 +87,63 @@ const ProductReviews = ({ reviews, averageRating, totalReviews }: ProductReviews
                                     placeholder="Share your thoughts about this product..."
                                     value={comment}
                                     onChange={(e) => setComment(e.target.value)}
-                                    sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
+                                    sx={{
+                                        '& .MuiOutlinedInput-root': {
+                                            borderRadius: 3,
+                                            bgcolor: '#f8fafc',
+                                            '& fieldset': { borderColor: '#f1f5f9' },
+                                            '&:hover fieldset': { borderColor: '#e2e8f0' },
+                                        }
+                                    }}
                                 />
                             </Box>
                             <Button
                                 variant="contained"
+                                fullWidth
                                 sx={{
                                     bgcolor: 'black',
                                     color: 'white',
-                                    py: 1.5,
-                                    fontWeight: 800,
-                                    '&:hover': { bgcolor: '#27272a' }
+                                    py: 2,
+                                    borderRadius: 3,
+                                    fontWeight: 900,
+                                    fontSize: '1rem',
+                                    '&:hover': { bgcolor: '#1a1a1a' }
                                 }}
                             >
                                 SUBMIT REVIEW
                             </Button>
                         </Stack>
-                    </Box>
+                    </Paper>
+
+                    {/* Reviews List */}
+                    <Stack spacing={6}>
+                        {reviews.map((review) => (
+                            <Box key={review._id}>
+                                <Stack direction="row" spacing={3} sx={{ mb: 2 }} alignItems="center">
+                                    <Avatar sx={{
+                                        bgcolor: '#f1f5f9',
+                                        color: '#1a202c',
+                                        fontWeight: 800,
+                                        width: 50,
+                                        height: 50
+                                    }}>
+                                        {review.userName?.[0] || 'U'}
+                                    </Avatar>
+                                    <Box sx={{ flex: 1 }}>
+                                        <Typography variant="subtitle1" sx={{ fontWeight: 900, color: '#1a202c' }}>{review.userName}</Typography>
+                                        <Rating value={review.rating} readOnly size="small" sx={{ color: '#fbbf24' }} />
+                                    </Box>
+                                    <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 600 }}>
+                                        {new Date(review.createdAt).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}
+                                    </Typography>
+                                </Stack>
+                                <Typography sx={{ color: '#4a5568', lineHeight: 1.8, pl: { md: 9 } }}>
+                                    {review.comment}
+                                </Typography>
+                                <Divider sx={{ mt: 5, borderColor: '#f1f5f9' }} />
+                            </Box>
+                        ))}
+                    </Stack>
                 </Box>
             </Stack>
         </Box>

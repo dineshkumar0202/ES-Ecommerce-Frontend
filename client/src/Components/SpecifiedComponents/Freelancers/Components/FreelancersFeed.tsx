@@ -1,10 +1,5 @@
-// Forces refresh
-import { Box, Typography, Paper, Stack, Button, IconButton } from '@mui/material';
-import Chip from '@mui/material/Chip';
-import PsychologyIcon from '@mui/icons-material/Psychology';
-import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
-import ViewListIcon from '@mui/icons-material/ViewList';
-import GridViewIcon from '@mui/icons-material/GridView';
+import { Box, Typography, Paper, Stack, Grid, Chip, Link } from '@mui/material';
+import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 
 // Interface for the post data
 export interface Post {
@@ -35,10 +30,10 @@ interface FreelancersFeedProps {
     showContactInfo?: boolean;
 }
 
-const FreelancersFeed = ({ posts, onInterestClick, showInterestButton = true, showContactInfo = false }: FreelancersFeedProps) => {
+const FreelancersFeed = ({ posts, showContactInfo = false }: FreelancersFeedProps) => {
+
     const filterDescription = (text: string) => {
         if (showContactInfo) return text;
-        // Mask phone numbers (8-12 digits) and "Contact: [numbers]" and emails
         return text
             .replace(/Contact:\s*[\d\s-]{8,}/gi, 'Contact: [Protected]')
             .replace(/[\d\s-]{8,15}/g, (match) => match.trim().length >= 8 ? ' [Contact Locked] ' : match)
@@ -47,177 +42,122 @@ const FreelancersFeed = ({ posts, onInterestClick, showInterestButton = true, sh
 
     return (
         <Box>
-            {/* Header Controls */}
-            <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 3 }}>
-                <Button
-                    endIcon={<KeyboardArrowDownIcon />}
+
+
+            {/* 2. FEED HEADER */}
+            <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 4, px: 2 }}>
+                <Box>
+                    <Typography variant="h5" sx={{ fontWeight: 900, color: '#1e293b', mb: 0.5 }}>Active Projects</Typography>
+                </Box>
+
+                <Link
+                    href="#"
+                    underline="none"
                     sx={{
+                        color: '#64748b',
+                        fontWeight: 700,
+                        fontSize: '0.85rem',
                         display: 'flex',
                         alignItems: 'center',
-                        color: 'black',
-                        fontWeight: 700,
-                        bgcolor: 'white',
-                        py: 1,
-                        px: 2,
-                        borderRadius: 3,
-                        textTransform: 'none',
-                        boxShadow: '0 2px 5px rgba(0,0,0,0.05)'
+                        gap: 0.5,
+                        '&:hover': { color: '#0f172a' }
                     }}
                 >
-                    All Categories
-                </Button>
-
-                <Stack direction="row" spacing={1}>
-                    <IconButton size="small" sx={{ bgcolor: '#f1f5f9' }}>
-                        <ViewListIcon fontSize="small" sx={{ color: 'black' }} />
-                    </IconButton>
-                    <IconButton size="small">
-                        <GridViewIcon fontSize="small" sx={{ color: '#94a3b8' }} />
-                    </IconButton>
-                </Stack>
+                    View all <ArrowForwardIcon sx={{ fontSize: 14 }} />
+                </Link>
             </Stack>
 
-            {/* List Feed */}
-            <Stack spacing={2}>
+            {/* 3. GRID FEED */}
+            <Grid container spacing={3}>
                 {posts.map((item) => (
-                    <Paper
-                        key={item.id}
-                        elevation={0}
-                        sx={{
-                            p: { xs: 2.5, sm: 2 },
-                            borderRadius: 4,
-                            bgcolor: 'white',
-                            display: 'flex',
-                            flexDirection: { xs: 'column', sm: 'row' },
-                            alignItems: { xs: 'stretch', sm: 'flex-start' },
-                            gap: 3,
-                            border: '1px solid #e2e8f0',
-                            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                            '&:hover': {
-                                boxShadow: '0 12px 30px rgba(0,0,0,0.08)',
-                                borderColor: 'transparent',
-                                transform: 'translateY(-4px)'
-                            }
-                        }}
-                    >
-                        {/* Image - Slightly larger for 'Product Image' emphasis */}
-                        <Box
-                            component="img"
-                            src={item.image}
-                            alt={item.title}
+                    <Grid key={item.id} size={{ xs: 12, md: 6 }}>
+                        <Paper
+                            elevation={0}
                             sx={{
-                                width: { xs: '100%', sm: 100 },
-                                height: { xs: 200, sm: 100 },
-                                borderRadius: 3,
-                                objectFit: 'cover',
-                                bgcolor: '#f1f5f9'
+                                borderRadius: 8,
+                                bgcolor: 'white',
+                                overflow: 'hidden',
+                                height: '90%',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                border: '1px solid #f1f5f9',
+                                transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+                                '&:hover': {
+                                    transform: 'translateY(-8px)',
+                                    boxShadow: '0 25px 50px -12px rgba(0,0,0,0.08)',
+                                    borderColor: '#e2e8f0'
+                                }
                             }}
-                        />
-
-                        {/* Middle Content - Product Details */}
-                        <Box sx={{ flexGrow: 1 }}>
-                            {/* Name (Buyer) and Category */}
-                            <Stack direction="row" justifyContent="space-between" alignItems="flex-start">
-                                <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 600, display: 'block', mb: 0.5 }}>
-                                    {item.nameDisplay || 'Anonymous Buyer'}
-                                </Typography>
-                                {item.category && (
-                                    <Box sx={{ bgcolor: '#f1f5f9', px: 1, py: 0.5, borderRadius: 1 }}>
-                                        <Typography variant="caption" sx={{ color: '#475569', fontWeight: 600 }}>
-                                            {item.category}
-                                        </Typography>
-                                    </Box>
-                                )}
-                            </Stack>
-
-                            {/* Product Name (Title) */}
-                            <Typography variant="h6" sx={{ fontWeight: 800, fontSize: '1.1rem', color: '#0f172a', mb: 0.5 }}>
-                                {item.title}
-                            </Typography>
-
-                            {/* Product Details / Description */}
-                            <Typography variant="body2" sx={{ color: '#475569', fontSize: '0.9rem', mb: 1, lineHeight: 1.5 }}>
-                                {filterDescription(item.description)}
-                            </Typography>
-
-                            {/* Additional Info (Only for Authorized) */}
-                            {showContactInfo && (
-                                <Stack spacing={0.5} sx={{ mb: 1.5, p: 1.5, bgcolor: '#f8fafc', borderRadius: 2 }}>
-                                    {item.location && <Typography variant="caption" sx={{ color: '#64748b', display: 'flex', alignItems: 'center', gap: 1 }}>📍 {item.location}</Typography>}
-                                    {item.contact && <Typography variant="caption" sx={{ color: '#64748b', display: 'flex', alignItems: 'center', gap: 1 }}>📞 {item.contact}</Typography>}
-                                    {item.email && <Typography variant="caption" sx={{ color: '#64748b', display: 'flex', alignItems: 'center', gap: 1 }}>✉️ {item.email}</Typography>}
-                                </Stack>
-                            )}
-
-                            {/* Date */}
-                            <Typography variant="body2" sx={{ color: '#94a3b8', fontSize: '0.75rem', fontWeight: 500 }}>
-                                {item.date || item.time}
-                            </Typography>
-                        </Box>
-
-                        {/* Right Side - Status and Action */}
-                        <Box sx={{
-                            textAlign: { xs: 'left', sm: 'right' },
-                            minWidth: { xs: '100%', sm: 180 },
-                            display: 'flex',
-                            flexDirection: { xs: 'row', sm: 'column' },
-                            gap: 1.5,
-                            alignItems: 'center',
-                            justifyContent: { xs: 'space-between', sm: 'flex-start' },
-                            mt: { xs: 1, sm: 0 }
-                        }}>
-                            <Chip
-                                label={item.status === 'APPROVED' ? 'Approved' : item.status === 'REJECTED' ? 'Rejected' : 'Pending'}
-                                sx={{
-                                    bgcolor: item.status === 'APPROVED' ? '#dcfce7' : item.status === 'REJECTED' ? '#fee2e2' : '#f1f5f9',
-                                    color: item.status === 'APPROVED' ? '#166534' : item.status === 'REJECTED' ? '#991b1b' : '#64748b',
-                                    fontWeight: 700,
-                                    borderRadius: 1.5,
-                                    px: 1,
-                                    height: 24,
-                                    fontSize: '0.65rem'
-                                }}
-                            />
-                            <Box sx={{ position: 'relative' }}>
-                                {showInterestButton && (
-                                    <Button
-                                        variant="contained"
-                                        size="medium"
-                                        startIcon={<PsychologyIcon sx={{ fontSize: '1.2rem !important' }} />}
-                                        onClick={() => onInterestClick?.(item.id)}
+                        >
+                            {/* Card Media with Badge */}
+                            <Box sx={{ p: 2 }}>
+                                <Box sx={{
+                                    position: 'relative',
+                                    width: '100%',
+                                    height: 200,
+                                    borderRadius: 6,
+                                    overflow: 'hidden'
+                                }}>
+                                    <Box
+                                        component="img"
+                                        src={item.image}
                                         sx={{
-                                            background: 'linear-gradient(135deg, #0f172a 0%, #172554 100%) !important',
-                                            color: '#ffffff !important',
-                                            fontWeight: 700,
-                                            borderRadius: '8px !important',
-                                            textTransform: 'none',
-                                            px: 3,
-                                            py: 1,
-                                            fontSize: '0.9rem',
-                                            width: { xs: '100%', sm: 'auto' },
-                                            minWidth: 140,
-                                            flexShrink: 0,
-                                            border: '1px solid rgba(255,255,255,0.1) !important',
-                                            boxShadow: '0 4px 12px rgba(15, 23, 42, 0.2)',
-                                            '&:hover': {
-                                                background: 'linear-gradient(135deg, #1e293b 0%, #1e3a8a 100%) !important',
-                                                transform: 'translateY(-2px)',
-                                                boxShadow: '0 8px 20px rgba(15, 23, 42, 0.3)',
-                                            },
-                                            transition: 'all 0.2s ease',
-                                            opacity: '1 !important',
-                                            visibility: 'visible !important',
-                                            zIndex: 999
+                                            width: '100%',
+                                            height: '120%',
+                                            objectFit: 'cover'
                                         }}
-                                    >
-                                        Interested
-                                    </Button>
-                                )}
+                                    />
+                                    <Chip
+                                        label={
+                                            item.status === 'APPROVED' ? 'Approved' :
+                                                item.status === 'PENDING' ? 'Pending' :
+                                                    item.status === 'REJECTED' ? 'Rejected' :
+                                                        'In Progress'
+                                        }
+                                        size="small"
+                                        sx={{
+                                            position: 'absolute',
+                                            top: 12,
+                                            left: 12,
+                                            bgcolor:
+                                                item.status === 'APPROVED' ? '#dcfce7' :
+                                                    item.status === 'PENDING' ? '#fef9c3' :
+                                                        item.status === 'REJECTED' ? '#fee2e2' :
+                                                            '#e0f2f7',
+                                            color:
+                                                item.status === 'APPROVED' ? '#166534' :
+                                                    item.status === 'PENDING' ? '#854d0e' :
+                                                        item.status === 'REJECTED' ? '#991b1b' :
+                                                            '#0369a1',
+                                            fontWeight: 800,
+                                            fontSize: '0.7rem',
+                                            backdropFilter: 'blur(8px)',
+                                            borderRadius: 2.5,
+                                            px: 1
+                                        }}
+                                    />
+                                </Box>
                             </Box>
-                        </Box>
-                    </Paper>
+
+                            {/* Card Content */}
+                            <Box sx={{ p: 5, pt: 1, flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
+                                <Typography variant="h6" sx={{ fontWeight: 800, color: '#0f172a', mb: 1, fontSize: '1.2rem', letterSpacing: -0.5 }}>
+                                    {item.title}
+                                </Typography>
+                                <Typography variant="body2" sx={{ color: '#94a3b8', mb: 4, lineHeight: 1.6, flexGrow: 1, fontSize: '0.9rem', fontWeight: 500 }}>
+                                    {filterDescription(item.description).substring(0, 80)}...
+                                </Typography>
+
+                                <Stack direction="row" alignItems="center" justifyContent="flex-end" sx={{ pt: 2, borderTop: '1px solid #f1f5f9' }}>
+                                    <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 500, fontSize: '0.75rem' }}>
+                                        {item.status === 'APPROVED' ? 'Success' : item.status === 'PENDING' ? 'Pending' : item.status === 'REJECTED' ? 'Rejected' : 'Due in 4 days'}
+                                    </Typography>
+                                </Stack>
+                            </Box>
+                        </Paper>
+                    </Grid>
                 ))}
-            </Stack>
+            </Grid>
         </Box>
     );
 };

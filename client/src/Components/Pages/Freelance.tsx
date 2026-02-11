@@ -4,6 +4,7 @@ import Footer from '../WrapperComponents/Footer';
 import FreelancersFeed from '../SpecifiedComponents/Freelancers/Components/FreelancersFeed';
 import FreelancerSidebar from '../SpecifiedComponents/Freelancers/Components/FreelancerSidebar';
 import FreelancerSidebarBuyer from '../SpecifiedComponents/Freelancers/Components/FreelancerSidebarBuyer';
+import FreelanceBanner from '../SpecifiedComponents/Freelancers/Components/FreelanceBanner';
 import { useState, useEffect } from 'react';
 import { FreelanceService, AuthService } from '../../services/api';
 
@@ -112,7 +113,8 @@ const Freelance = () => {
         <Box sx={{ minHeight: '100vh', bgcolor: '#f1f5f9' }}>
             <Navbar />
             <Container maxWidth="xl" sx={{ mt: 4, mb: 8 }}>
-                <Box sx={{ display: 'flex', flexDirection: { xs: 'column-reverse', md: 'row' }, gap: 4, alignItems: 'flex-start' }}>
+                <FreelanceBanner />
+                <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 4, alignItems: 'flex-start' }}>
                     <Box sx={{ flex: 1, minWidth: 0 }}>
                         <FreelancersFeed
                             posts={posts}
@@ -124,7 +126,7 @@ const Freelance = () => {
                         {isBuyer ? (
                             <FreelancerSidebarBuyer onPost={handlePost} />
                         ) : (
-                            <FreelancerSidebar onPost={handlePost} />
+                            <FreelancerSidebar />
                         )}
                     </Box>
                 </Box>
