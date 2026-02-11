@@ -21,24 +21,25 @@ async function resetAdminPassword() {
         const admin = await Admin.find({ email });
 
         if (admin.length === 0) {
-            console.log(`Admin with email ${email} not found. Creating one...`);
+            console.log(`[INFO] Admin with email ${email} not found. Creating new admin...`);
             const created = await Admin.create({
                 username: 'Super Admin',
                 email,
-                password: newPassword,
+                password: newPassword, // This will be hashed by pre-save hook
                 role: 'Admin',
                 profile: {
                     name: 'System Administrator',
                     avatar: 'https://ui-avatars.com/api/?name=Admin+User&background=0D8ABC&color=fff'
                 }
             });
-            console.log(`Admin created with ID: ${created._id}`);
+            console.log(`[SUCCESS] Admin created with ID: ${created._id}`);
         } else {
-            console.log(`Admin found (count=${admin.length}). Resetting password for ${email}...`);
+            console.log(`[INFO] Admin found (count=${admin.length}). Resetting password for ${email}...`);
             const targetAdmin = admin[0];
-            targetAdmin.password = newPassword;
+            targetAdmin.password = newPassword; // This will trigger pre-save hook hashing
             await targetAdmin.save();
-            console.log(`Password reset successfully for existing admin: ${targetAdmin._id}`);
+            console.log(`[SUCCESS] Password reset successfully for existing admin: ${targetAdmin._id}`);
+            console.log(`[INFO] Verified Email: ${targetAdmin.email}`);
         }
 
         console.log('DONE: Admin credentials ensured.');

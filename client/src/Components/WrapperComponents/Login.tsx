@@ -351,7 +351,7 @@ const Login = () => {
                                     </Typography>
                                     <TextField
                                         fullWidth variant="standard"
-                                        placeholder={userType === 0 ? "Unique ID, Email or Mobile" : userType === 2 ? "Enter Admin ID" : "Enter your mobile"}
+                                        placeholder={userType === 0 ? "Unique ID, Email or Mobile" : userType === 2 ? "Enter Admin Email" : "Enter your mobile"}
                                         value={mobile}
                                         onChange={(e) => setMobile(e.target.value)}
                                         InputProps={{ disableUnderline: true, sx: { py: 1, borderBottom: '1px solid #e2e8f0' } }}
@@ -422,10 +422,6 @@ const Login = () => {
 
                         <Stack spacing={3} sx={{ mb: 6 }}>
                             <Box sx={{ p: 3, bgcolor: '#f8fafc', borderRadius: 4, border: '1px dashed #adc9d1' }}>
-                                <Typography variant="caption" sx={{ fontWeight: 800, color: '#64748b', display: 'block', mb: 1 }}>YOUR UNIQUE SELLER ID</Typography>
-                                <Typography variant="h5" sx={{ fontWeight: 900, color: '#0f172a', letterSpacing: 2 }}>{registrationSuccess.id}</Typography>
-                            </Box>
-                            <Box sx={{ p: 3, bgcolor: '#f8fafc', borderRadius: 4, border: '1px dashed #adc9d1' }}>
                                 <Typography variant="caption" sx={{ fontWeight: 800, color: '#64748b', display: 'block', mb: 1 }}>YOUR PASSWORD</Typography>
                                 <Typography variant="h5" sx={{ fontWeight: 900, color: '#0f172a', letterSpacing: 2 }}>{registrationSuccess.pass}</Typography>
                             </Box>
@@ -437,7 +433,7 @@ const Login = () => {
                             onClick={() => {
                                 setAuthStep('USER_AUTH');
                                 setIsLogin(true);
-                                setMobile(registrationSuccess.id);
+                                setMobile(sellerData.email || sellerData.phoneNumber); // Autofill with email or mobile since ID is hidden
                                 setRegistrationSuccess(null);
                             }}
                             sx={{ py: 2, bgcolor: '#0f172a', color: 'white', fontWeight: 900, borderRadius: 4 }}

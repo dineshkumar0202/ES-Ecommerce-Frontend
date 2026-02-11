@@ -202,29 +202,38 @@ const Navbar = () => {
                 <Box sx={{ bgcolor: 'white', py: 1.5, borderBottom: '1px solid #f3f4f6' }}>
                     <Container maxWidth="xl">
                         <Stack direction="row" spacing={4} justifyContent="flex-start">
-                            {['RETAIL', 'WHOLESALE', 'Q-COMMERCE', 'RESALE', 'FREELANCER'].map((item) => {
-                                const path = item === 'FREELANCER' ? '/freelance' :
-                                    item === 'Q-COMMERCE' ? '/quick' :
-                                        `/${item.toLowerCase()}`;
-                                const isActive = location.pathname.startsWith(path);
+                            {(() => {
+                                const role = localStorage.getItem('userRole');
+                                let navItems = ['RETAIL', 'WHOLESALE', 'Q-COMMERCE', 'RESALE', 'FREELANCE'];
 
-                                return (
-                                    <Typography
-                                        key={item}
-                                        onClick={() => navigate(path)}
-                                        sx={{
-                                            fontSize: '0.85rem',
-                                            fontWeight: isActive ? 800 : 700,
-                                            color: isActive ? 'black' : '#111827',
-                                            cursor: 'pointer',
-                                            letterSpacing: 0.5,
-                                            '&:hover': { opacity: 0.7 }
-                                        }}
-                                    >
-                                        {item}
-                                    </Typography>
-                                );
-                            })}
+                                if (role === 'Seller') {
+                                    navItems = ['RETAIL', 'WHOLESALE', 'FREELANCE'];
+                                }
+
+                                return navItems.map((item) => {
+                                    const path = item === 'FREELANCE' ? '/freelance' :
+                                        item === 'Q-COMMERCE' ? '/quick' :
+                                            `/${item.toLowerCase()}`;
+                                    const isActive = location.pathname.startsWith(path);
+
+                                    return (
+                                        <Typography
+                                            key={item}
+                                            onClick={() => navigate(path)}
+                                            sx={{
+                                                fontSize: '0.85rem',
+                                                fontWeight: isActive ? 800 : 700,
+                                                color: isActive ? 'black' : '#111827',
+                                                cursor: 'pointer',
+                                                letterSpacing: 0.5,
+                                                '&:hover': { opacity: 0.7 }
+                                            }}
+                                        >
+                                            {item}
+                                        </Typography>
+                                    );
+                                });
+                            })()}
                         </Stack>
                     </Container>
                 </Box>
