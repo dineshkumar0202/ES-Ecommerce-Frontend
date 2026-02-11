@@ -7,6 +7,8 @@ export interface IBuyer extends Document {
     mobile: string;
     password?: string;
     role: 'Buyer';
+    googleId?: string;
+    isVerified?: boolean;
     profile: {
         name?: string;
         avatar?: string;
@@ -32,23 +34,34 @@ const buyerSchema: Schema = new mongoose.Schema({
     },
     mobile: {
         type: String,
-        required: true,
+        required: false, // Optional for Google OAuth users
         unique: true,
+        sparse: true,
     },
     password: {
         type: String,
-        required: true,
+        required: false, // Optional for Google OAuth users
     },
     role: {
         type: String,
         default: 'Buyer',
         immutable: true, // Force role to be Buyer
     },
+    googleId: {
+        type: String,
+        unique: true,
+        sparse: true,
+    },
+    isVerified: {
+        type: Boolean,
+        default: false,
+    },
     profile: {
         name: String,
         avatar: String,
         phone: String,
         location: String,
+        paymentMethod: String,
     },
     createdAt: {
         type: Date,

@@ -68,6 +68,7 @@ export const FreelanceService = {
 
 export const OrderService = {
     getMyOrders: () => api.get('/orders/myorders'),
+    getSellerOrders: () => api.get('/orders/seller/orders'),
     getAll: () => api.get('/orders'),
     getOrderById: (id: string) => api.get(`/orders/${id}`),
     create: (data: any) => api.post('/orders', data),
@@ -86,7 +87,9 @@ export const UserService = {
     getAll: () => api.get('/users'),
     getById: (id: string) => api.get(`/users/${id}`),
     delete: (id: string) => api.delete(`/users/${id}`),
-    registerFreelancer: (data: any) => api.post('/users/freelancer/register', data)
+    registerFreelancer: (data: any) => api.post('/users/freelancer/register', data),
+    updateUserProfile: (id: string, data: any) => api.put(`/users/${id}`, data),
+    updateSellerProfile: (id: string, data: any) => api.put(`/users/seller/${id}`, data)
 };
 
 export const AdminService = {

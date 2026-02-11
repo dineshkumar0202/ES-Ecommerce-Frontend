@@ -156,7 +156,7 @@ class AuthService {
     // --- Seller ---
     async registerSeller(userData: any) {
         // console.log("Registering Seller:", userData);
-        const { username, mobile, password, email } = userData;
+        const { username, mobile, password, email, businessDetails, bankDetails } = userData;
 
         const orConditions: any[] = [{ mobile }];
         if (email) orConditions.push({ email });
@@ -176,7 +176,10 @@ class AuthService {
             password,
             email,
             uniqueId,
-            role: 'Seller'
+            role: 'Seller',
+            businessDetails,
+            bankDetails,
+            isVerified: false // Default to false
         });
 
         if (seller) {

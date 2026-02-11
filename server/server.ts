@@ -17,6 +17,9 @@ import uploadRoutes from "./src/routers/uploadRouter";
 import paymentRoutes from "./src/routers/paymentRouter";
 import notificationRoutes from "./src/routers/users/NotificationRouter";
 import testEmailRoutes from "./src/routers/testEmailRouter";
+import googleAuthRoutes from "./src/routers/auth/GoogleAuthRouter";
+import session from "express-session";
+import passport from "./src/config/passport";
 import User from "./src/models/users/UserModel";
 import Product from "./src/models/retail/ProductModel";
 import QProduct from "./src/models/q-commerce/QProductModel";
@@ -59,11 +62,32 @@ app.use((req: any, res, next) => {
 });
 
 // Middleware
-app.use(cors());
+app.use(cors({
+    origin: process.env.CLIENT_URL || 'http://localhost:5175',
+    credentials: true
+}));
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
+// Session middleware for Passport
+app.use(
+    session({
+        secret: process.env.SESSION_SECRET || 'fallback_secret',
+        resave: false,
+        saveUninitialized: false,
+        cookie: {
+            secure: false, // Set to true in production with HTTPS
+            maxAge: 24 * 60 * 60 * 1000 // 24 hours
+        }
+    })
+);
+
+// Passport middleware
+app.use(passport.initialize());
+app.use(passport.session());
+
 // Routes
+app.use("/api/auth/google", googleAuthRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/posts", postRoutes); // Freelancer posts

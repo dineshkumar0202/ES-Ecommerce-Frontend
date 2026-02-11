@@ -27,6 +27,15 @@ const Register = () => {
         confirmPassword: ''
     });
 
+    // Seller Specific State
+    const [sellerData, setSellerData] = useState({
+        businessName: '',
+        gst: '',
+        accountNumber: '',
+        ifsc: '',
+        bankName: ''
+    });
+
     const [errors, setErrors] = useState<any>({});
 
     const validate = () => {
@@ -77,7 +86,11 @@ const Register = () => {
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
-        setFormData((prev: any) => ({ ...prev, [name]: value }));
+        if (['businessName', 'gst', 'accountNumber', 'ifsc', 'bankName'].includes(name)) {
+            setSellerData((prev: any) => ({ ...prev, [name]: value }));
+        } else {
+            setFormData((prev: any) => ({ ...prev, [name]: value }));
+        }
         if (errors[name]) {
             setErrors((prev: any) => ({ ...prev, [name]: '' }));
         }
@@ -98,7 +111,18 @@ const Register = () => {
                 username: formData.name,
                 mobile: formData.mobile,
                 email: formData.email || undefined,
-                password: formData.password
+                password: formData.password,
+                ...(userType === 0 && {
+                    businessDetails: {
+                        businessName: sellerData.businessName,
+                        gst: sellerData.gst
+                    },
+                    bankDetails: {
+                        accountNumber: sellerData.accountNumber,
+                        ifsc: sellerData.ifsc,
+                        bankName: sellerData.bankName
+                    }
+                })
             };
 
             let response;
@@ -248,6 +272,56 @@ const Register = () => {
                                     sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
                                 />
                             </Box>
+
+                            {userType === 0 && (
+                                <>
+                                    <TextField
+                                        fullWidth
+                                        name="businessName"
+                                        label="Business Name"
+                                        placeholder="My Awesome Store"
+                                        value={sellerData.businessName}
+                                        onChange={handleInputChange}
+                                        sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
+                                    />
+                                    <TextField
+                                        fullWidth
+                                        name="gst"
+                                        label="GST Number (Optional for Retail)"
+                                        placeholder="22AAAAA0000A1Z5"
+                                        value={sellerData.gst}
+                                        onChange={handleInputChange}
+                                        sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
+                                    />
+                                    <Typography variant="subtitle2" sx={{ fontWeight: 800, mt: 1 }}>Bank Details for Payouts</Typography>
+                                    <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
+                                        <TextField
+                                            fullWidth
+                                            name="accountNumber"
+                                            label="Account Number"
+                                            value={sellerData.accountNumber}
+                                            onChange={handleInputChange}
+                                            sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
+                                        />
+                                        <TextField
+                                            fullWidth
+                                            name="ifsc"
+                                            label="IFSC Code"
+                                            value={sellerData.ifsc}
+                                            onChange={handleInputChange}
+                                            sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
+                                        />
+                                    </Box>
+                                    <TextField
+                                        fullWidth
+                                        name="bankName"
+                                        label="Bank Name"
+                                        value={sellerData.bankName}
+                                        onChange={handleInputChange}
+                                        sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
+                                    />
+                                </>
+                            )}
 
                             <TextField
                                 fullWidth

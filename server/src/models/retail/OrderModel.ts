@@ -30,7 +30,8 @@ export interface IOrder extends Document {
     paidAt?: Date;
     isDelivered: boolean;
     deliveredAt?: Date;
-    status: 'Ordered' | 'Shipped' | 'Out for Delivery' | 'Delivered' | 'Cancelled';
+    status: 'Placed' | 'Payment Confirmed' | 'Processing' | 'Shipped' | 'Out for Delivery' | 'Delivered' | 'Cancelled';
+    orderType: 'Retail' | 'Wholesale' | 'Q-Commerce' | 'Resale' | 'Freelance';
     createdAt: Date;
     updatedAt: Date;
 }
@@ -106,9 +107,15 @@ const orderSchema: Schema = new mongoose.Schema(
         status: {
             type: String,
             required: true,
-            enum: ['Ordered', 'Shipped', 'Out for Delivery', 'Delivered', 'Cancelled'],
-            default: 'Ordered',
+            enum: ['Placed', 'Payment Confirmed', 'Processing', 'Shipped', 'Out for Delivery', 'Delivered', 'Cancelled'],
+            default: 'Placed',
         },
+        orderType: {
+            type: String,
+            required: true,
+            enum: ['Retail', 'Wholesale', 'Q-Commerce', 'Resale', 'Freelance'],
+            default: 'Retail'
+        }
     },
     {
         timestamps: true,

@@ -28,12 +28,25 @@ class OrderService {
     }
 
     async getOrderById(orderId: string, userId: string, role: string) {
-        const order = await Order.findById(orderId).populate("user", "username email");
+        const order = await Order.findById(orderId).populate("user", "username email mobile");
         if (order) {
-            if (order.user._id.toString() !== userId && role !== 'Admin') {
-                return null;
+            if (role === 'Admin') return order;
+            if (order.user._id.toString() === userId) return order;
+
+            if (role === 'Seller') {
+                const productIds = order.orderItems.map(i => i.product);
+
+                // Check Retail
+                const Product = await import('../../models/retail/ProductModel').then(m => m.default);
+                const retailOwned = await Product.exists({ _id: { $in: productIds }, seller: userId });
+                if (retailOwned) return order;
+
+                // Check Wholesale
+                const WholesaleProduct = await import('../../models/Wholesale/WholesaleProductModel').then(m => m.default);
+                const wholesaleOwned = await WholesaleProduct.exists({ _id: { $in: productIds }, seller: userId });
+                if (wholesaleOwned) return order;
             }
-            return order;
+            return null;
         }
         return null;
     }
@@ -87,6 +100,26 @@ class OrderService {
 
     async getMyOrders(userId: string) {
         return await Order.find({ user: userId });
+    }
+
+    async getOrdersBySeller(sellerId: string) {
+        // Find Retail products
+        const Product = await import('../../models/retail/ProductModel').then(m => m.default);
+        const retailProducts = await Product.find({ seller: sellerId }).select('_id');
+
+        // Find Wholesale products
+        const WholesaleProduct = await import('../../models/Wholesale/WholesaleProductModel').then(m => m.default);
+        const wholesaleProducts = await WholesaleProduct.find({ seller: sellerId }).select('_id');
+
+        const productIds = [
+            ...retailProducts.map(p => p._id),
+            ...wholesaleProducts.map(p => p._id)
+        ];
+
+        // Find orders containing these products
+        return await Order.find({
+            'orderItems.product': { $in: productIds }
+        }).populate("user", "username email mobile").sort({ createdAt: -1 });
     }
 
     async getAllOrders() {

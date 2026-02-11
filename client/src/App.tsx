@@ -23,6 +23,7 @@ import RetailProductDetails from './Components/SpecifiedComponents/Retail/Produc
 import QCommerceProductDetails from './Components/SpecifiedComponents/Q-Commerces/ProductDetails';
 import WholesaleProductDetails from './Components/SpecifiedComponents/WholeSale/Components/WholesaleProductDetails';
 import ResaleProductDetails from './Components/SpecifiedComponents/Second-hand/Components/ResaleProductDetails';
+import AuthSuccess from './Components/Pages/AuthSuccess';
 
 function App() {
     return (
@@ -41,6 +42,7 @@ function App() {
                 {/* Auth & User Management */}
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
+                <Route path="/auth/success" element={<AuthSuccess />} />
                 <Route path="/profile" element={<Profile />} />
                 <Route path="/seller/profile" element={<SellerProfile />} />
 

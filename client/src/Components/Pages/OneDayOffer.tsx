@@ -11,11 +11,10 @@ const OneDayOffer = () => {
     const navigate = useNavigate();
 
     const [displayProducts, setDisplayProducts] = useState<any[]>([]);
-    const [_isLoading, setIsLoading] = useState(true);
+
 
     useEffect(() => {
         const fetchProducts = async () => {
-            setIsLoading(true);
             try {
                 const { data } = await ProductService.getAll();
                 let products = [];
@@ -31,7 +30,6 @@ const OneDayOffer = () => {
             } catch (error) {
                 console.error("Error fetching products:", error);
             } finally {
-                setIsLoading(false);
             }
         };
         fetchProducts();

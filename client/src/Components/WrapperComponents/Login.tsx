@@ -13,6 +13,7 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import Navbar from './Navbar';
 import { AuthService } from '../../services/api';
+import GoogleAuthButton from './GoogleAuthButton';
 
 type AuthStep = 'SELECT' | 'USER_AUTH' | 'SELLER_REG';
 
@@ -68,10 +69,11 @@ const Login = () => {
                 response = await AuthService.registerBuyer({ username: name.trim(), mobile: mobile.trim(), password });
             }
 
-            const { token, username, role } = response.data;
+            const { token, username, role, _id } = response.data;
             localStorage.setItem('token', token);
             localStorage.setItem('userRole', role);
             localStorage.setItem('userName', username);
+            if (_id) localStorage.setItem('userId', _id);
 
             toast.success(`Welcome, ${username}!`);
 
@@ -366,9 +368,7 @@ const Login = () => {
                                     <>
                                         <Divider sx={{ my: 2 }}><Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 700 }}>OR CONTINUE WITH</Typography></Divider>
 
-                                        <Stack direction="row" spacing={2}>
-                                            <IconButton sx={{ flex: 1, border: '1px solid #e2e8f0', borderRadius: 2 }}><GoogleIcon /></IconButton>
-                                        </Stack>
+                                        <GoogleAuthButton />
                                     </>
                                 )}
 

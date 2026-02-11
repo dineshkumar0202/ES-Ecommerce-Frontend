@@ -14,7 +14,19 @@ export interface ISeller extends Document {
         bio?: string;
         phone?: string;
         location?: string;
+        address?: string;
     };
+    businessDetails?: {
+        businessName?: string;
+        gst?: string;
+        idProof?: string;
+    };
+    bankDetails?: {
+        accountNumber?: string;
+        ifsc?: string;
+        bankName?: string;
+    };
+    isVerified: boolean;
     freelancer?: {
         isRegistered?: boolean;
         status?: 'Pending' | 'Approved' | 'Rejected';
@@ -71,6 +83,21 @@ const sellerSchema: Schema = new mongoose.Schema({
         bio: String,
         phone: String,
         location: String,
+        address: String,
+    },
+    businessDetails: {
+        businessName: String,
+        gst: String,
+        idProof: String,
+    },
+    bankDetails: {
+        accountNumber: String,
+        ifsc: String,
+        bankName: String,
+    },
+    isVerified: {
+        type: Boolean,
+        default: false,
     },
     freelancer: {
         isRegistered: { type: Boolean, default: false },

@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { Box, Container, Snackbar, Alert, Button } from '@mui/material';
 import Navbar from '../WrapperComponents/Navbar';
 import Footer from '../WrapperComponents/Footer';
@@ -11,6 +12,7 @@ import WholesaleHeader from '../SpecifiedComponents/WholeSale/Components/Wholesa
 import CloseIcon from '@mui/icons-material/Close';
 
 const Wholesale = () => {
+    const location = useLocation();
     const [view, setView] = useState<'feed' | 'upload' | 'requests'>('feed');
     const [snackbarOpen, setSnackbarOpen] = useState(false);
     const [refreshToken, setRefreshToken] = useState(0);
@@ -37,9 +39,17 @@ const Wholesale = () => {
         setView('feed');
     };
 
+    useEffect(() => {
+        if (location.state && (location.state as any).view) {
+            setView((location.state as any).view);
+        }
+    }, [location]);
+
     const handleCloseSnackbar = () => {
         setSnackbarOpen(false);
     };
+
+    const userRole = localStorage.getItem('userRole');
 
 
 
@@ -60,6 +70,17 @@ const Wholesale = () => {
                     view === 'feed' ? (
                         <>
                             {/* Feed */}
+                            {userRole === 'Seller' && (
+                                <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
+                                    <Button
+                                        variant="contained"
+                                        onClick={() => setView('upload')}
+                                        sx={{ bgcolor: 'black', color: 'white', fontWeight: 800, borderRadius: 3, px: 3, '&:hover': { bgcolor: '#333' } }}
+                                    >
+                                        Post New Product
+                                    </Button>
+                                </Box>
+                            )}
                             <WholesaleFeed key={refreshToken} />
                         </>
                     ) : view === 'upload' ? (

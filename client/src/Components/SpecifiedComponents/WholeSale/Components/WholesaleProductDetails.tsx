@@ -24,7 +24,7 @@ import NavigateNextIcon from '@mui/icons-material/NavigateNext';
 
 import Navbar from '../../../WrapperComponents/Navbar';
 import Footer from '../../../WrapperComponents/Footer';
-import { WholesaleService, WishlistService } from '../../../../services/api';
+import { WholesaleService, WishlistService, OrderService } from '../../../../services/api';
 import { toast } from 'react-toastify';
 
 const WholesaleProductDetails = () => {
@@ -77,6 +77,39 @@ const WholesaleProductDetails = () => {
     };
 
 
+
+    const handleBuyNow = async () => {
+        try {
+            const orderData = {
+                orderItems: [{
+                    title: product.title,
+                    qty: 1,
+                    image: product.images?.[0] || product.image,
+                    price: product.price || product.pricePerUnit || 100,
+                    product: product._id
+                }],
+                shippingAddress: {
+                    address: '123 Test St',
+                    city: 'Test City',
+                    postalCode: '123456',
+                    country: 'India'
+                },
+                paymentMethod: 'Online',
+                itemsPrice: product.price || product.pricePerUnit || 100,
+                taxPrice: 0,
+                shippingPrice: 0,
+                totalPrice: product.price || product.pricePerUnit || 100,
+                orderType: 'Wholesale'
+            };
+
+            await OrderService.create(orderData);
+            toast.success('Sample Order placed successfully!');
+            navigate('/profile');
+        } catch (error) {
+            console.error(error);
+            toast.error('Failed to place order');
+        }
+    };
 
     if (isLoading) {
         return (
@@ -301,6 +334,25 @@ const WholesaleProductDetails = () => {
                                         }}
                                     >
                                         Get Custom Quote
+                                    </Button>
+
+                                    <Button
+                                        variant="outlined"
+                                        fullWidth
+                                        onClick={handleBuyNow}
+                                        sx={{
+                                            mt: 2,
+                                            borderColor: '#0f172a',
+                                            color: '#0f172a',
+                                            py: 2,
+                                            borderRadius: 4,
+                                            fontWeight: 900,
+                                            fontSize: '1rem',
+                                            textTransform: 'none',
+                                            '&:hover': { bgcolor: '#f1f5f9', borderColor: '#0f172a' }
+                                        }}
+                                    >
+                                        Buy Sample Now
                                     </Button>
 
 

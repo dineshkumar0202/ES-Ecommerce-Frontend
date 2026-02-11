@@ -142,6 +142,14 @@ class OrderController {
             res.status(500).json({ message: error.message });
         }
     }
+    async getSellerOrders(req: IAuthRequest, res: Response) {
+        try {
+            const orders = await OrderService.getOrdersBySeller(req.user._id as string);
+            res.json(orders);
+        } catch (error: any) {
+            res.status(500).json({ message: error.message });
+        }
+    }
 }
 
 export default new OrderController();
