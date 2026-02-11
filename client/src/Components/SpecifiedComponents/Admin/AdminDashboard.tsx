@@ -1,4 +1,4 @@
-import { Box, Typography, Paper, Stack, List, ListItemButton, ListItemIcon, ListItemText, Grid, IconButton } from '@mui/material';
+import { Box, Typography, Paper, Stack, List, ListItemButton, ListItemIcon, ListItemText, Grid } from '@mui/material';
 import {
     Dashboard as DashboardIcon,
     Store as StoreIcon,
@@ -10,9 +10,6 @@ import {
     Group as GroupIcon,
     ShoppingBag as ShoppingBagIcon,
     AttachMoney as AttachMoneyIcon,
-    Search as SearchIcon,
-    Notifications as NotificationsIcon,
-    AccountCircle as AccountCircleIcon
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { AdminService } from '../../../services/api';
@@ -75,12 +72,7 @@ const AdminDashboard = () => {
             {/* Sidebar */}
             <Box sx={{ width: 260, bgcolor: 'white', borderRight: '1px solid #e2e8f0', p: 3, display: 'flex', flexDirection: 'column', height: '100vh', position: 'sticky', top: 0 }}>
                 {/* Logo Area */}
-                <Stack direction="row" alignItems="center" spacing={1.5} sx={{ mb: 5, px: 2 }}>
-                    <Box sx={{ bgcolor: '#dae9e9', p: 1, borderRadius: 2, display: 'flex' }}>
-                        <DashboardIcon sx={{ color: '#1e293b', fontSize: 20 }} />
-                    </Box>
-                    <Typography variant="h6" sx={{ fontWeight: 800 }}>admin</Typography>
-                </Stack>
+                <Box sx={{ mb: 4 }} />
 
                 <List disablePadding>
                     {menuItems.map((item) => (
@@ -90,9 +82,9 @@ const AdminDashboard = () => {
                             sx={{
                                 mb: 1,
                                 borderRadius: 3,
-                                bgcolor: item.active ? '#dae9e9' : 'transparent',
+                                bgcolor: item.active ? '#CFE8EC' : 'transparent',
                                 color: item.active ? '#1e293b' : '#64748b',
-                                '&:hover': { bgcolor: item.active ? '#dae9e9' : '#f8fafc', color: item.active ? '#1e293b' : '#334155' },
+                                '&:hover': { bgcolor: item.active ? '#CFE8EC' : '#f8fafc', color: item.active ? '#1e293b' : '#334155' },
                                 py: 1.2,
                                 px: 2
                             }}
@@ -122,14 +114,7 @@ const AdminDashboard = () => {
 
             {/* Main Content */}
             <Box sx={{ flexGrow: 1, p: 4, overflow: 'auto', bgcolor: '#f8fafc' }}>
-                <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 4 }}>
-                    <Typography variant="h5" sx={{ fontWeight: 800 }}>Dashboard Overview</Typography>
-                    <Stack direction="row" spacing={2}>
-                        <IconButton sx={{ bgcolor: 'white' }}><SearchIcon /></IconButton>
-                        <IconButton sx={{ bgcolor: 'white' }}><NotificationsIcon /></IconButton>
-                        <IconButton sx={{ bgcolor: 'white' }}><AccountCircleIcon /></IconButton>
-                    </Stack>
-                </Stack>
+                <Box sx={{ mb: 2 }} />
 
                 {/* Stats Cards */}
                 <Grid container spacing={4} sx={{ mb: 5 }}>
@@ -218,7 +203,7 @@ const AdminDashboard = () => {
                     </Grid>
                 </Grid>
             </Box>
-        </Box>
+        </Box >
     );
 };
 
