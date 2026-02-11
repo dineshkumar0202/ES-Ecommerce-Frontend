@@ -1,6 +1,5 @@
 import { Box, Typography, Paper, Stack, Button, IconButton, TextField, Dialog, DialogTitle, DialogContent, DialogActions, MenuItem, InputAdornment, Alert, Avatar, Chip, Fade, CircularProgress, Collapse, Link } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import ImageOutlinedIcon from '@mui/icons-material/ImageOutlined';
 import PersonOutlineIcon from '@mui/icons-material/PersonOutline';
 import EmailOutlinedIcon from '@mui/icons-material/EmailOutlined';
@@ -18,9 +17,6 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import { useState, useEffect } from 'react';
 import { UserService, AuthService, UploadService } from '../../../../services/api';
 
-interface FreelancerSidebarProps {
-    // onPost removed as per user request to remove posting functionality
-}
 
 const SKILL_TESTS: any = {
     "Technology & IT": {

@@ -168,11 +168,14 @@ class AuthService {
             throw new Error('Seller with this mobile or email already exists');
         }
 
+        const uniqueId = `SLR${Math.floor(1000 + Math.random() * 9000)}`;
+
         const seller = await Seller.create({
             username,
             mobile,
             password,
             email,
+            uniqueId,
             role: 'Seller'
         });
 
@@ -183,6 +186,7 @@ class AuthService {
                 username: seller.username,
                 mobile: seller.mobile,
                 email: seller.email,
+                uniqueId: seller.uniqueId,
                 role: seller.role,
                 token: this.generateToken(seller._id as string, 'Seller'),
             };
@@ -193,11 +197,13 @@ class AuthService {
 
     async loginSeller(loginData: any) {
         // console.log("Login Seller Attempt:", loginData);
-        const { mobile, email, password } = loginData;
+        const { mobile, email, uniqueId, password } = loginData;
 
         let seller = null;
 
-        if (email) {
+        if (uniqueId) {
+            seller = await Seller.findOne({ uniqueId });
+        } else if (email) {
             // console.log("Seller Login Query by email:", email);
             seller = await Seller.findOne({ email });
         } else if (mobile) {
@@ -221,7 +227,7 @@ class AuthService {
 
             // console.log("Seller Not Found via any mobile format");
         } else {
-            throw new Error('Please provide email or mobile number');
+            throw new Error('Please provide Unique ID, email or mobile number');
         }
 
         if (!seller) {
@@ -239,6 +245,7 @@ class AuthService {
             username: seller.username,
             mobile: seller.mobile,
             email: seller.email,
+            uniqueId: seller.uniqueId,
             role: seller.role,
             token: this.generateToken(seller._id as string, 'Seller'),
         };

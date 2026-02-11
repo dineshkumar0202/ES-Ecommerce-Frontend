@@ -1,5 +1,5 @@
 import express from "express";
-import WishlistController from "../../controllers/Retile/WishlistController";
+import WishlistController from "../../controllers/Retail/WishlistController";
 import { protect } from "../../middleware/authMiddleware";
 
 const router = express.Router();

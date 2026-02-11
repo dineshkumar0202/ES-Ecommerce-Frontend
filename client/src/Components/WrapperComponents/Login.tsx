@@ -2,12 +2,11 @@ import { useState } from 'react';
 import {
     Box, Typography, TextField, Button, Paper, Divider, Alert,
     Stack, Container, IconButton, Fade, Checkbox, FormControlLabel,
-    CircularProgress, Stepper, Step, StepLabel, Grid
+    CircularProgress, Grid
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import GoogleIcon from '@mui/icons-material/Google';
-import AppleIcon from '@mui/icons-material/Apple';
 import PersonOutlineIcon from '@mui/icons-material/PersonOutline';
 import StorefrontIcon from '@mui/icons-material/Storefront';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
@@ -62,6 +61,9 @@ const Login = () => {
                 if (userType === 0) {
                     // Seller Login using Unique ID
                     response = await AuthService.loginSeller({ uniqueId: mobile.trim(), password });
+                } else if (userType === 2) {
+                    // Admin Login
+                    response = await AuthService.loginAdmin({ mobile: mobile.trim(), password });
                 } else {
                     response = await AuthService.loginBuyer({ mobile: mobile.trim(), password });
                 }
@@ -75,7 +77,15 @@ const Login = () => {
             localStorage.setItem('userName', username);
 
             toast.success(`Welcome, ${username}!`);
-            navigate(role === 'Admin' ? '/admin' : '/freelance');
+
+            // Explicit routing for admin
+            if (role === 'Admin') {
+                navigate('/admin');
+            } else if (role === 'Seller') {
+                navigate('/seller/profile');
+            } else {
+                navigate('/freelance');
+            }
         } catch (err: any) {
             setError(err.response?.data?.message || 'Authentication failed');
         } finally {
@@ -107,12 +117,12 @@ const Login = () => {
                 }
             });
 
-            // Simulate Unique ID generation (In real app, this comes from backend)
-            const generatedId = `SEL-${Math.floor(100000 + Math.random() * 900000)}`;
-            const generatedPass = sellerData.password; // or a truly generated one
+            // Use Unique ID returned from backend
+            const generatedId = response.data.uniqueId;
+            const generatedPass = sellerData.password;
 
             setRegistrationSuccess({ id: generatedId, pass: generatedPass });
-            toast.success("Seller registration successful! Credentials generated.");
+            // toast.success("Seller registration successful! Credentials generated.");
         } catch (err: any) {
             setError(err.response?.data?.message || 'Registration failed');
         } finally {
@@ -127,7 +137,11 @@ const Login = () => {
                 <Navbar />
                 <Container maxWidth="md" sx={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', py: 8 }}>
                     <Typography variant="h4" align="center" sx={{ fontWeight: 900, mb: 1, color: '#0f172a' }}>
-                        Join ATOZ.IN community 👋
+                        Join ATOZ.IN community <Box component="span" onClick={() => {
+                            setUserType(2);
+                            setAuthStep('USER_AUTH');
+                            setIsLogin(true);
+                        }} sx={{ cursor: 'pointer', display: 'inline-block', '&:hover': { transform: 'scale(1.2)' }, transition: '0.2s' }}>👋</Box>
                     </Typography>
                     <Typography variant="body1" align="center" sx={{ color: '#64748b', mb: 8 }}>
                         Select how you want to use the platform to get started
@@ -316,11 +330,11 @@ const Login = () => {
                                 )}
                                 <Box>
                                     <Typography variant="caption" sx={{ fontWeight: 800, color: '#64748b', mb: 1, display: 'block' }}>
-                                        {userType === 0 ? 'UNIQUE SELLER ID' : 'MOBILE NUMBER'}
+                                        {userType === 0 ? 'UNIQUE SELLER ID' : userType === 2 ? 'ADMIN ID' : 'MOBILE NUMBER'}
                                     </Typography>
                                     <TextField
                                         fullWidth variant="standard"
-                                        placeholder={userType === 0 ? "SEL-XXXXXX" : "Enter your mobile"}
+                                        placeholder={userType === 0 ? "SEL-XXXXXX" : userType === 2 ? "Enter Admin ID" : "Enter your mobile"}
                                         value={mobile}
                                         onChange={(e) => setMobile(e.target.value)}
                                         InputProps={{ disableUnderline: true, sx: { py: 1, borderBottom: '1px solid #e2e8f0' } }}
@@ -355,12 +369,15 @@ const Login = () => {
                                     {isLoading ? <CircularProgress size={24} color="inherit" /> : (isLogin ? 'Login' : 'Create Account')}
                                 </Button>
 
-                                <Divider sx={{ my: 2 }}><Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 700 }}>OR CONTINUE WITH</Typography></Divider>
+                                {userType !== 2 && (
+                                    <>
+                                        <Divider sx={{ my: 2 }}><Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 700 }}>OR CONTINUE WITH</Typography></Divider>
 
-                                <Stack direction="row" spacing={2}>
-                                    <IconButton sx={{ flex: 1, border: '1px solid #e2e8f0', borderRadius: 2 }}><GoogleIcon /></IconButton>
-                                    <IconButton sx={{ flex: 1, border: '1px solid #e2e8f0', borderRadius: 2 }}><AppleIcon /></IconButton>
-                                </Stack>
+                                        <Stack direction="row" spacing={2}>
+                                            <IconButton sx={{ flex: 1, border: '1px solid #e2e8f0', borderRadius: 2 }}><GoogleIcon /></IconButton>
+                                        </Stack>
+                                    </>
+                                )}
 
                                 <Typography variant="body2" sx={{ textAlign: 'center', mt: 4, color: '#64748b' }}>
                                     {isLogin ? "Don't have an account?" : "Already have an account?"} <Box component="span" onClick={() => setIsLogin(!isLogin)} sx={{ color: '#0f172a', fontWeight: 900, cursor: 'pointer' }}>{isLogin ? 'Sign up for free' : 'Login instead'}</Box>
@@ -424,10 +441,14 @@ const Login = () => {
             <Box sx={{ minHeight: '100vh', bgcolor: '#f8fafc', display: 'flex', flexDirection: 'column' }}>
                 <Navbar />
                 <Container maxWidth="md" sx={{ py: 10 }}>
+                    <Button
+                        onClick={() => setAuthStep('SELECT')}
+                        sx={{ mb: 4, color: '#64748b', fontWeight: 700, textTransform: 'none' }}
+                        startIcon={<span>←</span>}
+                    >
+                        Back to selection
+                    </Button>
                     <Box sx={{ mb: 6, textAlign: 'center' }}>
-                        <Stepper activeStep={0} sx={{ mb: 8, '& .MuiStepIcon-root.Mui-active': { color: '#B4D5DC' } }}>
-                            {['PROFILE', 'STORE', 'PAYOUT'].map((label) => <Step key={label}><StepLabel>{label}</StepLabel></Step>)}
-                        </Stepper>
                         <Typography variant="h4" sx={{ fontWeight: 900, mb: 1, color: '#0f172a' }}>Become a Verified Seller</Typography>
                         <Typography variant="body1" sx={{ color: '#64748b' }}>Join thousands of merchants growing their business on our multi-channel platform.</Typography>
                     </Box>

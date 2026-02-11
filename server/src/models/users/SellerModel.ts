@@ -6,6 +6,7 @@ export interface ISeller extends Document {
     email?: string;
     mobile: string;
     password?: string;
+    uniqueId?: string;
     role: 'Seller';
     profile: {
         name?: string;
@@ -53,6 +54,11 @@ const sellerSchema: Schema = new mongoose.Schema({
     password: {
         type: String,
         required: true,
+    },
+    uniqueId: {
+        type: String,
+        unique: true,
+        sparse: true,
     },
     role: {
         type: String,

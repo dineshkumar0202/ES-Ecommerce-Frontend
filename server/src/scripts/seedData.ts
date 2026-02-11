@@ -4,22 +4,21 @@ import bcrypt from 'bcryptjs';
 import Buyer from '../models/users/BuyerModel';
 import Seller from '../models/users/SellerModel';
 import Admin from '../models/users/AdminModel';
-import Product from '../models/retail/ProductModel'; // Assuming ProductModel is in ../models/retail/ProductModel.ts or similar
-// Wait, I need to check where ProductModel is. It was imported as ./src/routers/retail/ProductRouter in server.ts
-// listing models/retail might help confirm location.
+import Product from '../models/retail/ProductModel';
 
 dotenv.config();
 
 async function seedDatabase() {
     try {
-        await mongoose.connect(process.env.MONGO_URI as string);
+        if (!process.env.MONGO_URI) {
+            throw new Error('MONGO_URI is not defined in .env');
+        }
+
+        await mongoose.connect(process.env.MONGO_URI);
         console.log('📦 Connected to MongoDB');
 
         // Clear existing data
         console.log('🗑️  Clearing existing data...');
-        // We can keep User for legacy or clear it. Let's clear everything to be clean.
-        // But need to import User if we want to clear it? Or just use mongoose.connection.dropCollection('users')?
-        // Let's just focus on the new collections.
         await Buyer.deleteMany({});
         await Seller.deleteMany({});
         await Admin.deleteMany({});
@@ -30,63 +29,109 @@ async function seedDatabase() {
         const hashedPassword = await bcrypt.hash('password123', 10);
 
         // Admin
-        const admin = await Admin.create({
+        await Admin.create({
             username: 'Admin User',
             email: 'admin@atoz.com',
             password: hashedPassword,
             role: 'Admin',
             profile: {
                 name: 'Super Admin',
-                avatar: 'https://via.placeholder.com/150'
+                avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150'
             }
         });
 
         // Seller
         const seller = await Seller.create({
-            username: 'John Seller',
-            email: 'john@example.com',
-            mobile: '9876543211',
+            username: 'TechGear Official',
+            email: 'seller@techgear.in',
+            mobile: '9876543210',
             password: hashedPassword,
+            uniqueId: 'SLR1001',
             role: 'Seller',
             profile: {
-                name: 'John Doe',
-                bio: 'Top seller',
-                phone: '9876543211',
-                location: 'NYC'
+                name: 'TechGear Store',
+                bio: 'Premium tech accessories provider.',
+                location: 'Bangalore, India'
             }
         });
 
         // Buyer
-        const buyer = await Buyer.create({
-            username: 'Jane Buyer',
-            email: 'jane@example.com',
-            mobile: '9876543212',
+        await Buyer.create({
+            username: 'Dinesh Kumar',
+            email: 'buyer@example.com',
+            mobile: '9123456789',
             password: hashedPassword,
             role: 'Buyer',
             profile: {
-                name: 'Jane Doe',
-                phone: '9876543212',
-                location: 'LA'
+                name: 'Dinesh Kumar M',
+                location: 'Chennai, India'
             }
         });
 
-        console.log(`✅ Created Admin, Seller, and Buyer`);
+        console.log(`✅ Created Admin, Seller (ID: SLR1001), and Buyer`);
 
         // Create products
-        // Note: Product model needs to be checked for "seller" reference. 
-        // If Product refers to "User", it might fail validation if we pass a Seller ID from "sellers" collection
-        // IF the Product schema has `ref: 'User'`.
-        // We need to check ProductModel.
+        console.log('🛍️  Seeding products...');
+        const sampleProducts = [
+            {
+                title: "Premium Wireless Headphones",
+                description: "Noise canceling wireless headphones with 40h battery life.",
+                price: 12999,
+                category: "Electronics",
+                images: ["https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=800"],
+                stock: 50,
+                brand: "Sony",
+                seller: seller._id,
+                rating: 4.8,
+                numReviews: 120
+            },
+            {
+                title: "Leather Urban Backpack",
+                description: "Sustainable handcrafted leather backpack for daily commute.",
+                price: 4500,
+                category: "Fashion",
+                images: ["https://images.unsplash.com/photo-1548036328-c9fa89d128fa?auto=format&fit=crop&w=800"],
+                stock: 30,
+                brand: "Wildcraft",
+                seller: seller._id,
+                rating: 4.5,
+                numReviews: 85
+            },
+            {
+                title: "Mechanical Gaming Keyboard",
+                description: "RGB mechanical keyboard with blue switches.",
+                price: 3200,
+                category: "Electronics",
+                images: ["https://images.unsplash.com/photo-1511467687858-23d96c32e4ae?auto=format&fit=crop&w=800"],
+                stock: 100,
+                brand: "Logitech",
+                seller: seller._id,
+                rating: 4.7,
+                numReviews: 210
+            },
+            {
+                title: "Smart Ergonomic Chair",
+                description: "Breathable mesh back with adjustable lumbar support.",
+                price: 15400,
+                category: "Lifestyle",
+                images: ["https://images.unsplash.com/photo-1505843490538-5133c6c7d0e1?auto=format&fit=crop&w=800"],
+                stock: 15,
+                brand: "Herman Miller",
+                seller: seller._id,
+                rating: 4.9,
+                numReviews: 45
+            }
+        ];
 
-        // I will assume for now I can seed products.
-        // But I should comment out product seeding or fix ProductModel first.
+        await Product.insertMany(sampleProducts);
+        console.log('✅ Products seeded successfully');
 
-        // Let's check ProductModel location and content before writing this file fully.
+        console.log('✨ Database seeding complete!');
+        process.exit(0);
     } catch (error) {
         console.error('❌ Error seeding database:', error);
         process.exit(1);
     }
 }
-
 
 seedDatabase();
