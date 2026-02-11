@@ -10,6 +10,7 @@ import RocketLaunchIcon from '@mui/icons-material/RocketLaunch';
 import AutorenewIcon from '@mui/icons-material/Autorenew';
 import WorkIcon from '@mui/icons-material/Work';
 import PersonOutlineIcon from '@mui/icons-material/PersonOutline';
+import FavoriteBorderOutlinedIcon from '@mui/icons-material/FavoriteBorderOutlined';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { CartService } from '../../services/api';
 import { useSocket } from '../../hooks/useSocket';
@@ -185,13 +186,24 @@ const Navbar = () => {
                                     direction="row"
                                     spacing={1}
                                     alignItems="center"
+                                    sx={{ cursor: 'pointer', color: 'black' }}
+                                    onClick={() => navigate('/profile?view=wishlist')}
+                                >
+                                    <FavoriteBorderOutlinedIcon sx={{ fontSize: 24 }} />
+                                    <Typography sx={{ fontWeight: 600, fontSize: '0.9rem', ml: 1, display: { xs: 'none', lg: 'block' } }}>Wishlist</Typography>
+                                </Stack>
+
+                                <Stack
+                                    direction="row"
+                                    spacing={1}
+                                    alignItems="center"
                                     sx={{ cursor: 'pointer', color: 'black', position: 'relative' }}
-                                    onClick={() => navigate('/profile')}
+                                    onClick={() => navigate('/profile?view=cart')}
                                 >
                                     <Badge badgeContent={cartCount} sx={{ '& .MuiBadge-badge': { bgcolor: 'black', color: 'white', fontWeight: 800 } }}>
                                         <ShoppingCartOutlinedIcon sx={{ fontSize: 24 }} />
                                     </Badge>
-                                    <Typography sx={{ fontWeight: 600, fontSize: '0.9rem', ml: 1 }}>Cart</Typography>
+                                    <Typography sx={{ fontWeight: 600, fontSize: '0.9rem', ml: 1, display: { xs: 'none', lg: 'block' } }}>Cart</Typography>
                                 </Stack>
                             </Stack>
                         </Stack>
