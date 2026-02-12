@@ -63,7 +63,7 @@ export const FreelanceService = {
     update: (id: string, data: any) => api.put(`/posts/${id}`, data),
     updateStatus: (id: string, status: string) => api.put(`/posts/${id}/status`, { status }),
     delete: (id: string) => api.delete(`/posts/${id}`),
-    submitInterest: (postId: string) => api.post(`/posts/${postId}/interest`)
+    submitInterest: (postId: string, data?: any) => api.post(`/posts/${postId}/interest`, data)
 };
 
 export const OrderService = {
@@ -130,7 +130,8 @@ export const UploadService = {
 
 export const PaymentService = {
     getConfig: () => api.get('/payments/config'),
-    createPaymentIntent: (amount: number) => api.post('/payments/create-payment-intent', { amount })
+    createPaymentIntent: (amount: number) => api.post('/payments/create-payment-intent', { amount }),
+    createRazorpayOrder: (amount: number) => api.post('/payments/create-razorpay-order', { amount })
 };
 
 export const AuthService = {

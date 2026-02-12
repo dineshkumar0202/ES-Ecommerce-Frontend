@@ -138,7 +138,62 @@ const Checkout = () => {
                 <CircularProgress color="inherit" />
             </Box>
         );
+
+
     }
+
+    const loadRazorpay = () => {
+        return new Promise((resolve) => {
+            const script = document.createElement('script');
+            script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+            script.onload = () => resolve(true);
+            script.onerror = () => resolve(false);
+            document.body.appendChild(script);
+        });
+    };
+
+    const handleRazorpayPayment = async () => {
+        if (!shippingAddress.address || !shippingAddress.city || !shippingAddress.postalCode) {
+            toast.warning('Please fill in all shipping details first');
+            return;
+        }
+
+        const res = await loadRazorpay();
+        if (!res) {
+            toast.error('Razorpay SDK failed to load. Are you online?');
+            return;
+        }
+
+        try {
+            // Create Order on Backend
+            const { data: order } = await PaymentService.createRazorpayOrder(cart.totalPrice * 1.18);
+
+            const options = {
+                key: "rzp_test_YourKeyHere", // Replace with your actual Test Key ID
+                amount: order.amount,
+                currency: order.currency,
+                name: "AtoZ Marketplace",
+                description: "Transaction",
+                order_id: order.id,
+                handler: async function (response: any) {
+                    handlePlaceOrder(response.razorpay_payment_id);
+                },
+                prefill: {
+                    name: "User Name",
+                    email: "user@example.com",
+                    contact: "9999999999"
+                },
+                theme: {
+                    color: "#3399cc"
+                }
+            };
+            const rzp1 = new (window as any).Razorpay(options);
+            rzp1.open();
+        } catch (error) {
+            console.error("Razorpay Error:", error);
+            toast.error("Payment initiation failed");
+        }
+    };
 
     const appearance = { theme: 'stripe' as const };
     const options = { clientSecret, appearance };
@@ -184,11 +239,31 @@ const Checkout = () => {
                                             </Box>
                                         } sx={{ width: '100%', m: 0 }} />
                                     </Paper>
+
+                                    <Paper variant="outlined" sx={{ p: 2, mb: 2, borderRadius: 3, border: paymentMethod === 'Razorpay' ? '2px solid black' : '1px solid #e2e8f0' }}>
+                                        <FormControlLabel value="Razorpay" control={<Radio color="default" />} label={
+                                            <Box>
+                                                <Typography sx={{ fontWeight: 700 }}>Razorpay (UPI / Cards)</Typography>
+                                                <Typography variant="caption" sx={{ color: '#64748b' }}>Secure payment via Razorpay.</Typography>
+                                            </Box>
+                                        } sx={{ width: '100%', m: 0 }} />
+                                        {paymentMethod === 'Razorpay' && (
+                                            <Button
+                                                variant="contained"
+                                                fullWidth
+                                                onClick={handleRazorpayPayment}
+                                                sx={{ mt: 2, bgcolor: '#3399cc', color: 'white', fontWeight: 700 }}
+                                            >
+                                                Pay with Razorpay
+                                            </Button>
+                                        )}
+                                    </Paper>
+
                                     <Paper variant="outlined" sx={{ p: 2, borderRadius: 3, border: paymentMethod === 'Stripe' ? '2px solid black' : '1px solid #e2e8f0' }}>
                                         <FormControlLabel value="Stripe" control={<Radio color="default" />} label={
                                             <Box>
-                                                <Typography sx={{ fontWeight: 700 }}>Online Payment (Stripe)</Typography>
-                                                <Typography variant="caption" sx={{ color: '#64748b' }}>Secure payment via Credit/Debit Cards or UPI.</Typography>
+                                                <Typography sx={{ fontWeight: 700 }}>Stripe (International)</Typography>
+                                                <Typography variant="caption" sx={{ color: '#64748b' }}>Credit/Debit Cards.</Typography>
                                             </Box>
                                         } sx={{ width: '100%', m: 0 }} />
 

@@ -33,6 +33,10 @@ const Freelance = () => {
     const [posts, setPosts] = useState<Post[]>([]);
     const [isFreelancerRegistered, setIsFreelancerRegistered] = useState(false);
 
+    const [interestDialog, setInterestDialog] = useState(false);
+    const [selectedPostId, setSelectedPostId] = useState<string | null>(null);
+    const [interestForm, setInterestForm] = useState({ price: '', days: '' });
+
     const fetchPosts = async () => {
         try {
             const { data } = await FreelanceService.getAll();
@@ -48,7 +52,7 @@ const Freelance = () => {
                 views: p.views || "0 views",
                 time: p.time || new Date(p.createdAt).toLocaleDateString(),
                 date: new Date(p.createdAt).toLocaleDateString(),
-                nameDisplay: p.nameDisplay || p.username || "Anonymous",
+                nameDisplay: p.nameDisplay || p.user?.profile?.name || p.user?.username || "Anonymous",
                 category: p.category || "General",
                 unit: p.unit || "/hr",
                 contact: p.contact,
@@ -91,9 +95,21 @@ const Freelance = () => {
             return;
         }
 
+        setSelectedPostId(postId.toString());
+        setInterestDialog(true);
+    };
+
+    const submitInterestForm = async () => {
+        if (!selectedPostId) return;
+
         try {
-            await FreelanceService.submitInterest(postId.toString());
+            await FreelanceService.submitInterest(selectedPostId, {
+                proposedPrice: Number(interestForm.price),
+                estimatedDuration: interestForm.days
+            });
             alert("Success! Your interest has been recorded. The admin will review your request shortly.");
+            setInterestDialog(false);
+            setInterestForm({ price: '', days: '' });
         } catch (error: any) {
             alert(error.response?.data?.message || "Failed to submit interest");
         }
@@ -131,6 +147,50 @@ const Freelance = () => {
                     </Box>
                 </Box>
             </Container>
+
+            {/* Interest Dialog */}
+            {interestDialog && (
+                <Box sx={{ position: 'fixed', inset: 0, bgcolor: 'rgba(0,0,0,0.5)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <Box sx={{ bgcolor: 'white', p: 4, borderRadius: 2, width: 400, maxWidth: '90%' }}>
+                        <h2 style={{ marginTop: 0 }}>Submit Interest</h2>
+                        <Box sx={{ mb: 2 }}>
+                            <label style={{ display: 'block', marginBottom: 5, fontWeight: 'bold' }}>Proposed Price (₹)</label>
+                            <input
+                                type="number"
+                                style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
+                                value={interestForm.price}
+                                onChange={(e) => setInterestForm({ ...interestForm, price: e.target.value })}
+                                placeholder="Enter your price"
+                            />
+                        </Box>
+                        <Box sx={{ mb: 3 }}>
+                            <label style={{ display: 'block', marginBottom: 5, fontWeight: 'bold' }}>Estimated Duration (Days)</label>
+                            <input
+                                type="text"
+                                style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
+                                value={interestForm.days}
+                                onChange={(e) => setInterestForm({ ...interestForm, days: e.target.value })}
+                                placeholder="e.g. 5 days"
+                            />
+                        </Box>
+                        <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
+                            <button
+                                onClick={() => setInterestDialog(false)}
+                                style={{ padding: '8px 16px', borderRadius: '4px', border: '1px solid #ccc', background: 'white', cursor: 'pointer' }}
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={submitInterestForm}
+                                style={{ padding: '8px 16px', borderRadius: '4px', border: 'none', background: '#bef264', color: 'black', fontWeight: 'bold', cursor: 'pointer' }}
+                            >
+                                Submit
+                            </button>
+                        </Box>
+                    </Box>
+                </Box>
+            )}
+
             <Footer />
         </Box>
     );

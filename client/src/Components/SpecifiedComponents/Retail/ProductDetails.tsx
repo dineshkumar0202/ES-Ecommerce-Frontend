@@ -68,7 +68,7 @@ const ProductDetails = () => {
 
         try {
             await CartService.addToCart({ productId: product._id, quantity: 1, type: 'Retail' });
-            navigate('/checkout', { state: { preferredPaymentMethod: 'Stripe' } });
+            navigate('/checkout', { state: { preferredPaymentMethod: 'Razorpay' } });
         } catch (error: any) {
             console.error(error);
             toast.error('Failed to proceed to checkout');

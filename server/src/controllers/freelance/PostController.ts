@@ -25,9 +25,13 @@ class PostController {
                 return;
             }
 
+            const { proposedPrice, estimatedDuration } = req.body;
+
             const newInterest = new Interest({
                 post: postId,
                 user: userId,
+                proposedPrice: proposedPrice || 0,
+                estimatedDuration: estimatedDuration || '',
                 status: 'Pending'
             });
 

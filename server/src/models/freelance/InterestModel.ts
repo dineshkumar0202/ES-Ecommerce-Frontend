@@ -18,6 +18,14 @@ const interestSchema: Schema = new mongoose.Schema({
         ref: 'User',
         required: true
     },
+    proposedPrice: {
+        type: Number,
+        default: 0
+    },
+    estimatedDuration: {
+        type: String,
+        default: ''
+    },
     status: {
         type: String,
         enum: ['Pending', 'Approved', 'Rejected'],

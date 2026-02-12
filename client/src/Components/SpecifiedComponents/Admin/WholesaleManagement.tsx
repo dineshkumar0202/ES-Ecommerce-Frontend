@@ -136,40 +136,6 @@ const WholesaleManagement = () => {
         { name: 'Freelance', icon: <WorkOutlineIcon sx={{ fontSize: 20 }} />, path: '/admin/freelance' },
     ];
 
-    // Mock Pending Wholesale Sellers for UI demonstration (matching Image 2)
-    const pendingSellers = [
-        {
-            id: 1,
-            name: "Global Logistics Hub",
-            description: "Leading wholesale distributor of high-end electronics and industrial...",
-            readyToShip: "1,240 items",
-            reliability: "99.2%",
-            coverImg: "https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&q=80&w=800",
-            logo: "https://images.unsplash.com/photo-1560179707-f14e90ef3623?auto=format&fit=crop&q=80&w=100",
-            status: "PENDING"
-        },
-        {
-            id: 2,
-            name: "Elite Office Supply",
-            description: "Premium office furniture and workspace solutions for tech...",
-            readyToShip: "458 items",
-            reliability: "94.5%",
-            coverImg: "https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&q=80&w=800",
-            logo: "https://images.unsplash.com/photo-1572044162444-ad60f128bdea?auto=format&fit=crop&q=80&w=100",
-            status: "PENDING"
-        },
-        {
-            id: 3,
-            name: "Nexus Hardware Ltd.",
-            description: "Specialized in heavy-duty computing hardware and server...",
-            readyToShip: "2,810 items",
-            reliability: "98.9%",
-            coverImg: "https://images.unsplash.com/photo-1558494949-ef010cbdcc48?auto=format&fit=crop&q=80&w=800",
-            logo: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&q=80&w=100",
-            status: "PENDING"
-        }
-    ];
-
     return (
         <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: 'white' }}>
             {/* Sidebar */}
@@ -285,43 +251,42 @@ const WholesaleManagement = () => {
                         <Stack direction="row" alignItems="center" spacing={1.5}>
                             <Typography variant="h6" sx={{ fontWeight: 800, color: '#1e293b' }}>New Product Posts</Typography>
                             <Box sx={{ bgcolor: '#e2e8f0', px: 1.5, py: 0.5, borderRadius: 10 }}>
-                                <Typography sx={{ fontSize: '0.75rem', fontWeight: 800, color: '#64748b' }}>12 Pending</Typography>
+                                <Typography sx={{ fontSize: '0.75rem', fontWeight: 800, color: '#64748b' }}>{products.length} Items</Typography>
                             </Box>
                         </Stack>
-                        <Typography variant="subtitle2" sx={{ color: '#94a3b8', fontWeight: 700, cursor: 'pointer' }}>View all</Typography>
                     </Stack>
 
                     <Grid container spacing={4}>
-                        {(products.length > 0 ? products.slice(0, 2) : [{}, {}]).map((product, idx) => (
-                            <Grid key={(product as any)._id || idx} size={{ xs: 12, md: 6 }}>
+                        {products.map((product) => (
+                            <Grid key={product._id} size={{ xs: 12, md: 6 }}>
                                 <Paper elevation={0} sx={{ p: 2.5, borderRadius: 5, bgcolor: 'white', border: '1px solid #f1f5f9' }}>
                                     <Stack direction="row" spacing={3}>
                                         <Box sx={{ width: 160, height: 160, borderRadius: 4, overflow: 'hidden', flexShrink: 0, bgcolor: '#f8fafc' }}>
                                             <Box
                                                 component="img"
-                                                src={(product as any).images?.[0] || (idx === 0 ? 'https://images.unsplash.com/photo-1546435770-a3e426ff472b?auto=format&fit=crop&q=80&w=400' : 'https://images.unsplash.com/photo-1544450173-8c879791368a?auto=format&fit=crop&q=80&w=400')}
+                                                src={product.images?.[0]}
                                                 sx={{ width: '100%', height: '100%', objectFit: 'cover' }}
                                             />
                                         </Box>
                                         <Box sx={{ flexGrow: 1, pt: 1 }}>
                                             <Stack direction="row" justifyContent="space-between" alignItems="flex-start">
                                                 <Box>
-                                                    <Typography variant="h6" sx={{ fontWeight: 900, color: '#1e293b', lineHeight: 1.2, mb: 0.5 }}>{(product as any).title || (idx === 0 ? 'Premium Wireless Headphones' : 'Office Ergonomic Chair V2')}</Typography>
-                                                    <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 700 }}>Model: {(product as any).sku || (idx === 0 ? 'WH-1000XM4-Bulk' : 'OC-77-BLK')}</Typography>
+                                                    <Typography variant="h6" sx={{ fontWeight: 900, color: '#1e293b', lineHeight: 1.2, mb: 0.5 }}>{product.title}</Typography>
+                                                    <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 700 }}>SKU: {product.sku}</Typography>
                                                 </Box>
                                                 <Box sx={{ bgcolor: '#CFE8EC', px: 1.2, py: 0.5, borderRadius: 1.5 }}>
-                                                    <Typography sx={{ fontSize: '0.65rem', fontWeight: 900, color: '#1e293b' }}>REVIEW</Typography>
+                                                    <Typography sx={{ fontSize: '0.65rem', fontWeight: 900, color: '#1e293b' }}>{product.category}</Typography>
                                                 </Box>
                                             </Stack>
 
                                             <Stack direction="row" spacing={5} sx={{ mt: 4 }}>
                                                 <Box>
                                                     <Typography variant="caption" sx={{ color: '#cbd5e1', fontWeight: 800, display: 'block', mb: 0.5, letterSpacing: 1 }}>BULK PRICING</Typography>
-                                                    <Typography variant="h5" sx={{ fontWeight: 900, color: '#1e293b' }}>${(product as any).pricePerUnit || (idx === 0 ? '85.50' : '112.50')}<Typography component="span" variant="caption" sx={{ color: '#94a3b8', ml: 0.5 }}>/unit</Typography></Typography>
+                                                    <Typography variant="h5" sx={{ fontWeight: 900, color: '#1e293b' }}>₹{product.pricePerUnit}<Typography component="span" variant="caption" sx={{ color: '#94a3b8', ml: 0.5 }}>/unit</Typography></Typography>
                                                 </Box>
                                                 <Box>
                                                     <Typography variant="caption" sx={{ color: '#cbd5e1', fontWeight: 800, display: 'block', mb: 0.5, letterSpacing: 1 }}>MIN. ORDER</Typography>
-                                                    <Typography variant="h5" sx={{ fontWeight: 900, color: '#1e293b' }}>{(product as any).minOrderQuantity || (idx === 0 ? '50' : '20')} <Typography component="span" variant="caption" sx={{ color: '#94a3b8' }}>units</Typography></Typography>
+                                                    <Typography variant="h5" sx={{ fontWeight: 900, color: '#1e293b' }}>{product.minOrderQuantity} <Typography component="span" variant="caption" sx={{ color: '#94a3b8' }}>units</Typography></Typography>
                                                 </Box>
                                             </Stack>
                                         </Box>
@@ -330,87 +295,12 @@ const WholesaleManagement = () => {
                             </Grid>
                         ))}
                     </Grid>
+                    {products.length === 0 && !isLoading && (
+                        <Typography variant="body1" sx={{ color: '#94a3b8', textAlign: 'center', py: 5 }}>No wholesale products found.</Typography>
+                    )}
                 </Box>
 
-                {/* Section 2: Seller Verification (Matching Image 2) */}
-                <Box>
-                    <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 3 }}>
-                        <Typography variant="h6" sx={{ fontWeight: 800, color: '#1e293b' }}>Seller Verification Requests</Typography>
-                        <Typography variant="subtitle2" sx={{ color: '#94a3b8', fontWeight: 700, cursor: 'pointer' }}>Manage All</Typography>
-                    </Stack>
-
-                    <Grid container spacing={4}>
-                        {pendingSellers.map((seller) => (
-                            <Grid key={seller.id} size={{ xs: 12, sm: 6, md: 4 }}>
-                                <Paper elevation={0} sx={{
-                                    borderRadius: 5,
-                                    overflow: 'hidden',
-                                    bgcolor: 'white',
-                                    border: '1px solid #f1f5f9',
-                                    transition: 'all 0.3s ease',
-                                    height: '100%',
-                                    '&:hover': { transform: 'translateY(-8px)', boxShadow: '0 20px 40px rgba(0,0,0,0.04)' }
-                                }}>
-                                    <Box sx={{ position: 'relative', height: 180 }}>
-                                        <Box
-                                            component="img"
-                                            src={seller.coverImg}
-                                            sx={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                                        />
-                                        <Box sx={{ position: 'absolute', top: 15, right: 15, bgcolor: 'rgba(0,0,0,0.2)', backdropFilter: 'blur(8px)', px: 1.5, py: 0.5, borderRadius: 2, border: '1px solid rgba(255,255,255,0.2)' }}>
-                                            <Typography sx={{ fontSize: '0.65rem', fontWeight: 900, color: 'white', letterSpacing: 0.5 }}>PENDING</Typography>
-                                        </Box>
-                                        <Paper elevation={4} sx={{ position: 'absolute', bottom: -24, left: 24, width: 64, height: 64, borderRadius: 3, p: 1, bgcolor: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                            <Box
-                                                component="img"
-                                                src={seller.logo}
-                                                sx={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 2 }}
-                                            />
-                                        </Paper>
-                                    </Box>
-
-                                    <Box sx={{ p: 4, pt: 6 }}>
-                                        <Typography variant="h6" sx={{ fontWeight: 900, color: '#1e293b', mb: 1, fontSize: '1.15rem' }}>{seller.name}</Typography>
-                                        <Typography variant="body2" sx={{ color: '#64748b', mb: 3.5, height: 40, overflow: 'hidden', lineHeight: 1.5 }}>{seller.description}</Typography>
-
-                                        <Stack direction="row" spacing={4} sx={{ mb: 4, pt: 2, borderTop: '1px solid #f1f5f9' }}>
-                                            <Box>
-                                                <Typography variant="caption" sx={{ color: '#cbd5e1', fontWeight: 800, display: 'block', mb: 0.5, textTransform: 'uppercase', fontSize: '0.6rem', letterSpacing: 0.5 }}>READY TO SHIP</Typography>
-                                                <Typography variant="subtitle2" sx={{ fontWeight: 900, color: '#1e293b' }}>{seller.readyToShip}</Typography>
-                                            </Box>
-                                            <Box>
-                                                <Typography variant="caption" sx={{ color: '#cbd5e1', fontWeight: 800, display: 'block', mb: 0.5, textTransform: 'uppercase', fontSize: '0.6rem', letterSpacing: 0.5 }}>RELIABILITY</Typography>
-                                                <Typography variant="subtitle2" sx={{ fontWeight: 900, color: '#1e293b' }}>{seller.reliability}</Typography>
-                                            </Box>
-                                        </Stack>
-
-                                        <Stack direction="row" spacing={2}>
-                                            <Button
-                                                variant="contained"
-                                                fullWidth
-                                                sx={{
-                                                    bgcolor: '#CFE8EC',
-                                                    color: '#1e293b',
-                                                    borderRadius: 3.5,
-                                                    fontWeight: 900,
-                                                    boxShadow: 'none',
-                                                    textTransform: 'none',
-                                                    py: 1.5,
-                                                    '&:hover': { bgcolor: '#b8dbe2', boxShadow: 'none' }
-                                                }}
-                                            >
-                                                Approve Seller
-                                            </Button>
-                                            <IconButton sx={{ bgcolor: '#0f172a', color: 'white', borderRadius: 3.5, width: 48, height: 48, '&:hover': { bgcolor: '#1e293b' } }}>
-                                                <VisibilityIcon sx={{ fontSize: 20 }} />
-                                            </IconButton>
-                                        </Stack>
-                                    </Box>
-                                </Paper>
-                            </Grid>
-                        ))}
-                    </Grid>
-                </Box>
+                {/* Section 2: Seller Verification - REMOVED DUMMY DATA */}
 
                 {/* Loading Indicator */}
                 {isLoading && products.length === 0 && (

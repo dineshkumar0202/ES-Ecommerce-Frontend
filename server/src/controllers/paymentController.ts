@@ -70,6 +70,31 @@ class PaymentController {
             isMock
         });
     }
+
+
+    async createRazorpayOrder(req: Request, res: Response) {
+        const Razorpay = require('razorpay');
+        const { amount } = req.body;
+
+        const razorpay = new Razorpay({
+            key_id: process.env.RAZORPAY_KEY_ID || 'rzp_test_YourKeyHere', // Default test key
+            key_secret: process.env.RAZORPAY_KEY_SECRET || 'YourSecretHere',
+        });
+
+        const options = {
+            amount: Math.round(amount * 100), // amount in the smallest currency unit (paise)
+            currency: "INR",
+            receipt: `receipt_${Date.now()}`
+        };
+
+        try {
+            const order = await razorpay.orders.create(options);
+            res.json(order);
+        } catch (error: any) {
+            console.error("Razorpay Error:", error);
+            res.status(500).json({ message: error.message });
+        }
+    }
 }
 
 export default new PaymentController();

@@ -9,6 +9,7 @@ import QProduct from '../../models/q-commerce/QProductModel';
 import ResaleProduct from '../../models/Resale/ResaleProductModel';
 import Post from '../../models/freelance/PostModel';
 import Interest from '../../models/freelance/InterestModel';
+import EmailService from '../../services/EmailService';
 
 class AdminController {
     // ... existing methods ...
@@ -27,13 +28,52 @@ class AdminController {
     async updateInterestStatus(req: Request, res: Response) {
         try {
             const { status } = req.body;
-            const interest = await Interest.findById(req.params.id);
+            // Populate post to get title
+            const interest: any = await Interest.findById(req.params.id).populate('post');
+
             if (!interest) {
                 res.status(404).json({ message: "Interest request not found" });
                 return;
             }
+
             interest.status = status;
             await interest.save();
+
+            // Find user email (handle different user types manually if population fails or ref is mixed)
+            let userEmail = '';
+            let userName = '';
+
+            // Try direct population if possible, but manual lookup is safer with mixed models
+            if (interest.user) {
+                const userId = interest.user._id || interest.user;
+
+                // Check Seller
+                const seller = await Seller.findById(userId);
+                if (seller) {
+                    userEmail = seller.email || '';
+                    userName = seller.username;
+                } else {
+                    // Check Buyer
+                    const buyer = await Buyer.findById(userId);
+                    if (buyer) {
+                        userEmail = buyer.email || '';
+                        userName = buyer.username;
+                    } else {
+                        // Check User (Legacy)
+                        // const user = await User.findById(userId);
+                        // if (user) ...
+                    }
+                }
+            }
+
+            if (userEmail) {
+                await EmailService.sendInterestStatusUpdate(
+                    userEmail,
+                    interest.post?.title || 'Freelance Project',
+                    status
+                );
+            }
+
             res.json(interest);
         } catch (error: any) {
             res.status(500).json({ message: error.message });
@@ -291,6 +331,12 @@ class AdminController {
                     seller.freelancer.rejectionReason = rejectionReason;
                 }
                 const updatedSeller = await seller.save();
+
+                // Email Notification
+                if (seller.email) {
+                    await EmailService.sendFreelancerStatusUpdate(seller.email, status, rejectionReason);
+                }
+
                 res.json(updatedSeller);
             } else {
                 res.status(404).json({ message: "Freelancer not found" });

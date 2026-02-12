@@ -268,11 +268,8 @@ class AuthService {
 
         const isMatch = await admin.matchPassword(password);
         if (!isMatch) {
-            // console.log("Admin password mismatch for email:", email);
             throw new Error('Password incorrect');
         }
-
-        // console.log("Admin login successful:", admin.username);
 
         return {
             _id: admin._id,

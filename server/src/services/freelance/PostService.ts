@@ -4,7 +4,7 @@ import axios from 'axios';
 
 class PostService {
     async getAllPosts() {
-        return await Post.find().sort({ createdAt: -1 });
+        return await Post.find().populate('user', 'username email profile.name').sort({ createdAt: -1 });
     }
 
     async createPost(postData: any) { // Changed to any or Partial<IPost> for flexibility

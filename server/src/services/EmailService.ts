@@ -187,6 +187,92 @@ class EmailService {
         });
     }
 
+    // Freelance Interest Status Update Email
+    async sendInterestStatusUpdate(userEmail: string, postTitle: string, status: string, notes?: string) {
+        const statusColors: any = {
+            'Approved': '#bef264',
+            'Rejected': '#ef4444',
+            'Pending': '#cbd5e1'
+        };
+
+        const html = `
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <style>
+                    body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+                    .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+                    .header { background: #000; color: white; padding: 30px; text-align: center; }
+                    .content { padding: 30px; background: #f8fafc; }
+                    .status-badge { display: inline-block; padding: 10px 20px; background: ${statusColors[status] || '#e2e8f0'}; color: ${status === 'Rejected' ? 'white' : 'black'}; border-radius: 20px; font-weight: bold; }
+                </style>
+            </head>
+            <body>
+                <div class="container">
+                    <div class="header">
+                        <h1>Interest Request Update</h1>
+                    </div>
+                    <div class="content">
+                        <p>Your interest in the post <strong>"${postTitle}"</strong> has been updated.</p>
+                        <p><span class="status-badge">${status}</span></p>
+                        ${notes ? `<p><strong>Notes:</strong> ${notes}</p>` : ''}
+                        <p>Check your dashboard for more details.</p>
+                    </div>
+                </div>
+            </body>
+            </html>
+        `;
+
+        return this.sendEmail({
+            to: userEmail,
+            subject: `Interest Request Update - ${status}`,
+            html,
+        });
+    }
+
+    // Freelancer Status Update Email
+    async sendFreelancerStatusUpdate(userEmail: string, status: string, rejectionReason?: string) {
+        const statusColors: any = {
+            'Approved': '#bef264',
+            'Rejected': '#ef4444',
+            'Pending': '#cbd5e1'
+        };
+
+        const html = `
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <style>
+                    body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+                    .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+                    .header { background: #000; color: white; padding: 30px; text-align: center; }
+                    .content { padding: 30px; background: #f8fafc; }
+                    .status-badge { display: inline-block; padding: 10px 20px; background: ${statusColors[status] || '#e2e8f0'}; color: ${status === 'Rejected' ? 'white' : 'black'}; border-radius: 20px; font-weight: bold; }
+                </style>
+            </head>
+            <body>
+                <div class="container">
+                    <div class="header">
+                        <h1>Freelancer Profile Update</h1>
+                    </div>
+                    <div class="content">
+                        <p>Your freelancer profile status has been updated.</p>
+                        <p><span class="status-badge">${status}</span></p>
+                        ${rejectionReason ? `<p><strong>Reason:</strong> ${rejectionReason}</p>` : ''}
+                        <p>Check your dashboard for more details.</p>
+                    </div>
+                </div>
+            </body>
+            </html>
+        `;
+
+        return this.sendEmail({
+            to: userEmail,
+            subject: `Freelancer Profile Status - ${status}`,
+            html,
+        });
+    }
+
     // Low Stock Alert Email (for admins)
     async sendLowStockAlert(adminEmail: string, products: any[]) {
         const html = `

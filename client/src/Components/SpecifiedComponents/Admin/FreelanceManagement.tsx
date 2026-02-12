@@ -226,8 +226,8 @@ const FreelanceManagement = () => {
 
                                             <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mt: 'auto', pt: 2, borderTop: '1px solid #f1f5f9' }}>
                                                 <Stack direction="row" alignItems="center" spacing={1}>
-                                                    <Avatar sx={{ width: 24, height: 24, fontSize: '0.75rem' }}>{post.username?.[0] || 'U'}</Avatar>
-                                                    <Typography variant="caption" sx={{ fontWeight: 600 }}>{post.username || 'Anonymous'}</Typography>
+                                                    <Avatar sx={{ width: 24, height: 24, fontSize: '0.75rem' }}>{(post.nameDisplay?.[0] || post.user?.profile?.name?.[0] || post.user?.username?.[0] || 'U').toUpperCase()}</Avatar>
+                                                    <Typography variant="caption" sx={{ fontWeight: 600 }}>{post.nameDisplay || post.user?.profile?.name || post.user?.username || 'Anonymous'}</Typography>
                                                 </Stack>
                                                 <Stack direction="row" spacing={1} alignItems="center">
                                                     <Typography variant="subtitle2" sx={{ color: '#84cc16', fontWeight: 800 }}>₹{post.price}</Typography>
@@ -423,6 +423,18 @@ const FreelanceManagement = () => {
                                                     <Typography variant="caption" sx={{ color: '#94a3b8' }}>{interest.user?.email}</Typography>
                                                 </Box>
                                             </Stack>
+
+                                            <Box sx={{ mb: 2, p: 2, bgcolor: '#fffbed', borderRadius: 2, border: '1px solid #fef3c7' }}>
+                                                <Typography variant="caption" sx={{ fontWeight: 800, color: '#b45309', display: 'block', mb: 1, textTransform: 'uppercase', letterSpacing: 0.5 }}>Proposal Details</Typography>
+                                                <Stack direction="row" justifyContent="space-between" sx={{ mb: 0.5 }}>
+                                                    <Typography variant="body2" sx={{ color: '#78350f', fontWeight: 600 }}>Proposed Price:</Typography>
+                                                    <Typography variant="body2" sx={{ fontWeight: 800, color: '#000' }}>₹{interest.proposedPrice || 0}</Typography>
+                                                </Stack>
+                                                <Stack direction="row" justifyContent="space-between">
+                                                    <Typography variant="body2" sx={{ color: '#78350f', fontWeight: 600 }}>Est. Duration:</Typography>
+                                                    <Typography variant="body2" sx={{ fontWeight: 800, color: '#000' }}>{interest.estimatedDuration || 'N/A'}</Typography>
+                                                </Stack>
+                                            </Box>
 
                                             {interest.status === 'Pending' && (
                                                 <Stack direction="row" spacing={2} sx={{ mt: 'auto' }}>

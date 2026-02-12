@@ -24,7 +24,8 @@ const FreelancerSidebarBuyer = ({ onPost }: FreelancerSidebarBuyerProps) => {
         email: '',
         requirements: '',
         description: '',
-        location: ''
+        location: '',
+        price: '',
     });
 
     const handleGenerate = async () => {
@@ -87,7 +88,7 @@ const FreelancerSidebarBuyer = ({ onPost }: FreelancerSidebarBuyerProps) => {
             contact: formData.contact,
             email: formData.email,
             location: formData.location,
-            price: Math.floor(Math.random() * 200) + 50,
+            price: Number(formData.price) || 0,
             currency: "₹",
             unit: "/hr",
             status: "PENDING",
@@ -103,7 +104,7 @@ const FreelancerSidebarBuyer = ({ onPost }: FreelancerSidebarBuyerProps) => {
         setOpenPostDialog(false);
         setPrompt('');
         setGeneratedImage(null);
-        setFormData({ name: '', productName: '', contact: '', email: '', requirements: '', description: '', location: '' });
+        setFormData({ name: '', productName: '', contact: '', email: '', requirements: '', description: '', location: '', price: '' });
     };
 
     return (
@@ -352,6 +353,33 @@ const FreelancerSidebarBuyer = ({ onPost }: FreelancerSidebarBuyerProps) => {
                             fullWidth
                             value={formData.location}
                             onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                            variant="filled"
+                            InputProps={{ disableUnderline: true, sx: { borderRadius: 3, bgcolor: '#f8fafc' } }}
+                        />
+                        <TextField
+                            label="Email Address"
+                            fullWidth
+                            value={formData.email}
+                            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                            variant="filled"
+                            InputProps={{ disableUnderline: true, sx: { borderRadius: 3, bgcolor: '#f8fafc' } }}
+                        />
+                        <TextField
+                            label="Specific Requirements"
+                            fullWidth
+                            multiline
+                            rows={2}
+                            value={formData.requirements}
+                            onChange={(e) => setFormData({ ...formData, requirements: e.target.value })}
+                            variant="filled"
+                            InputProps={{ disableUnderline: true, sx: { borderRadius: 3, bgcolor: '#f8fafc' } }}
+                        />
+                        <TextField
+                            label="Budget (₹)"
+                            fullWidth
+                            type="number"
+                            value={formData.price}
+                            onChange={(e) => setFormData({ ...formData, price: e.target.value })}
                             variant="filled"
                             InputProps={{ disableUnderline: true, sx: { borderRadius: 3, bgcolor: '#f8fafc' } }}
                         />

@@ -30,6 +30,8 @@ import WholesaleProductDetails from './Components/SpecifiedComponents/WholeSale/
 import ResaleProductDetails from './Components/SpecifiedComponents/Second-hand/Components/ResaleProductDetails';
 import AuthSuccess from './Components/Pages/AuthSuccess';
 
+import ProtectedAdminRoute from './Components/SpecifiedComponents/Admin/ProtectedAdminRoute';
+
 function App() {
     return (
         <Router>
@@ -72,13 +74,41 @@ function App() {
                 <Route path="/one-day-offer" element={<OneDayOffer />} />
 
                 {/* Admin Section */}
-                <Route path="/admin" element={<AdminDashboard />} />
-                <Route path="/admin/dashboard" element={<AdminDashboard />} />
-                <Route path="/admin/retail" element={<RetailManagement />} />
-                <Route path="/admin/wholesale" element={<WholesaleManagement />} />
-                <Route path="/admin/quick" element={<QCommerceManagement />} />
-                <Route path="/admin/resale" element={<ResaleManagement />} />
-                <Route path="/admin/freelance" element={<FreelanceManagement />} />
+                <Route path="/admin" element={
+                    <ProtectedAdminRoute>
+                        <AdminDashboard />
+                    </ProtectedAdminRoute>
+                } />
+                <Route path="/admin/dashboard" element={
+                    <ProtectedAdminRoute>
+                        <AdminDashboard />
+                    </ProtectedAdminRoute>
+                } />
+                <Route path="/admin/retail" element={
+                    <ProtectedAdminRoute>
+                        <RetailManagement />
+                    </ProtectedAdminRoute>
+                } />
+                <Route path="/admin/wholesale" element={
+                    <ProtectedAdminRoute>
+                        <WholesaleManagement />
+                    </ProtectedAdminRoute>
+                } />
+                <Route path="/admin/quick" element={
+                    <ProtectedAdminRoute>
+                        <QCommerceManagement />
+                    </ProtectedAdminRoute>
+                } />
+                <Route path="/admin/resale" element={
+                    <ProtectedAdminRoute>
+                        <ResaleManagement />
+                    </ProtectedAdminRoute>
+                } />
+                <Route path="/admin/freelance" element={
+                    <ProtectedAdminRoute>
+                        <FreelanceManagement />
+                    </ProtectedAdminRoute>
+                } />
 
                 {/* Catch-all Routing */}
                 <Route path="*" element={<Navigate to="/retail" replace />} />
