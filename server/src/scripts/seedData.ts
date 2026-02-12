@@ -26,13 +26,13 @@ async function seedDatabase() {
 
         // Create users
         console.log('👥 Creating users...');
-        const hashedPassword = await bcrypt.hash('password123', 10);
+        const password = 'password123';
 
         // Admin
         await Admin.create({
             username: 'Admin User',
             email: 'admin@atoz.com',
-            password: hashedPassword,
+            password: password,
             role: 'Admin',
             profile: {
                 name: 'Super Admin',
@@ -45,7 +45,7 @@ async function seedDatabase() {
             username: 'TechGear Official',
             email: 'seller@techgear.in',
             mobile: '9876543210',
-            password: hashedPassword,
+            password: password,
             uniqueId: 'SLR1001',
             role: 'Seller',
             profile: {
@@ -60,7 +60,7 @@ async function seedDatabase() {
             username: 'Dinesh Kumar',
             email: 'buyer@example.com',
             mobile: '9123456789',
-            password: hashedPassword,
+            password: password,
             role: 'Buyer',
             profile: {
                 name: 'Dinesh Kumar M',

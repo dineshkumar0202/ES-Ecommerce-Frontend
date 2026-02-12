@@ -70,23 +70,27 @@ const buyerSchema: Schema = new mongoose.Schema({
 });
 
 buyerSchema.methods.matchPassword = async function (enteredPassword: string): Promise<boolean> {
-    if (!this.password) return false;
-    return await bcrypt.compare(enteredPassword, this.password);
+    if (!enteredPassword || !this.password) return false;
+    try {
+        return await bcrypt.compare(enteredPassword, this.password);
+    } catch (error) {
+        console.error('Password comparison error:', error);
+        return false;
+    }
 };
 
 buyerSchema.pre<IBuyer>('save', async function (next) {
-    if (!this.isModified('password')) {
+    if (!this.isModified('password') || !this.password) {
         return next();
     }
 
-    // Google OAuth buyers may not have a password set
-    if (!this.password) {
-        return next();
+    try {
+        const salt = await bcrypt.genSalt(10);
+        this.password = await bcrypt.hash(this.password, salt);
+        next();
+    } catch (error) {
+        next(error as Error);
     }
-
-    const salt = await bcrypt.genSalt(10);
-    this.password = await bcrypt.hash(this.password as string, salt);
-    next();
 });
 
 const Buyer = mongoose.model<IBuyer, BuyerModelInterface>('Buyer', buyerSchema);

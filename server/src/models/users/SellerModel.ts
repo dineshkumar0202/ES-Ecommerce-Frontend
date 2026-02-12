@@ -120,17 +120,27 @@ const sellerSchema: Schema = new mongoose.Schema({
 });
 
 sellerSchema.methods.matchPassword = async function (enteredPassword: string): Promise<boolean> {
-    return await bcrypt.compare(enteredPassword, this.password);
+    if (!enteredPassword || !this.password) return false;
+    try {
+        return await bcrypt.compare(enteredPassword, this.password);
+    } catch (error) {
+        console.error('Password comparison error:', error);
+        return false;
+    }
 };
 
 sellerSchema.pre<ISeller>('save', async function (next) {
-    if (!this.isModified('password')) {
+    if (!this.isModified('password') || !this.password) {
         return next();
     }
 
-    const salt = await bcrypt.genSalt(10);
-    this.password = await bcrypt.hash(this.password as string, salt);
-    next();
+    try {
+        const salt = await bcrypt.genSalt(10);
+        this.password = await bcrypt.hash(this.password, salt);
+        next();
+    } catch (error) {
+        next(error as Error);
+    }
 });
 
 const Seller = mongoose.model<ISeller, SellerModelInterface>('Seller', sellerSchema);
