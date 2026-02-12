@@ -84,7 +84,7 @@ const ProductDetails = () => {
                 setIsInWishlist(false);
                 toast.info("Removed from wishlist");
             } else {
-                await WishlistService.addToWishlist({ productId: product._id });
+                await WishlistService.addToWishlist({ productId: product._id, type: 'retail' });
                 setIsInWishlist(true);
                 toast.success("Added to wishlist");
             }

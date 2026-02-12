@@ -43,6 +43,7 @@ import ElectricBoltIcon from '@mui/icons-material/ElectricBolt';
 import ThemeIcon from '@mui/icons-material/Brightness4';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import DeleteIcon from '@mui/icons-material/Delete';
+import EditIcon from '@mui/icons-material/Edit';
 import { useNavigate } from 'react-router-dom';
 import { QProductService, OrderService, UploadService } from '../../../services/api';
 import { toast } from 'react-toastify';
@@ -56,6 +57,7 @@ const QCommerceManagement = () => {
 
     // Create Product Modal State (Retail-like)
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [editingProduct, setEditingProduct] = useState<any>(null);
     const [newProduct, setNewProduct] = useState({
         title: '',
         brand: '',
@@ -135,6 +137,101 @@ const QCommerceManagement = () => {
         });
     };
 
+    const handleDeleteProduct = async (id: string) => {
+        if (window.confirm("Delete this Q-Commerce product?")) {
+            try {
+                await QProductService.delete(id);
+                setProducts(products.filter((p: any) => p._id !== id));
+                toast.success("Product deleted successfully");
+            } catch (error) {
+                toast.error("Failed to delete product");
+            }
+        }
+    };
+
+    const handleEditProduct = (product: any) => {
+        setEditingProduct(product);
+        setNewProduct({
+            title: product.title || '',
+            brand: product.brand || '',
+            category: product.category || '',
+            price: product.price?.toString() || '',
+            mrp: product.mrp?.toString() || '',
+            discount: product.discount?.toString() || '',
+            stock: product.stock?.toString() || '',
+            unit: product.unit || '',
+            description: product.description || '',
+            images: Array.isArray(product.images) ? product.images.join(', ') : (product.image || '')
+        });
+        setIsModalOpen(true);
+    };
+
+    const handleCloseModal = () => {
+        setIsModalOpen(false);
+        setEditingProduct(null);
+        setNewProduct({
+            title: '', brand: '', category: '', price: '', mrp: '', discount: '', stock: '', unit: '', description: '', images: ''
+        });
+    };
+
+    const handleUpdateProduct = async () => {
+        if (!editingProduct) return;
+
+        // Validate required fields
+        if (!newProduct.title.trim()) {
+            toast.error('Product title is required');
+            return;
+        }
+        if (!newProduct.brand.trim()) {
+            toast.error('Brand is required');
+            return;
+        }
+        if (!newProduct.category.trim()) {
+            toast.error('Category is required');
+            return;
+        }
+        if (!newProduct.price || Number(newProduct.price) <= 0) {
+            toast.error('Valid price is required');
+            return;
+        }
+        if (!newProduct.mrp || Number(newProduct.mrp) <= 0) {
+            toast.error('Valid MRP is required');
+            return;
+        }
+
+        setIsCreating(true);
+        try {
+            const images = newProduct.images
+                .split(',')
+                .map((img: string) => img.trim())
+                .filter((img: string) => img !== '');
+
+            const payload = {
+                title: newProduct.title.trim(),
+                brand: newProduct.brand.trim(),
+                category: newProduct.category.trim(),
+                price: Number(newProduct.price),
+                mrp: Number(newProduct.mrp),
+                discount: newProduct.discount === '' ? 0 : Number(newProduct.discount),
+                stock: newProduct.stock === '' ? 0 : Number(newProduct.stock),
+                unit: newProduct.unit.trim() || undefined,
+                description: newProduct.description.trim() || undefined,
+                image: images[0] || 'https://via.placeholder.com/600',
+                images
+            };
+
+            const { data } = await QProductService.update(editingProduct._id, payload);
+            setProducts(products.map((p: any) => p._id === editingProduct._id ? data : p));
+            handleCloseModal();
+            toast.success('Product updated successfully!');
+        } catch (error: any) {
+            console.error('Failed to update product:', error);
+            toast.error(`Failed to update: ${error.response?.data?.message || error.message}`);
+        } finally {
+            setIsCreating(false);
+        }
+    };
+
     const handleCreateProduct = async () => {
         // Validate required fields
         if (!newProduct.title.trim()) {
@@ -179,23 +276,9 @@ const QCommerceManagement = () => {
                 images
             };
 
-            console.log('Creating Q-Commerce product with payload:', payload);
-
             const { data } = await QProductService.create(payload);
             setProducts([data, ...products]);
-            setIsModalOpen(false);
-            setNewProduct({
-                title: '',
-                brand: '',
-                category: '',
-                price: '',
-                mrp: '',
-                discount: '',
-                stock: '',
-                unit: '',
-                description: '',
-                images: ''
-            });
+            handleCloseModal();
             toast.success('Q-Commerce product created successfully!');
         } catch (error: any) {
             console.error('Failed to create Q-Commerce product:', error);
@@ -254,10 +337,7 @@ const QCommerceManagement = () => {
                 </List>
 
                 <Box sx={{ mt: 'auto', pt: 2 }}>
-                    <Stack direction="row" alignItems="center" spacing={2} sx={{ px: 2, mb: 3, cursor: 'pointer', color: '#64748b' }}>
-                        <ThemeIcon sx={{ fontSize: 20 }} />
-                        <Typography variant="body2" fontWeight={600}>Theme</Typography>
-                    </Stack>
+
                     <Stack onClick={() => { localStorage.removeItem('token'); localStorage.removeItem('userRole'); navigate('/admin/login'); }} direction="row" alignItems="center" spacing={2} sx={{ px: 2, cursor: 'pointer', color: '#ef4444' }}>
                         <ExitToAppIcon sx={{ fontSize: 20 }} />
                         <Typography variant="body2" fontWeight={600}>Leave</Typography>
@@ -274,32 +354,14 @@ const QCommerceManagement = () => {
                         <Typography variant="body2" sx={{ color: '#64748b', fontWeight: 500 }}>Real-time rapid delivery management</Typography>
                     </Box>
                     <Stack direction="row" spacing={2}>
-                        <TextField
-                            size="small"
-                            placeholder="Search dark store..."
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                            sx={{
-                                width: 280,
-                                '& .MuiOutlinedInput-root': {
-                                    bgcolor: 'white',
-                                    borderRadius: 3,
-                                    '& fieldset': { border: 'none' },
-                                    boxShadow: '0 2px 10px rgba(0,0,0,0.03)'
-                                }
-                            }}
-                            InputProps={{
-                                startAdornment: (
-                                    <InputAdornment position="start">
-                                        <SearchIcon sx={{ color: '#94a3b8', fontSize: 20 }} />
-                                    </InputAdornment>
-                                ),
-                            }}
-                        />
+
                         <Button
                             variant="contained"
                             startIcon={<AddIcon />}
-                            onClick={() => setIsModalOpen(true)}
+                            onClick={() => {
+                                handleCloseModal(); // Reset state for new product
+                                setIsModalOpen(true);
+                            }}
                             sx={{
                                 bgcolor: '#B4D5DC',
                                 color: 'black',
@@ -379,7 +441,17 @@ const QCommerceManagement = () => {
                                                     <LinearProgress variant="determinate" value={item.stock ? Math.min(100, item.stock) : 50} sx={{ height: 6, borderRadius: 3, bgcolor: '#f1f5f9', '& .MuiLinearProgress-bar': { bgcolor: '#22c55e', borderRadius: 3 } }} />
                                                 </Box>
                                                 <Box>
-                                                    <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 600 }}>Price: ₹{item.price}</Typography>
+                                                    <Stack direction="row" justifyContent="space-between" alignItems="center">
+                                                        <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 600 }}>Price: ₹{item.price}</Typography>
+                                                        <Stack direction="row" spacing={0.5}>
+                                                            <IconButton size="small" onClick={() => handleEditProduct(item)} sx={{ color: '#94a3b8', '&:hover': { color: '#1e293b', bgcolor: '#f1f5f9' } }}>
+                                                                <EditIcon fontSize="small" />
+                                                            </IconButton>
+                                                            <IconButton size="small" onClick={() => handleDeleteProduct(item._id)} sx={{ color: '#fee2e2', '&:hover': { color: '#ef4444', bgcolor: '#fef2f2' } }}>
+                                                                <DeleteIcon fontSize="small" />
+                                                            </IconButton>
+                                                        </Stack>
+                                                    </Stack>
                                                 </Box>
                                             </Stack>
                                         </Box>
@@ -442,12 +514,12 @@ const QCommerceManagement = () => {
                 {/* Create Q-Commerce Product Modal (Retail-like) */}
                 <Dialog
                     open={isModalOpen}
-                    onClose={() => setIsModalOpen(false)}
+                    onClose={handleCloseModal}
                     maxWidth="sm"
                     fullWidth
                     PaperProps={{ sx: { borderRadius: 6, p: 1 } }}
                 >
-                    <DialogTitle sx={{ fontWeight: 900, fontSize: '1.5rem', pb: 1 }}>Add Q-Commerce Product</DialogTitle>
+                    <DialogTitle sx={{ fontWeight: 900, fontSize: '1.5rem', pb: 1 }}>{editingProduct ? 'Edit Product' : 'Add Q-Commerce Product'}</DialogTitle>
                     <DialogContent>
                         <Typography variant="body2" sx={{ color: '#94a3b8', mb: 3, fontWeight: 500 }}>
                             Fill the details to add a product in Q‑Commerce.
@@ -597,25 +669,14 @@ const QCommerceManagement = () => {
                         </Stack>
                     </DialogContent>
                     <DialogActions sx={{ p: 4 }}>
-                        <Button onClick={() => setIsModalOpen(false)} sx={{ color: '#94a3b8', textTransform: 'none', fontWeight: 700, mr: 2 }}>
-                            Cancel
-                        </Button>
+                        <Button onClick={handleCloseModal} sx={{ color: '#94a3b8', textTransform: 'none', fontWeight: 700, mr: 2 }}>Cancel</Button>
                         <Button
                             variant="contained"
-                            onClick={handleCreateProduct}
                             disabled={isCreating}
-                            sx={{
-                                bgcolor: 'black',
-                                color: 'white',
-                                borderRadius: 3,
-                                textTransform: 'none',
-                                px: 5,
-                                py: 1.2,
-                                fontWeight: 900,
-                                '&:hover': { bgcolor: '#000' }
-                            }}
+                            onClick={editingProduct ? handleUpdateProduct : handleCreateProduct}
+                            sx={{ bgcolor: '#1e293b', color: 'white', borderRadius: 3, textTransform: 'none', px: 5, py: 1.2, fontWeight: 800, '&:hover': { bgcolor: '#000' } }}
                         >
-                            {isCreating ? 'Creating...' : 'Publish Product'}
+                            {isCreating ? <CircularProgress size={24} color="inherit" /> : (editingProduct ? 'Update Product' : 'Create Product')}
                         </Button>
                     </DialogActions>
                 </Dialog>

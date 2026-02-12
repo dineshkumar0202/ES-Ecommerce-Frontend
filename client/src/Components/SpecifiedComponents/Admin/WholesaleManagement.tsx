@@ -199,27 +199,7 @@ const WholesaleManagement = () => {
                         </Box>
 
                         <Stack direction="row" spacing={2} alignItems="center">
-                            <TextField
-                                size="small"
-                                placeholder="Search orders..."
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                                sx={{
-                                    width: 300,
-                                    '& .MuiOutlinedInput-root': {
-                                        bgcolor: 'white',
-                                        borderRadius: 3,
-                                        '& fieldset': { borderColor: '#e2e8f0' },
-                                    }
-                                }}
-                                InputProps={{
-                                    startAdornment: (
-                                        <InputAdornment position="start">
-                                            <SearchIcon sx={{ color: '#94a3b8', fontSize: 20 }} />
-                                        </InputAdornment>
-                                    ),
-                                }}
-                            />
+
                             <Button
                                 variant="contained"
                                 onClick={() => setIsModalOpen(true)}

@@ -70,18 +70,17 @@ const WholesaleProductDetails = () => {
     const handleToggleWishlist = async () => {
         try {
             if (isFavorite) {
+                // If the WishlistService supports deletion by ID, call it here.
+                // Assuming removeFromWishlist is available.
+                await WishlistService.removeFromWishlist(product._id);
                 setIsFavorite(false);
+                toast.success('Removed from wishlist');
             } else {
-                await WishlistService.addToWishlist({ productId: product._id });
+                await WishlistService.addToWishlist({ productId: product._id, type: 'wholesale' });
                 setIsFavorite(true);
                 toast.success('Added to wishlist!');
             }
         } catch (err: any) {
-            const status = err?.response?.status;
-            if (status === 404 || err?.response?.data?.message === 'Product not found') {
-                toast.info('Wishlist is for retail products. Use WhatsApp or call to save this wholesale item.');
-                return;
-            }
             console.error('Wishlist error:', err);
             toast.error('Please login to add to wishlist');
         }

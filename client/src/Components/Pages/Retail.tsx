@@ -1,4 +1,6 @@
+import { useRef, useEffect } from 'react';
 import { Box, Container } from '@mui/material';
+import { useSearchParams } from 'react-router-dom';
 import Navbar from '../WrapperComponents/Navbar';
 import Footer from '../WrapperComponents/Footer';
 
@@ -8,6 +10,19 @@ import RetailCategories from '../SpecifiedComponents/Retail/RetailCategories';
 import Products from '../SpecifiedComponents/Retail/Products';
 
 const Retail = () => {
+    const productsRef = useRef<HTMLDivElement>(null);
+    const [searchParams] = useSearchParams();
+
+    const scrollToProducts = () => {
+        productsRef.current?.scrollIntoView({ behavior: 'smooth' });
+    };
+
+    useEffect(() => {
+        if (searchParams.get('search')) {
+            scrollToProducts();
+        }
+    }, [searchParams]);
+
     return (
         <Box sx={{ minHeight: '100vh', bgcolor: 'white' }}>
             <Navbar />
@@ -17,10 +32,12 @@ const Retail = () => {
                 <RetailBanner />
 
                 {/* Categories Section */}
-                <RetailCategories />
+                <RetailCategories onCategoryClick={scrollToProducts} />
 
                 {/* Featured Products Grid */}
-                <Products />
+                <Box ref={productsRef} sx={{ scrollMarginTop: '150px' }}>
+                    <Products />
+                </Box>
             </Container>
 
             <Footer />

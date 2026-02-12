@@ -10,7 +10,11 @@ const categories = [
     { name: 'Bags', image: 'https://images.unsplash.com/photo-1548036328-c9fa89d128fa?auto=format&fit=crop&q=80&w=200' }
 ];
 
-const RetailCategories = () => {
+interface RetailCategoriesProps {
+    onCategoryClick: () => void;
+}
+
+const RetailCategories = ({ onCategoryClick }: RetailCategoriesProps) => {
     return (
         <Box sx={{ width: '100%', mb: 8, mt: 4 }}>
             {/* Section Header */}
@@ -37,6 +41,7 @@ const RetailCategories = () => {
                 {categories.map((cat, index) => (
                     <Stack
                         key={index}
+                        onClick={onCategoryClick}
                         alignItems="center"
                         spacing={2}
                         sx={{

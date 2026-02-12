@@ -20,7 +20,8 @@ class WishlistController {
             if (!req.body.productId) {
                 return res.status(400).json({ message: "Product ID is required" });
             }
-            const wishlist = await WishlistService.addToWishlist(req.user._id as string, req.body.productId);
+            const type = req.body.type || 'retail';
+            const wishlist = await WishlistService.addToWishlist(req.user._id as string, req.body.productId, type);
             res.json(wishlist);
         } catch (error: any) {
             if (error.message === "Product already in wishlist") {

@@ -19,6 +19,30 @@ const wishlistSchema: Schema = new mongoose.Schema({
             ref: "Product",
         },
     ],
+    wholesaleProducts: [
+        {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "WholesaleProduct",
+        },
+    ],
+    qCommerceProducts: [
+        {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "QProduct",
+        },
+    ],
+    resaleProducts: [
+        {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "ResaleProduct",
+        },
+    ],
+    freelancePosts: [
+        {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Post",
+        },
+    ],
     createdAt: {
         type: Date,
         default: Date.now,

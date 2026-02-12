@@ -67,10 +67,14 @@ const QProductDetails = () => {
 
     const handleToggleWishlist = async () => {
         try {
-            if (!isFavorite) {
+            if (isFavorite) {
+                await WishlistService.removeFromWishlist(product._id);
+                setIsFavorite(false);
+                toast.success('Removed from wishlist');
+            } else {
                 await WishlistService.addToWishlist({
                     productId: product._id,
-                    type: 'QCommerce'
+                    type: 'q-commerce'
                 });
                 setIsFavorite(true);
                 toast.success('Added to wishlist!');

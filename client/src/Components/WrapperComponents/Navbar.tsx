@@ -12,7 +12,7 @@ import WorkIcon from '@mui/icons-material/Work';
 import PersonOutlineIcon from '@mui/icons-material/PersonOutline';
 import FavoriteBorderOutlinedIcon from '@mui/icons-material/FavoriteBorderOutlined';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { CartService } from '../../services/api';
+import { CartService, ProductService } from '../../services/api';
 import { useSocket } from '../../hooks/useSocket';
 import { Snackbar, Alert } from '@mui/material';
 
@@ -22,7 +22,30 @@ const Navbar = () => {
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
     const [cartCount, setCartCount] = useState(0);
     const [searchTerm, setSearchTerm] = useState('');
+    const [suggestions, setSuggestions] = useState<any[]>([]);
+    const [showSuggestions, setShowSuggestions] = useState(false);
     const [notification, setNotification] = useState<{ message: string; type: 'success' | 'info' | 'error' } | null>(null);
+
+    // Debounce search suggestions
+    useEffect(() => {
+        const fetchSuggestions = async () => {
+            if (searchTerm.trim().length > 2) {
+                try {
+                    const { data } = await ProductService.getAll({ keyword: searchTerm, limit: 5 });
+                    setSuggestions(data.products || []);
+                    setShowSuggestions(true);
+                } catch (error) {
+                    console.error("Error fetching suggestions:", error);
+                }
+            } else {
+                setSuggestions([]);
+                setShowSuggestions(false);
+            }
+        };
+
+        const timeoutId = setTimeout(fetchSuggestions, 300);
+        return () => clearTimeout(timeoutId);
+    }, [searchTerm]);
 
     const open = Boolean(anchorEl);
 
@@ -116,7 +139,7 @@ const Navbar = () => {
                             </Stack>
 
                             {/* Search Area */}
-                            <Box sx={{ flex: 1, display: 'flex', justifyContent: 'center' }}>
+                            <Box sx={{ flex: 1, display: 'flex', justifyContent: 'center', position: 'relative' }}>
                                 <Box sx={{
                                     display: 'flex',
                                     bgcolor: 'white',
@@ -132,6 +155,8 @@ const Navbar = () => {
                                         value={searchTerm}
                                         onChange={(e) => setSearchTerm(e.target.value)}
                                         onKeyDown={handleSearch}
+                                        onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+                                        onFocus={() => searchTerm.length > 2 && setShowSuggestions(true)}
                                         sx={{ ml: 2, flex: 1, fontSize: '0.9rem', color: '#6b7280' }}
                                     />
                                     <Box
@@ -151,6 +176,68 @@ const Navbar = () => {
                                         Search
                                     </Box>
                                 </Box>
+
+                                {/* Search Suggestions Dropdown */}
+                                {showSuggestions && suggestions.length > 0 && (
+                                    <Box sx={{
+                                        position: 'absolute',
+                                        top: '100%',
+                                        left: 0,
+                                        right: 0,
+                                        maxWidth: '700px',
+                                        mx: 'auto',
+                                        bgcolor: 'white',
+                                        borderRadius: '0 0 8px 8px',
+                                        boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+                                        zIndex: 1500,
+                                        mt: 0.5,
+                                        border: '1px solid #f3f4f6',
+                                        overflow: 'hidden'
+                                    }}>
+                                        {suggestions.map((product) => (
+                                            <Box
+                                                key={product._id}
+                                                onClick={() => {
+                                                    navigate(`/product/${product._id}`);
+                                                    setShowSuggestions(false);
+                                                    setSearchTerm('');
+                                                }}
+                                                sx={{
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    p: 1.5,
+                                                    cursor: 'pointer',
+                                                    '&:hover': { bgcolor: '#f8fafc' },
+                                                    borderBottom: '1px solid #f3f4f6'
+                                                }}
+                                            >
+                                                <Box sx={{ width: 40, height: 40, borderRadius: 1, overflow: 'hidden', bgcolor: '#f1f5f9', mr: 2, flexShrink: 0 }}>
+                                                    <img
+                                                        src={product.images?.[0] || product.image || 'https://via.placeholder.com/40'}
+                                                        alt=""
+                                                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                                    />
+                                                </Box>
+                                                <Box>
+                                                    <Typography variant="body2" sx={{ fontWeight: 600, color: '#1e293b' }}>
+                                                        {product.title}
+                                                    </Typography>
+                                                    <Typography variant="caption" sx={{ color: '#64748b' }}>
+                                                        {product.category}
+                                                    </Typography>
+                                                </Box>
+                                            </Box>
+                                        ))}
+                                        <Box
+                                            onClick={() => navigate(`/retail?search=${encodeURIComponent(searchTerm)}`)}
+                                            sx={{ p: 1.5, textAlign: 'center', bgcolor: '#f8fafc', cursor: 'pointer', '&:hover': { bgcolor: '#f1f5f9' } }}
+                                        >
+                                            <Typography variant="caption" sx={{ fontWeight: 700, color: 'black' }}>
+                                                View all results for "{searchTerm}"
+                                            </Typography>
+                                        </Box>
+                                    </Box>
+                                )}
                             </Box>
 
                             {/* Actions Area */}

@@ -21,6 +21,8 @@ import KeyboardArrowLeftIcon from '@mui/icons-material/KeyboardArrowLeft';
 import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
 
 import { CartService, WishlistService, OrderService, AuthService, UserService, WholesaleService, ResaleService, QProductService, FreelanceService } from '../../services/api';
+import { toast } from 'react-toastify';
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import StoreIcon from '@mui/icons-material/Store';
 import WarehouseIcon from '@mui/icons-material/Warehouse';
 import FlashOnIcon from '@mui/icons-material/FlashOn';
@@ -90,7 +92,7 @@ const Profile = () => {
                     username: editName,
                     email: editEmail,
                     profile: { ...userData.profile, avatar: editAvatar, phone: editPhone }
-                }).catch(() => {});
+                }).catch(() => { });
             }
         } finally {
             setSavingProfile(false);
@@ -174,6 +176,42 @@ const Profile = () => {
             }
         } catch (error) {
             console.error("Profile data fetch error:", error);
+        }
+    };
+
+    const handleRemoveWishlist = async (productId: string) => {
+        try {
+            await WishlistService.removeFromWishlist(productId);
+            setWishlistItems(prev => prev.filter(item => item._id !== productId));
+            setWishlistCount(prev => prev - 1);
+            toast.success("Removed from wishlist");
+        } catch (error) {
+            console.error("Error removing from wishlist:", error);
+            toast.error("Failed to remove");
+        }
+    };
+
+    const handleAddToCart = async (product: any) => {
+        try {
+            // Map frontend types to backend CartService expectations
+            const typeMapping: any = {
+                'retail': 'Retail',
+                'wholesale': 'Wholesale',
+                'q-commerce': 'Quick',
+                'resale': 'Resale'
+            };
+            const mappedType = typeMapping[product.type] || 'Retail';
+
+            await CartService.addToCart({
+                productId: product._id,
+                quantity: 1,
+                type: mappedType
+            });
+            setCartCount(prev => prev + 1);
+            toast.success("Added to cart!");
+        } catch (error) {
+            console.error("Error adding to cart:", error);
+            toast.error("Failed to add to cart");
         }
     };
 
@@ -554,209 +592,209 @@ const Profile = () => {
                             )}
 
                             {!selectedChannel && (
-                        <Grid container spacing={4}>
-                            {/* Recent Order Tracker */}
-                            <Grid size={{ xs: 12, md: 12, lg: 8 }}>
-                                <Paper elevation={0} sx={{ p: { xs: 3, md: 5 }, borderRadius: 10, border: '1px solid #f1f5f9', maxHeight: '800px', overflowY: 'auto' }}>
-                                    <Typography variant="h5" sx={{ fontWeight: 900, mb: 4, position: 'sticky', top: 0, bgcolor: 'white', zIndex: 10, pb: 2, borderBottom: '1px solid #f1f5f9' }}>ORDER HISTORY ({orders.length})</Typography>
+                                <Grid container spacing={4}>
+                                    {/* Recent Order Tracker */}
+                                    <Grid size={{ xs: 12, md: 12, lg: 8 }}>
+                                        <Paper elevation={0} sx={{ p: { xs: 3, md: 5 }, borderRadius: 10, border: '1px solid #f1f5f9', maxHeight: '800px', overflowY: 'auto' }}>
+                                            <Typography variant="h5" sx={{ fontWeight: 900, mb: 4, position: 'sticky', top: 0, bgcolor: 'white', zIndex: 10, pb: 2, borderBottom: '1px solid #f1f5f9' }}>ORDER HISTORY ({orders.length})</Typography>
 
-                                    {orders && orders.length > 0 ? (
-                                        <Stack spacing={6}>
-                                            {orders.map((order: any) => (
-                                                <Box key={order._id} sx={{ pb: 6, borderBottom: '1px dashed #e2e8f0', '&:last-child': { borderBottom: 'none', pb: 0 } }}>
-                                                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
-                                                        <Box>
-                                                            <Typography variant="subtitle1" sx={{ fontWeight: 800 }}>Order #{order._id.substring(0, 8).toUpperCase()}</Typography>
-                                                            <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 600 }}>{new Date(order.createdAt).toLocaleDateString()}</Typography>
-                                                        </Box>
-                                                        <Chip label={order.status.toUpperCase()} sx={{ bgcolor: 'black', color: 'white', fontWeight: 900, px: 2, height: 24, fontSize: '0.65rem' }} />
-                                                    </Box>
+                                            {orders && orders.length > 0 ? (
+                                                <Stack spacing={6}>
+                                                    {orders.map((order: any) => (
+                                                        <Box key={order._id} sx={{ pb: 6, borderBottom: '1px dashed #e2e8f0', '&:last-child': { borderBottom: 'none', pb: 0 } }}>
+                                                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
+                                                                <Box>
+                                                                    <Typography variant="subtitle1" sx={{ fontWeight: 800 }}>Order #{order._id.substring(0, 8).toUpperCase()}</Typography>
+                                                                    <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 600 }}>{new Date(order.createdAt).toLocaleDateString()}</Typography>
+                                                                </Box>
+                                                                <Chip label={order.status.toUpperCase()} sx={{ bgcolor: 'black', color: 'white', fontWeight: 900, px: 2, height: 24, fontSize: '0.65rem' }} />
+                                                            </Box>
 
-                                                    <Stack spacing={3}>
-                                                        {order.orderItems.map((item: any) => (
-                                                            <Stack key={item._id} direction={{ xs: 'column', sm: 'row' }} spacing={3}>
-                                                                <Box sx={{ width: 80, height: 80, bgcolor: '#f1f5f9', borderRadius: 4, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', flexShrink: 0 }}>
-                                                                    {item.image ? (
-                                                                        <img src={item.image} alt={item.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                                                                    ) : (
-                                                                        <LocalMallOutlinedIcon sx={{ fontSize: 24, opacity: 0.1 }} />
-                                                                    )}
-                                                                </Box>
-                                                                <Box sx={{ flex: 1 }}>
-                                                                    <Typography variant="subtitle2" sx={{ fontWeight: 800, mb: 0.5 }}>{item.title}</Typography>
-                                                                    <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 600, display: 'block', mb: 1 }}>
-                                                                        Qty {item.quantity} • ₹{(Number(item.price) || 0).toLocaleString('en-IN')}
-                                                                    </Typography>
-                                                                </Box>
-                                                                <Typography variant="subtitle1" sx={{ fontWeight: 900 }}>₹{((Number(item.price) || 0) * (Number(item.quantity) || 0)).toLocaleString('en-IN')}</Typography>
+                                                            <Stack spacing={3}>
+                                                                {order.orderItems.map((item: any) => (
+                                                                    <Stack key={item._id} direction={{ xs: 'column', sm: 'row' }} spacing={3}>
+                                                                        <Box sx={{ width: 80, height: 80, bgcolor: '#f1f5f9', borderRadius: 4, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', flexShrink: 0 }}>
+                                                                            {item.image ? (
+                                                                                <img src={item.image} alt={item.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                                                            ) : (
+                                                                                <LocalMallOutlinedIcon sx={{ fontSize: 24, opacity: 0.1 }} />
+                                                                            )}
+                                                                        </Box>
+                                                                        <Box sx={{ flex: 1 }}>
+                                                                            <Typography variant="subtitle2" sx={{ fontWeight: 800, mb: 0.5 }}>{item.title}</Typography>
+                                                                            <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 600, display: 'block', mb: 1 }}>
+                                                                                Qty {item.quantity} • ₹{(Number(item.price) || 0).toLocaleString('en-IN')}
+                                                                            </Typography>
+                                                                        </Box>
+                                                                        <Typography variant="subtitle1" sx={{ fontWeight: 900 }}>₹{((Number(item.price) || 0) * (Number(item.quantity) || 0)).toLocaleString('en-IN')}</Typography>
+                                                                    </Stack>
+                                                                ))}
                                                             </Stack>
-                                                        ))}
-                                                    </Stack>
 
-                                                    {/* Progress Bar for each order */}
-                                                    <Box sx={{ mt: 4, px: 1 }}>
-                                                        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1, position: 'relative' }}>
-                                                            <Box sx={{ position: 'absolute', top: 6, left: 10, right: 10, height: 2, bgcolor: '#f1f5f9', zIndex: 0 }} />
-                                                            <Box sx={{ position: 'absolute', top: 6, left: 10, width: `${(getStatusIndex(order.status) / 3) * 100}%`, height: 2, bgcolor: '#B4D5DC', zIndex: 1 }} />
-                                                            {['ORDERED', 'SHIPPED', 'INTRANSIT', 'DELIVERED'].map((stage, i) => {
-                                                                const isActive = i <= getStatusIndex(order.status);
-                                                                return (
-                                                                    <Box key={stage} sx={{ textAlign: 'center', zIndex: 2 }}>
-                                                                        <Box
-                                                                            sx={{
-                                                                                width: 14, height: 14, borderRadius: '50%',
-                                                                                bgcolor: isActive ? '#B4D5DC' : '#f1f5f9',
-                                                                                mx: 'auto', mb: 1,
-                                                                                border: '2px solid white',
-                                                                                boxShadow: isActive ? '0 0 0 2px #B4D5DC' : 'none'
-                                                                            }}
-                                                                        />
-                                                                        <Typography variant="caption" sx={{ fontWeight: 900, fontSize: '0.55rem', color: isActive ? 'black' : '#94a3b8', letterSpacing: 0.5, display: { xs: 'none', sm: 'block' } }}>
-                                                                            {stage}
-                                                                        </Typography>
-                                                                    </Box>
-                                                                );
-                                                            })}
+                                                            {/* Progress Bar for each order */}
+                                                            <Box sx={{ mt: 4, px: 1 }}>
+                                                                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1, position: 'relative' }}>
+                                                                    <Box sx={{ position: 'absolute', top: 6, left: 10, right: 10, height: 2, bgcolor: '#f1f5f9', zIndex: 0 }} />
+                                                                    <Box sx={{ position: 'absolute', top: 6, left: 10, width: `${(getStatusIndex(order.status) / 3) * 100}%`, height: 2, bgcolor: '#B4D5DC', zIndex: 1 }} />
+                                                                    {['ORDERED', 'SHIPPED', 'INTRANSIT', 'DELIVERED'].map((stage, i) => {
+                                                                        const isActive = i <= getStatusIndex(order.status);
+                                                                        return (
+                                                                            <Box key={stage} sx={{ textAlign: 'center', zIndex: 2 }}>
+                                                                                <Box
+                                                                                    sx={{
+                                                                                        width: 14, height: 14, borderRadius: '50%',
+                                                                                        bgcolor: isActive ? '#B4D5DC' : '#f1f5f9',
+                                                                                        mx: 'auto', mb: 1,
+                                                                                        border: '2px solid white',
+                                                                                        boxShadow: isActive ? '0 0 0 2px #B4D5DC' : 'none'
+                                                                                    }}
+                                                                                />
+                                                                                <Typography variant="caption" sx={{ fontWeight: 900, fontSize: '0.55rem', color: isActive ? 'black' : '#94a3b8', letterSpacing: 0.5, display: { xs: 'none', sm: 'block' } }}>
+                                                                                    {stage}
+                                                                                </Typography>
+                                                                            </Box>
+                                                                        );
+                                                                    })}
+                                                                </Box>
+                                                            </Box>
+
+                                                            <Stack direction="row" justifyContent="flex-end" spacing={2} sx={{ mt: 3 }}>
+                                                                <Button size="small" variant="outlined" sx={{ color: '#0f172a', borderColor: '#e2e8f0', fontWeight: 800, borderRadius: 3 }}>
+                                                                    DETAILS
+                                                                </Button>
+                                                            </Stack>
                                                         </Box>
-                                                    </Box>
-
-                                                    <Stack direction="row" justifyContent="flex-end" spacing={2} sx={{ mt: 3 }}>
-                                                        <Button size="small" variant="outlined" sx={{ color: '#0f172a', borderColor: '#e2e8f0', fontWeight: 800, borderRadius: 3 }}>
-                                                            DETAILS
-                                                        </Button>
-                                                    </Stack>
+                                                    ))}
+                                                </Stack>
+                                            ) : (
+                                                <Box sx={{ textAlign: 'center', py: 8 }}>
+                                                    <LocalMallOutlinedIcon sx={{ fontSize: 48, color: '#e2e8f0', mb: 2 }} />
+                                                    <Typography variant="h6" sx={{ fontWeight: 900, color: '#94a3b8' }}>No orders found</Typography>
+                                                    <Button
+                                                        onClick={() => navigate('/retail')}
+                                                        sx={{ mt: 2, color: '#0f172a', fontWeight: 900 }}
+                                                    >
+                                                        Browse Products
+                                                    </Button>
                                                 </Box>
-                                            ))}
-                                        </Stack>
-                                    ) : (
-                                        <Box sx={{ textAlign: 'center', py: 8 }}>
-                                            <LocalMallOutlinedIcon sx={{ fontSize: 48, color: '#e2e8f0', mb: 2 }} />
-                                            <Typography variant="h6" sx={{ fontWeight: 900, color: '#94a3b8' }}>No orders found</Typography>
-                                            <Button
-                                                onClick={() => navigate('/retail')}
-                                                sx={{ mt: 2, color: '#0f172a', fontWeight: 900 }}
-                                            >
-                                                Browse Products
-                                            </Button>
-                                        </Box>
-                                    )}
-                                </Paper>
-                            </Grid>
-
-                            {/* Activity Feed */}
-                            <Grid size={{ xs: 12 }}>
-                                <Paper elevation={0} sx={{ p: { xs: 3, md: 5 }, borderRadius: 10, border: '1px solid #f1f5f9' }}>
-                                    <Typography variant="caption" sx={{ fontWeight: 900, color: '#94a3b8', letterSpacing: 2, display: 'block', mb: 0.5 }}>ACTIVITY FEED</Typography>
-                                    <Typography variant="body2" sx={{ color: '#64748b', fontWeight: 700, mb: 3 }}>REAL-TIME HISTORY</Typography>
-                                    <Stack spacing={2}>
-                                        {[
-                                            { label: 'REVIEWED ITEM', time: '5 HOURS AGO' },
-                                            { label: 'ACHIEVED ORDER', time: 'YESTERDAY' },
-                                            { label: 'PRE-ORDERED', time: '3 DAYS AGO' },
-                                            { label: 'VERIFIED', time: '1 WEEK AGO' },
-                                            { label: 'JOINED ELITE', time: 'MAR 2004' }
-                                        ].map((act, i) => (
-                                            <Stack key={i} direction="row" alignItems="center" spacing={2}>
-                                                <Box sx={{ width: 40, height: 40, borderRadius: '50%', bgcolor: '#f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                                    <CheckCircleIcon sx={{ fontSize: 18, color: '#B4D5DC' }} />
-                                                </Box>
-                                                <Box sx={{ flex: 1 }}>
-                                                    <Typography variant="subtitle2" sx={{ fontWeight: 800 }}>{act.label}</Typography>
-                                                    <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 600 }}>{act.time}</Typography>
-                                                </Box>
-                                            </Stack>
-                                        ))}
-                                    </Stack>
-                                </Paper>
-                            </Grid>
-
-                            {/* Latest Arrivals Scroller */}
-                            <Grid size={{ xs: 12, md: 12, lg: 6 }}>
-                                <Paper elevation={0} sx={{ p: { xs: 3, md: 5 }, borderRadius: 10, border: '1px solid #f1f5f9' }}>
-                                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 6 }}>
-                                        <Typography variant="h5" sx={{ fontWeight: 900 }}>LATEST ARRIVALS</Typography>
-                                        <Stack direction="row" spacing={1}>
-                                            <IconButton size="small" sx={{ border: '1px solid #f1f5f9' }}><KeyboardArrowLeftIcon /></IconButton>
-                                            <IconButton size="small" sx={{ border: '1px solid #f1f5f9' }}><KeyboardArrowRightIcon /></IconButton>
-                                        </Stack>
-                                    </Box>
-
-                                    <Grid container spacing={3}>
-                                        {[
-                                            { img: '⌚', name: 'QUANTUM CHRONO', price: '₹12,400' },
-                                            { img: '🎧', name: 'ELITE AUDIO', price: '₹8,900' },
-                                            { img: '🎒', name: 'NOMAD PACK', price: '₹4,200' }
-                                        ].map((product) => (
-                                            <Grid key={product.name} size={{ xs: 4 }}>
-                                                <Box sx={{ textAlign: 'center' }}>
-                                                    <Box sx={{
-                                                        pt: '100%',
-                                                        bgcolor: '#f8fafc',
-                                                        borderRadius: 6,
-                                                        mb: 2,
-                                                        position: 'relative',
-                                                        display: 'flex',
-                                                        alignItems: 'center',
-                                                        justifyContent: 'center'
-                                                    }}>
-                                                        <Typography sx={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', fontSize: { xs: '1.2rem', sm: '2rem' } }}>
-                                                            {product.img}
-                                                        </Typography>
-                                                    </Box>
-                                                    <Typography variant="caption" sx={{ fontWeight: 900, color: '#0f172a', display: 'block', fontSize: '0.6rem' }}>{product.name}</Typography>
-                                                    <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 700, fontSize: '0.6rem' }}>{product.price}</Typography>
-                                                </Box>
-                                            </Grid>
-                                        ))}
+                                            )}
+                                        </Paper>
                                     </Grid>
-                                </Paper>
-                            </Grid>
 
-                            {/* Summary Cards */}
-                            <Grid size={{ xs: 12, md: 12, lg: 6 }}>
-                                <Stack direction={{ xs: 'column', sm: 'row' }} spacing={3} sx={{ height: '100%' }}>
-                                    <Paper elevation={0} sx={{ p: 3, flex: 1, borderRadius: 8, border: '1px solid #f1f5f9', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                                        <Typography variant="caption" sx={{ fontWeight: 900, color: '#94a3b8', letterSpacing: 1, mb: 4 }}>VOUCHERS</Typography>
-                                        <Box sx={{ width: 40, height: 40, bgcolor: 'black', borderRadius: 2, mb: 4, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                            <DiamondIcon sx={{ color: 'white', fontSize: 20 }} />
-                                        </Box>
-                                        <Typography variant="h2" sx={{ fontWeight: 900, mb: 0.5 }}>04</Typography>
-                                        <Typography variant="caption" sx={{ fontWeight: 800, color: '#94a3b8', mb: 4 }}>ACTIVE REWARDS</Typography>
-                                        <Button sx={{ color: '#64748b', fontWeight: 900, fontSize: '0.7rem' }}>VIEW ALL</Button>
-                                    </Paper>
+                                    {/* Activity Feed */}
+                                    <Grid size={{ xs: 12 }}>
+                                        <Paper elevation={0} sx={{ p: { xs: 3, md: 5 }, borderRadius: 10, border: '1px solid #f1f5f9' }}>
+                                            <Typography variant="caption" sx={{ fontWeight: 900, color: '#94a3b8', letterSpacing: 2, display: 'block', mb: 0.5 }}>ACTIVITY FEED</Typography>
+                                            <Typography variant="body2" sx={{ color: '#64748b', fontWeight: 700, mb: 3 }}>REAL-TIME HISTORY</Typography>
+                                            <Stack spacing={2}>
+                                                {[
+                                                    { label: 'REVIEWED ITEM', time: '5 HOURS AGO' },
+                                                    { label: 'ACHIEVED ORDER', time: 'YESTERDAY' },
+                                                    { label: 'PRE-ORDERED', time: '3 DAYS AGO' },
+                                                    { label: 'VERIFIED', time: '1 WEEK AGO' },
+                                                    { label: 'JOINED ELITE', time: 'MAR 2004' }
+                                                ].map((act, i) => (
+                                                    <Stack key={i} direction="row" alignItems="center" spacing={2}>
+                                                        <Box sx={{ width: 40, height: 40, borderRadius: '50%', bgcolor: '#f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                                            <CheckCircleIcon sx={{ fontSize: 18, color: '#B4D5DC' }} />
+                                                        </Box>
+                                                        <Box sx={{ flex: 1 }}>
+                                                            <Typography variant="subtitle2" sx={{ fontWeight: 800 }}>{act.label}</Typography>
+                                                            <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 600 }}>{act.time}</Typography>
+                                                        </Box>
+                                                    </Stack>
+                                                ))}
+                                            </Stack>
+                                        </Paper>
+                                    </Grid>
 
-                                    <Paper elevation={0} sx={{ p: 3, flex: 1, borderRadius: 8, border: '1px solid #f1f5f9', display: 'flex', flexDirection: 'column', alignItems: 'center', cursor: 'pointer' }} onClick={() => setCurrentView('cart')}>
-                                        <Typography variant="caption" sx={{ fontWeight: 900, color: '#94a3b8', letterSpacing: 1, mb: 4 }}>CART</Typography>
-                                        <Box sx={{ width: 40, height: 40, bgcolor: '#f8fafc', borderRadius: '50%', mb: 4, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                            <ShoppingCartOutlinedIcon sx={{ color: '#B4D5DC' }} />
-                                        </Box>
-                                        <Typography variant="h2" sx={{ fontWeight: 900, mb: 0.5 }}>{String(cartCount).padStart(2, '0')}</Typography>
-                                        <Typography variant="caption" sx={{ fontWeight: 800, color: '#94a3b8', mb: 4 }}>ITEMS READY</Typography>
-                                        <Button
-                                            onClick={(e) => { e.stopPropagation(); setCurrentView('cart'); }}
-                                            sx={{ bgcolor: 'black', color: 'white', fontWeight: 900, fontSize: '0.7rem', px: 2, borderRadius: 4, '&:hover': { bgcolor: '#333' } }}
-                                        >
-                                            VIEW ALL
-                                        </Button>
-                                    </Paper>
+                                    {/* Latest Arrivals Scroller */}
+                                    <Grid size={{ xs: 12, md: 12, lg: 6 }}>
+                                        <Paper elevation={0} sx={{ p: { xs: 3, md: 5 }, borderRadius: 10, border: '1px solid #f1f5f9' }}>
+                                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 6 }}>
+                                                <Typography variant="h5" sx={{ fontWeight: 900 }}>LATEST ARRIVALS</Typography>
+                                                <Stack direction="row" spacing={1}>
+                                                    <IconButton size="small" sx={{ border: '1px solid #f1f5f9' }}><KeyboardArrowLeftIcon /></IconButton>
+                                                    <IconButton size="small" sx={{ border: '1px solid #f1f5f9' }}><KeyboardArrowRightIcon /></IconButton>
+                                                </Stack>
+                                            </Box>
 
-                                    <Paper elevation={0} sx={{ p: 3, flex: 1, borderRadius: 8, border: '1px solid #f1f5f9', display: 'flex', flexDirection: 'column', alignItems: 'center', cursor: 'pointer' }} onClick={() => setCurrentView('wishlist')}>
-                                        <Typography variant="caption" sx={{ fontWeight: 900, color: '#94a3b8', letterSpacing: 1, mb: 4 }}>WISHLIST</Typography>
-                                        <Box sx={{ width: 40, height: 40, bgcolor: '#f8fafc', borderRadius: '50%', mb: 4, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                            <FavoriteBorderOutlinedIcon sx={{ color: '#B4D5DC' }} />
-                                        </Box>
-                                        <Typography variant="h2" sx={{ fontWeight: 900, mb: 0.5 }}>{wishlistCount}</Typography>
-                                        <Typography variant="caption" sx={{ fontWeight: 800, color: '#94a3b8', mb: 4 }}>SAVED ITEMS</Typography>
-                                        <Button
-                                            onClick={(e) => { e.stopPropagation(); setCurrentView('wishlist'); }}
-                                            sx={{ color: '#64748b', fontWeight: 900, fontSize: '0.7rem' }}
-                                        >
-                                            VIEW ALL
-                                        </Button>
-                                    </Paper>
-                                </Stack>
-                            </Grid>
-                        </Grid>
+                                            <Grid container spacing={3}>
+                                                {[
+                                                    { img: '⌚', name: 'QUANTUM CHRONO', price: '₹12,400' },
+                                                    { img: '🎧', name: 'ELITE AUDIO', price: '₹8,900' },
+                                                    { img: '🎒', name: 'NOMAD PACK', price: '₹4,200' }
+                                                ].map((product) => (
+                                                    <Grid key={product.name} size={{ xs: 4 }}>
+                                                        <Box sx={{ textAlign: 'center' }}>
+                                                            <Box sx={{
+                                                                pt: '100%',
+                                                                bgcolor: '#f8fafc',
+                                                                borderRadius: 6,
+                                                                mb: 2,
+                                                                position: 'relative',
+                                                                display: 'flex',
+                                                                alignItems: 'center',
+                                                                justifyContent: 'center'
+                                                            }}>
+                                                                <Typography sx={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', fontSize: { xs: '1.2rem', sm: '2rem' } }}>
+                                                                    {product.img}
+                                                                </Typography>
+                                                            </Box>
+                                                            <Typography variant="caption" sx={{ fontWeight: 900, color: '#0f172a', display: 'block', fontSize: '0.6rem' }}>{product.name}</Typography>
+                                                            <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 700, fontSize: '0.6rem' }}>{product.price}</Typography>
+                                                        </Box>
+                                                    </Grid>
+                                                ))}
+                                            </Grid>
+                                        </Paper>
+                                    </Grid>
+
+                                    {/* Summary Cards */}
+                                    <Grid size={{ xs: 12, md: 12, lg: 6 }}>
+                                        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={3} sx={{ height: '100%' }}>
+                                            <Paper elevation={0} sx={{ p: 3, flex: 1, borderRadius: 8, border: '1px solid #f1f5f9', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                                                <Typography variant="caption" sx={{ fontWeight: 900, color: '#94a3b8', letterSpacing: 1, mb: 4 }}>VOUCHERS</Typography>
+                                                <Box sx={{ width: 40, height: 40, bgcolor: 'black', borderRadius: 2, mb: 4, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                                    <DiamondIcon sx={{ color: 'white', fontSize: 20 }} />
+                                                </Box>
+                                                <Typography variant="h2" sx={{ fontWeight: 900, mb: 0.5 }}>04</Typography>
+                                                <Typography variant="caption" sx={{ fontWeight: 800, color: '#94a3b8', mb: 4 }}>ACTIVE REWARDS</Typography>
+                                                <Button sx={{ color: '#64748b', fontWeight: 900, fontSize: '0.7rem' }}>VIEW ALL</Button>
+                                            </Paper>
+
+                                            <Paper elevation={0} sx={{ p: 3, flex: 1, borderRadius: 8, border: '1px solid #f1f5f9', display: 'flex', flexDirection: 'column', alignItems: 'center', cursor: 'pointer' }} onClick={() => setCurrentView('cart')}>
+                                                <Typography variant="caption" sx={{ fontWeight: 900, color: '#94a3b8', letterSpacing: 1, mb: 4 }}>CART</Typography>
+                                                <Box sx={{ width: 40, height: 40, bgcolor: '#f8fafc', borderRadius: '50%', mb: 4, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                                    <ShoppingCartOutlinedIcon sx={{ color: '#B4D5DC' }} />
+                                                </Box>
+                                                <Typography variant="h2" sx={{ fontWeight: 900, mb: 0.5 }}>{String(cartCount).padStart(2, '0')}</Typography>
+                                                <Typography variant="caption" sx={{ fontWeight: 800, color: '#94a3b8', mb: 4 }}>ITEMS READY</Typography>
+                                                <Button
+                                                    onClick={(e) => { e.stopPropagation(); setCurrentView('cart'); }}
+                                                    sx={{ bgcolor: 'black', color: 'white', fontWeight: 900, fontSize: '0.7rem', px: 2, borderRadius: 4, '&:hover': { bgcolor: '#333' } }}
+                                                >
+                                                    VIEW ALL
+                                                </Button>
+                                            </Paper>
+
+                                            <Paper elevation={0} sx={{ p: 3, flex: 1, borderRadius: 8, border: '1px solid #f1f5f9', display: 'flex', flexDirection: 'column', alignItems: 'center', cursor: 'pointer' }} onClick={() => setCurrentView('wishlist')}>
+                                                <Typography variant="caption" sx={{ fontWeight: 900, color: '#94a3b8', letterSpacing: 1, mb: 4 }}>WISHLIST</Typography>
+                                                <Box sx={{ width: 40, height: 40, bgcolor: '#f8fafc', borderRadius: '50%', mb: 4, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                                    <FavoriteBorderOutlinedIcon sx={{ color: '#B4D5DC' }} />
+                                                </Box>
+                                                <Typography variant="h2" sx={{ fontWeight: 900, mb: 0.5 }}>{wishlistCount}</Typography>
+                                                <Typography variant="caption" sx={{ fontWeight: 800, color: '#94a3b8', mb: 4 }}>SAVED ITEMS</Typography>
+                                                <Button
+                                                    onClick={(e) => { e.stopPropagation(); setCurrentView('wishlist'); }}
+                                                    sx={{ color: '#64748b', fontWeight: 900, fontSize: '0.7rem' }}
+                                                >
+                                                    VIEW ALL
+                                                </Button>
+                                            </Paper>
+                                        </Stack>
+                                    </Grid>
+                                </Grid>
                             )}
                         </>
                     )}
@@ -803,11 +841,37 @@ const Profile = () => {
                                         <Grid key={product._id} size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
                                             <Paper elevation={0} sx={{ p: 2, borderRadius: 6, bgcolor: '#f8fafc', border: '1px solid #f1f5f9', height: '100%' }}>
                                                 <Box sx={{ pt: '100%', position: 'relative', borderRadius: 4, overflow: 'hidden', mb: 2 }}>
-                                                    <img src={product.images?.[0]} alt="" style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
+                                                    <img src={product.images?.[0] || product.image} alt="" style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
                                                 </Box>
                                                 <Typography variant="subtitle1" sx={{ fontWeight: 800, mb: 0.5 }}>{product.title}</Typography>
                                                 <Typography variant="h6" sx={{ fontWeight: 900, color: '#B4D5DC' }}>₹{product.price}</Typography>
-                                                <Button fullWidth sx={{ mt: 2, bgcolor: 'black', color: 'white', borderRadius: 3, fontWeight: 900, fontSize: '0.75rem' }}>ADD TO CART</Button>
+
+                                                <Stack spacing={1} sx={{ mt: 2 }}>
+                                                    {product.type !== 'freelance' && (
+                                                        <Button
+                                                            fullWidth
+                                                            onClick={() => handleAddToCart(product)}
+                                                            sx={{ bgcolor: 'black', color: 'white', borderRadius: 3, fontWeight: 900, fontSize: '0.75rem' }}
+                                                        >
+                                                            ADD TO CART
+                                                        </Button>
+                                                    )}
+                                                    <Button
+                                                        fullWidth
+                                                        variant="contained"
+                                                        onClick={() => handleRemoveWishlist(product._id)}
+                                                        sx={{
+                                                            bgcolor: '#fee2e2',
+                                                            color: '#ef4444',
+                                                            borderRadius: 3,
+                                                            fontWeight: 900,
+                                                            fontSize: '0.75rem',
+                                                            '&:hover': { bgcolor: '#fecaca' }
+                                                        }}
+                                                    >
+                                                        REMOVE
+                                                    </Button>
+                                                </Stack>
                                             </Paper>
                                         </Grid>
                                     ))}

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Box, Typography, Stack, Tab, Tabs, CircularProgress, Card, CardMedia, CardContent, IconButton, Tooltip, Chip } from '@mui/material';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import ShoppingCartOutlinedIcon from '@mui/icons-material/ShoppingCartOutlined';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
@@ -10,6 +10,9 @@ import { toast } from 'react-toastify';
 
 const Products = () => {
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
+    const searchQuery = searchParams.get('search');
+
     const [products, setProducts] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [selectedTab, setSelectedTab] = useState('All');
@@ -18,8 +21,12 @@ const Products = () => {
     const bgColors = ['#EAE0D5', '#F3E5D8', '#F8DEC8', '#F1F5F9', '#E2E8F0', '#E7E5E4', '#D6D3D1', '#F5E6D3'];
 
     useEffect(() => {
-        fetchProducts();
-    }, [selectedTab]);
+        if (searchQuery && selectedTab !== 'All') {
+            setSelectedTab('All');
+        } else {
+            fetchProducts();
+        }
+    }, [selectedTab, searchQuery]);
 
     const fetchProducts = async () => {
         setLoading(true);
@@ -27,6 +34,9 @@ const Products = () => {
             const params: any = { limit: 8 };
             if (selectedTab !== 'All') {
                 params.category = selectedTab;
+            }
+            if (searchQuery) {
+                params.keyword = searchQuery;
             }
             const { data } = await ProductService.getAll(params);
             if (data.products) setProducts(data.products);
@@ -40,6 +50,9 @@ const Products = () => {
 
     const handleTabChange = (_event: React.SyntheticEvent, newValue: string) => {
         setSelectedTab(newValue);
+        if (searchQuery) {
+            navigate('/retail');
+        }
     };
 
     const handleAddToWishlist = async (e: React.MouseEvent, productId: string) => {
