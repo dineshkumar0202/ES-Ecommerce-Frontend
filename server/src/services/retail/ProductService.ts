@@ -12,6 +12,7 @@ class ProductService {
             minRating,
             brand,
             brands, // Multi-select support
+            seller,
             sortBy = 'createdAt',
             order = 'desc',
             page = 1,
@@ -54,6 +55,10 @@ class ProductService {
         } else if (brands) {
             const brandArray = Array.isArray(brands) ? brands : brands.split(',');
             filter.brand = { $in: brandArray };
+        }
+
+        if (seller) {
+            filter.seller = seller;
         }
 
         // Sort options

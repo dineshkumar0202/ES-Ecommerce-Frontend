@@ -16,6 +16,7 @@ import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import LocalShippingOutlinedIcon from '@mui/icons-material/LocalShippingOutlined';
 import VerifiedUserOutlinedIcon from '@mui/icons-material/VerifiedUserOutlined';
+import CameraAltOutlinedIcon from '@mui/icons-material/CameraAltOutlined';
 import LockIcon from '@mui/icons-material/Lock';
 
 import Navbar from '../../WrapperComponents/Navbar';
@@ -31,6 +32,7 @@ const ProductDetails = () => {
     const [loading, setLoading] = useState(true);
     const [selectedImage, setSelectedImage] = useState(0);
     const [isInWishlist, setIsInWishlist] = useState(false);
+    const [showFullDescription, setShowFullDescription] = useState(false);
 
     useEffect(() => {
         if (id) {
@@ -145,35 +147,195 @@ const ProductDetails = () => {
                 {/* Main Product Section */}
                 <Box sx={{
                     display: 'grid',
-                    gridTemplateColumns: { xs: '1fr', md: '1.2fr 1fr' },
+                    gridTemplateColumns: { xs: '1fr', md: '0.8fr 1.2fr' },
                     gap: { xs: 4, md: 8 },
                     mb: 10
                 }}>
 
-                    {/* LEFT COLUMN: IMAGES */}
-                    <Box>
-                        {/* Main Image Stage */}
-                        <Box sx={{
-                            bgcolor: '#f8fafc',
-                            borderRadius: 4,
-                            position: 'relative',
-                            overflow: 'hidden',
-                            aspectRatio: '1/1.1',
-                            mb: 3,
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            border: '1px solid #f1f5f9'
+                    {/* LEFT COLUMN: INFORMATION */}
+                    <Box sx={{ pt: { md: 2 } }}>
+                        {/* Breadcrumbs (Moved inside column for alignment) */}
+                        <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 700, mb: 1, display: 'block', textTransform: 'uppercase', letterSpacing: 1 }}>
+                            Home / {product.category || 'Furniture'} / {product.subCategory || 'Lounge'}
+                        </Typography>
+
+                        {/* Title */}
+                        <Typography variant="h4" sx={{
+                            fontWeight: 900,
+                            lineHeight: 1.2,
+                            mb: 2,
+                            fontSize: { xs: '1.5rem', md: '2rem' }, // Significantly smaller title
+                            color: '#1a202c',
+                            fontFamily: 'serif'
                         }}>
-                            {/* Badges Overlay */}
-                            <Stack spacing={1} sx={{ position: 'absolute', top: 24, left: 24, zIndex: 2 }}>
-                                <Chip label="NEW RELEASE" sx={{ bgcolor: '#d1e6eb', color: '#1a202c', fontWeight: 800, borderRadius: 1.5, height: 26, fontSize: '0.65rem' }} />
-                                <Chip label="PRO SERIES" sx={{ bgcolor: 'black', color: 'white', fontWeight: 800, borderRadius: 1.5, height: 26, fontSize: '0.65rem' }} />
+                            {product.title}
+                        </Typography>
+
+                        {/* Price Badge */}
+                        <Box sx={{ display: 'inline-block', bgcolor: '#b4d5dc', px: 2, py: 0.5, borderRadius: 5, mb: 4 }}>
+                            <Typography variant="h6" sx={{ fontWeight: 800, color: '#1a202c' }}>
+                                ₹{product.price.toFixed(2)}
+                            </Typography>
+                        </Box>
+
+                        {/* Specs Grid - Moved here */}
+                        <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: x => x.spacing(4, 8), mb: 6 }}>
+                            <Box>
+                                <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 800, textTransform: 'uppercase', letterSpacing: 1, display: 'block', mb: 1 }}>Material</Typography>
+                                <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#1e293b' }}>Premium Ash Wood</Typography>
+                            </Box>
+                            <Box>
+                                <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 800, textTransform: 'uppercase', letterSpacing: 1, display: 'block', mb: 1 }}>Dimensions</Typography>
+                                <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#1e293b' }}>85cm x 75cm x 90cm</Typography>
+                            </Box>
+                            <Box>
+                                <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 800, textTransform: 'uppercase', letterSpacing: 1, display: 'block', mb: 1 }}>Warranty</Typography>
+                                <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#1e293b' }}>10 Year Structure</Typography>
+                            </Box>
+                            <Box>
+                                <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 800, textTransform: 'uppercase', letterSpacing: 1, display: 'block', mb: 1 }}>Delivery</Typography>
+                                <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#1e293b' }}>White-glove service</Typography>
+                            </Box>
+                        </Box>
+
+                        {/* Actions */}
+                        <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 6 }}>
+                            {/* Quantity Counter */}
+                            <Stack direction="row" alignItems="center" spacing={2} sx={{ bgcolor: '#f8fafc', borderRadius: 3, px: 2, py: 1 }}>
+                                <Typography sx={{ cursor: 'pointer', fontWeight: 600, color: '#94a3b8', fontSize: '0.9rem' }}>-</Typography>
+                                <Typography sx={{ fontWeight: 800, fontSize: '0.9rem' }}>1</Typography>
+                                <Typography sx={{ cursor: 'pointer', fontWeight: 600, color: '#94a3b8', fontSize: '0.9rem' }}>+</Typography>
                             </Stack>
 
+                            <Button
+                                onClick={handleAddToCart}
+                                variant="contained"
+                                size="small"
+                                sx={{
+                                    bgcolor: '#b4d5dc',
+                                    color: '#1a202c',
+                                    fontWeight: 800,
+                                    py: 1,
+                                    px: 3,
+                                    borderRadius: 3,
+                                    boxShadow: 'none',
+                                    letterSpacing: 0.5,
+                                    fontSize: '0.85rem',
+                                    '&:hover': { bgcolor: '#9bbec9', boxShadow: 'none' }
+                                }}>
+                                ADD TO CART
+                            </Button>
+                            <Button
+                                onClick={handleBuyNow}
+                                variant="outlined"
+                                size="small"
+                                sx={{
+                                    borderColor: '#1a202c',
+                                    color: '#1a202c',
+                                    fontWeight: 800,
+                                    py: 1,
+                                    px: 3,
+                                    borderRadius: 3,
+                                    borderWidth: 2,
+                                    letterSpacing: 0.5,
+                                    fontSize: '0.85rem',
+                                    '&:hover': { bgcolor: 'transparent', borderColor: '#1a202c', borderWidth: 2 }
+                                }}>
+                                BUY NOW
+                            </Button>
+                        </Stack>
+
+                        {/* Description */}
+                        <Box sx={{ mb: 6 }}>
+                            <Typography
+                                variant="body1"
+                                sx={{
+                                    color: '#64748b',
+                                    lineHeight: 1.8,
+                                    fontWeight: 500,
+                                    display: '-webkit-box',
+                                    overflow: 'hidden',
+                                    WebkitBoxOrient: 'vertical',
+                                    WebkitLineClamp: showFullDescription ? 'unset' : 3,
+                                    textOverflow: 'ellipsis',
+                                    mb: 1
+                                }}
+                            >
+                                {product.description || "An iconic statement piece blending mid-century fluid aesthetics with contemporary ergonomic engineering. Crafted for the modern workspace or living sanctuary."}
+                            </Typography>
+                            <Typography
+                                onClick={() => setShowFullDescription(!showFullDescription)}
+                                variant="body2"
+                                sx={{
+                                    color: '#1a202c',
+                                    fontWeight: 700,
+                                    cursor: 'pointer',
+                                    textDecoration: 'underline',
+                                    display: 'inline-block'
+                                }}
+                            >
+                                {showFullDescription ? 'See Less' : 'See More'}
+                            </Typography>
+                        </Box>
+
+
+
+
+
+
+
+                        {/* Footer Badges */}
+                        <Stack direction="row" spacing={4}>
+                            <Stack direction="row" alignItems="center" spacing={1}>
+                                <VerifiedUserOutlinedIcon sx={{ fontSize: 16, color: '#b4d5dc' }} />
+                                <Typography variant="caption" sx={{ fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 0.5 }}>Certified Quality</Typography>
+                            </Stack>
+                            <Stack direction="row" alignItems="center" spacing={1}>
+                                <LocalShippingOutlinedIcon sx={{ fontSize: 16, color: '#b4d5dc' }} />
+                                <Typography variant="caption" sx={{ fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 0.5 }}>Free Worldwide Shipping</Typography>
+                            </Stack>
+                        </Stack>
+                    </Box>
+
+                    {/* RIGHT COLUMN: IMAGES */}
+                    <Box sx={{ display: 'flex', gap: 3, height: '600px' }}>
+                        {/* Vertical Thumbnails */}
+                        <Stack spacing={2} sx={{ width: 80, overflowY: 'auto', py: 1, '&::-webkit-scrollbar': { display: 'none' } }}>
+                            {(product.images?.length > 0 ? product.images : [product.thumbnail, product.thumbnail, product.thumbnail, product.thumbnail]).map((img: string, index: number) => (
+                                <Box
+                                    key={index}
+                                    onClick={() => setSelectedImage(index)}
+                                    sx={{
+                                        width: 80,
+                                        height: 80,
+                                        borderRadius: 3,
+                                        overflow: 'hidden',
+                                        cursor: 'pointer',
+                                        border: selectedImage === index ? '2px solid #1e293b' : '2px solid transparent',
+                                        opacity: selectedImage === index ? 1 : 0.6,
+                                        transition: 'all 0.2s',
+                                        flexShrink: 0
+                                    }}
+                                >
+                                    <Box component="img" src={img} sx={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                </Box>
+                            ))}
+                        </Stack>
+
+                        {/* Image Container */}
+                        <Box sx={{
+                            flex: 1,
+                            bgcolor: 'transparent', // Removed background color
+                            borderRadius: 6,
+                            position: 'relative',
+                            overflow: 'hidden',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center'
+                        }}>
                             <IconButton
                                 onClick={handleToggleWishlist}
-                                sx={{ position: 'absolute', top: 24, right: 24, bgcolor: 'white', boxShadow: '0 4px 12px rgba(0,0,0,0.08)', '&:hover': { bgcolor: '#f8fafc' } }}
+                                sx={{ position: 'absolute', top: 24, right: 24, bgcolor: 'white', ml: 'auto', width: 44, height: 44, boxShadow: '0 4px 12px rgba(0,0,0,0.05)', '&:hover': { bgcolor: '#f8fafc' } }}
                             >
                                 {isInWishlist ? <FavoriteIcon sx={{ color: '#ef4444' }} /> : <FavoriteBorderIcon />}
                             </IconButton>
@@ -182,166 +344,20 @@ const ProductDetails = () => {
                                 component="img"
                                 src={product.images?.[selectedImage] || product.thumbnail || 'https://via.placeholder.com/600'}
                                 alt={product.title}
-                                sx={{ width: '90%', height: '90%', objectFit: 'contain' }}
+                                sx={{
+                                    width: '80%',
+                                    height: 'auto',
+                                    maxHeight: '80%',
+                                    objectFit: 'contain',
+                                    filter: 'drop-shadow(0 20px 40px rgba(0,0,0,0.15))'
+                                }}
                             />
-                        </Box>
 
-                        {/* Thumbnails Row */}
-                        <Box sx={{ display: 'flex', gap: 2, overflowX: 'auto', pb: 1, '&::-webkit-scrollbar': { display: 'none' } }}>
-                            {(product.images?.length > 0 ? product.images : [product.thumbnail]).map((img: string, index: number) => (
-                                <Box
-                                    key={index}
-                                    onClick={() => setSelectedImage(index)}
-                                    sx={{
-                                        minWidth: '80px',
-                                        height: '80px',
-                                        bgcolor: '#f8fafc',
-                                        borderRadius: 2,
-                                        border: selectedImage === index ? '2px solid #adc9d1' : '1px solid #f1f5f9',
-                                        cursor: 'pointer',
-                                        p: 1,
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        transition: 'all 0.2s ease'
-                                    }}
-                                >
-                                    <Box component="img" src={img} sx={{ width: '100%', height: '100%', objectFit: 'contain' }} />
-                                </Box>
-                            ))}
-                        </Box>
-                    </Box>
-
-                    {/* RIGHT COLUMN: INFORMATION */}
-                    <Box sx={{ pt: { md: 2 } }}>
-                        {/* Rating Header */}
-                        <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 2 }}>
-                            <Rating value={product.rating || 0} readOnly size="small" sx={{ color: '#fbbf24' }} />
-                            <Typography variant="caption" sx={{ fontWeight: 700, color: '#718096' }}>
-                                {product.rating?.toFixed(1) || '0.0'} ({product.numReviews || 0} Reviews)
-                            </Typography>
-                        </Stack>
-
-                        {/* Title */}
-                        <Typography variant="h3" sx={{
-                            fontWeight: 900,
-                            textTransform: 'uppercase',
-                            lineHeight: 1.1,
-                            mb: 2,
-                            fontSize: { xs: '2rem', md: '2.5rem' },
-                            color: '#1a202c'
-                        }}>
-                            {product.title}
-                        </Typography>
-
-                        <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 800, letterSpacing: 1, display: 'block', mb: 4 }}>
-                            SKU: {product._id?.substring(0, 8).toUpperCase() || 'N/A'} &nbsp; • &nbsp; DESIGNED FOR EXCELLENCE
-                        </Typography>
-
-                        {/* Price Section */}
-                        <Box sx={{ mb: 4, p: 3, bgcolor: '#f8fafc', borderRadius: 3, border: '1px solid #f1f5f9' }}>
-                            <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 1.5 }}>
-                                <Typography variant="h3" sx={{ fontWeight: 800, color: '#1a202c' }}>
-                                    ₹{product.price}
-                                </Typography>
-                                {product.oldPrice && (
-                                    <>
-                                        <Typography variant="h5" sx={{ textDecoration: 'line-through', color: '#cbd5e1', fontWeight: 600 }}>
-                                            ₹{product.oldPrice}
-                                        </Typography>
-                                        <Chip label={`${Math.round(((product.oldPrice - product.price) / product.oldPrice) * 100)}% OFF`} size="small" sx={{ bgcolor: '#f0fff4', color: '#38a169', fontWeight: 800, borderRadius: 1 }} />
-                                    </>
-                                )}
-                            </Stack>
-                            <Typography variant="body2" sx={{ color: '#718096', lineHeight: 1.6, fontStyle: 'italic' }}>
-                                {product.description}
-                            </Typography>
-                        </Box>
-
-                        {/* Action Buttons */}
-                        <Stack direction="row" spacing={2} sx={{ mb: 5 }}>
-                            <Button
-                                onClick={handleAddToCart}
-                                variant="contained"
-                                sx={{
-                                    bgcolor: '#adc9d1',
-                                    color: '#1a202c',
-                                    fontWeight: 800,
-                                    py: 1.8,
-                                    flex: 1,
-                                    borderRadius: 3,
-                                    boxShadow: 'none',
-                                    '&:hover': { bgcolor: '#9bbec9', boxShadow: 'none' }
-                                }}>
-                                ADD TO CART
-                            </Button>
-                            <Button
-                                onClick={handleBuyNow}
-                                variant="outlined"
-                                sx={{
-                                    color: '#1a202c',
-                                    borderColor: '#e2e8f0',
-                                    fontWeight: 800,
-                                    py: 1.8,
-                                    flex: 1,
-                                    borderRadius: 3,
-                                    borderWidth: '1.5px',
-                                    '&:hover': { borderColor: '#1a202c', bgcolor: 'transparent', borderWidth: '1.5px' }
-                                }}>
-                                BUY NOW
-                            </Button>
-                        </Stack>
-
-                        {/* Trust & Payment section */}
-                        <Box sx={{ mb: 4, p: 3, bgcolor: '#f8fafc', borderRadius: 3, border: '1px solid #f1f5f9' }}>
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2, color: '#38a169' }}>
-                                <LockIcon sx={{ fontSize: 16 }} />
-                                <Typography variant="caption" sx={{ fontWeight: 800, letterSpacing: 0.5, textTransform: 'uppercase' }}>
-                                    Guaranteed Safe Checkout
-                                </Typography>
-                            </Box>
-
-                            <Stack direction="row" spacing={1.5} flexWrap="wrap" useFlexGap sx={{ mb: 3 }}>
-                                {['VISA', 'MASTERCARD', 'PAYPAL', 'UPI', 'RUPAY'].map((method) => (
-                                    <Box key={method} sx={{
-                                        border: '1px solid #e2e8f0',
-                                        borderRadius: 1.5,
-                                        px: 1.5,
-                                        py: 0.8,
-                                        bgcolor: 'white',
-                                        fontWeight: 800,
-                                        fontSize: '0.6rem',
-                                        color: '#64748b'
-                                    }}>
-                                        {method}
-                                    </Box>
-                                ))}
-                            </Stack>
-
-                            <Stack direction="row" spacing={3} sx={{ color: '#64748b' }}>
-                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                    <VerifiedUserOutlinedIcon sx={{ fontSize: 16 }} />
-                                    <Typography variant="caption" sx={{ fontWeight: 700 }}>2 Year Warranty</Typography>
-                                </Box>
-                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                    <LocalShippingOutlinedIcon sx={{ fontSize: 16 }} />
-                                    <Typography variant="caption" sx={{ fontWeight: 700 }}>Free Express Shipping</Typography>
-                                </Box>
-                            </Stack>
-                        </Box>
-
-                        {/* Specs Grid */}
-                        <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
-                            {specs.map((spec, i) => (
-                                <Box key={i} sx={{ bgcolor: '#f8fafc', p: 2.5, borderRadius: 2, border: '1px solid #f1f5f9' }}>
-                                    <Typography variant="caption" sx={{ fontWeight: 700, color: '#94a3b8', display: 'block', mb: 0.5 }}>
-                                        {spec.label.toUpperCase()}
-                                    </Typography>
-                                    <Typography variant="body2" sx={{ fontWeight: 800 }}>
-                                        {spec.value}
-                                    </Typography>
-                                </Box>
-                            ))}
+                            <IconButton
+                                sx={{ position: 'absolute', bottom: 24, right: 24, bgcolor: 'white', ml: 'auto', width: 44, height: 44, boxShadow: '0 4px 12px rgba(0,0,0,0.05)', '&:hover': { bgcolor: '#f8fafc' } }}
+                            >
+                                <CameraAltOutlinedIcon sx={{ color: 'black' }} />
+                            </IconButton>
                         </Box>
                     </Box>
                 </Box>

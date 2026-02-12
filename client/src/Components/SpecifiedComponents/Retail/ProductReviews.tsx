@@ -1,4 +1,5 @@
-import { Box, Typography, Stack, Rating, TextField, Button, Avatar, Divider, Paper } from '@mui/material';
+import { Box, Typography, Stack, Rating, TextField, Button, Avatar, Divider, Paper, IconButton } from '@mui/material';
+import CameraAltOutlinedIcon from '@mui/icons-material/CameraAltOutlined';
 import { useState } from 'react';
 
 interface Review {
@@ -20,6 +21,18 @@ interface ProductReviewsProps {
 const ProductReviews = ({ reviews, averageRating, totalReviews }: ProductReviewsProps) => {
     const [comment, setComment] = useState('');
     const [rating, setRating] = useState<number | null>(5);
+    const [selectedImage, setSelectedImage] = useState<string | null>(null);
+
+    const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setSelectedImage(reader.result as string);
+            };
+            reader.readAsDataURL(file);
+        }
+    };
 
     return (
         <Box sx={{ mt: 8 }}>
@@ -56,7 +69,6 @@ const ProductReviews = ({ reviews, averageRating, totalReviews }: ProductReviews
 
                 {/* Right Side: Review Form & List */}
                 <Box sx={{ flex: 1, width: '100%' }}>
-                    {/* Add Review Form */}
                     <Paper
                         elevation={0}
                         sx={{
@@ -78,7 +90,7 @@ const ProductReviews = ({ reviews, averageRating, totalReviews }: ProductReviews
                                     sx={{ color: '#fbbf24', fontSize: '2rem' }}
                                 />
                             </Box>
-                            <Box>
+                            <Box sx={{ position: 'relative' }}>
                                 <Typography variant="caption" sx={{ fontWeight: 800, display: 'block', mb: 1.5, color: '#94a3b8' }}>YOUR COMMENT</Typography>
                                 <TextField
                                     fullWidth
@@ -91,11 +103,36 @@ const ProductReviews = ({ reviews, averageRating, totalReviews }: ProductReviews
                                         '& .MuiOutlinedInput-root': {
                                             borderRadius: 3,
                                             bgcolor: '#f8fafc',
+                                            pb: 6, // Space for the image preview
                                             '& fieldset': { borderColor: '#f1f5f9' },
                                             '&:hover fieldset': { borderColor: '#e2e8f0' },
                                         }
                                     }}
                                 />
+
+                                {/* Photo Upload Logic */}
+                                <Box sx={{ position: 'absolute', bottom: 12, right: 12, display: 'flex', alignItems: 'center', gap: 2 }}>
+                                    {selectedImage && (
+                                        <Box
+                                            component="img"
+                                            src={selectedImage}
+                                            alt="Review Preview"
+                                            sx={{ width: 40, height: 40, borderRadius: 2, objectFit: 'cover', border: '1px solid #e2e8f0' }}
+                                        />
+                                    )}
+                                    <input
+                                        accept="image/*"
+                                        style={{ display: 'none' }}
+                                        id="icon-button-file"
+                                        type="file"
+                                        onChange={handleImageUpload}
+                                    />
+                                    <label htmlFor="icon-button-file">
+                                        <IconButton color="primary" aria-label="upload picture" component="span" sx={{ color: '#64748b' }}>
+                                            <CameraAltOutlinedIcon />
+                                        </IconButton>
+                                    </label>
+                                </Box>
                             </Box>
                             <Button
                                 variant="contained"

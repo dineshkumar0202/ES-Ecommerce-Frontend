@@ -98,29 +98,20 @@ const Navbar = () => {
                 <Box sx={{ bgcolor: '#B4D5DC', py: 1.5, borderBottom: '1px solid rgba(0,0,0,0.05)' }}>
                     <Container maxWidth="xl">
                         <Stack direction="row" alignItems="center" spacing={4}>
-                            <Stack direction="row" alignItems="center" spacing={1} onClick={() => navigate('/')} sx={{ cursor: 'pointer' }}>
-                                <Box sx={{
-                                    bgcolor: 'black',
-                                    width: 32,
-                                    height: 32,
-                                    borderRadius: 1,
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center'
-                                }}>
-                                    <RocketLaunchIcon sx={{ color: '#B4D5DC', fontSize: 18 }} />
-                                </Box>
+                            <Stack direction="row" alignItems="center" spacing={0.5} onClick={() => navigate('/')} sx={{ cursor: 'pointer' }}>
                                 <Typography
-                                    variant="h5"
+                                    variant="h4"
                                     sx={{
                                         fontWeight: 900,
-                                        color: 'black',
-                                        letterSpacing: 1,
-                                        display: 'flex',
-                                        alignItems: 'baseline'
+                                        background: 'linear-gradient(135deg, #1a202c 0%, #4a5568 100%)',
+                                        WebkitBackgroundClip: 'text',
+                                        WebkitTextFillColor: 'transparent',
+                                        letterSpacing: -1,
+                                        lineHeight: 1,
+                                        fontFamily: 'Inter, sans-serif'
                                     }}
                                 >
-                                    ATOZ<Box component="span" sx={{ color: '#64748b', fontWeight: 500, fontSize: '1rem' }}>.IN</Box>
+                                    AZ
                                 </Typography>
                             </Stack>
 

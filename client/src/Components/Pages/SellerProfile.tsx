@@ -44,7 +44,7 @@ import {
     DeleteOutline as DeleteOutlineIcon
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
-import { WholesaleService, OrderService, AuthService } from '../../services/api';
+import { WholesaleService, OrderService, AuthService, ProductService } from '../../services/api';
 
 const SellerProfile = () => {
     const navigate = useNavigate();
@@ -77,7 +77,23 @@ const SellerProfile = () => {
             setSellerProfile(data);
 
             const prodRes = await WholesaleService.getMyProducts();
-            setProducts(prodRes.data || []);
+            const wholesaleProducts = prodRes.data || [];
+
+            // Fetch Retail Products
+            let retailProducts: any[] = [];
+            try {
+                const retailRes = await ProductService.getAll({ seller: data._id });
+                retailProducts = retailRes.data?.products || [];
+            } catch (err) {
+                console.error("Error fetching retail products", err);
+            }
+
+            // Combine products, marking their source type if needed
+            const allProducts = [
+                ...wholesaleProducts.map((p: any) => ({ ...p, type: 'Wholesale' })),
+                ...retailProducts.map((p: any) => ({ ...p, type: 'Retail' }))
+            ];
+            setProducts(allProducts);
 
             const ordersRes = await OrderService.getSellerOrders();
             setOrders(ordersRes.data.map((o: any) => ({
@@ -91,6 +107,35 @@ const SellerProfile = () => {
 
         } catch (error) {
             console.error("Error loading dashboard:", error);
+        }
+    };
+
+    const handleProductDelete = async (id: string, type: string) => {
+        if (window.confirm('Are you sure you want to delete this product?')) {
+            try {
+                if (type === 'Retail') {
+                    await ProductService.delete(id);
+                } else {
+                    await WholesaleService.delete(id);
+                }
+                fetchSellerData(); // Refresh list
+            } catch (error) {
+                console.error("Delete failed:", error);
+                alert("Failed to delete product");
+            }
+        }
+    };
+
+    const handleProductEdit = (id: string, type: string) => {
+        // Navigate to edit page depending on type
+        // For now, assuming a generic edit or specific routes
+        if (type === 'Retail') {
+            // Assuming there's a retail edit route or using the same upload form with edit mode
+            navigate(`/retail/edit/${id}`); // Placeholder route
+            alert(`Edit Retail Product: ${id} (Feature to be implemented)`);
+        } else {
+            navigate(`/wholesale/edit/${id}`);
+            alert(`Edit Wholesale Product: ${id} (Feature to be implemented)`);
         }
     };
 
@@ -531,8 +576,8 @@ const SellerProfile = () => {
                                         </TableCell>
                                         <TableCell sx={{ fontWeight: 800 }}>₹{p.price || p.pricePerUnit}</TableCell>
                                         <TableCell>
-                                            <IconButton size="small"><EditOutlinedIcon /></IconButton>
-                                            <IconButton size="small" color="error"><DeleteOutlineIcon /></IconButton>
+                                            <IconButton size="small" onClick={() => handleProductEdit(p._id, p.type || 'Wholesale')}><EditOutlinedIcon /></IconButton>
+                                            <IconButton size="small" color="error" onClick={() => handleProductDelete(p._id, p.type || 'Wholesale')}><DeleteOutlineIcon /></IconButton>
                                         </TableCell>
                                     </TableRow>
                                 ))}

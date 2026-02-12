@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
-import { Box, Typography, Stack, Tab, Tabs, CircularProgress, Card, CardMedia, CardContent, IconButton, Tooltip } from '@mui/material';
+import { Box, Typography, Stack, Tab, Tabs, CircularProgress, Card, CardMedia, CardContent, IconButton, Tooltip, Chip } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
-import ShoppingBagOutlinedIcon from '@mui/icons-material/ShoppingBagOutlined';
+import ShoppingCartOutlinedIcon from '@mui/icons-material/ShoppingCartOutlined';
+import LocationOnIcon from '@mui/icons-material/LocationOn';
+import CameraAltOutlinedIcon from '@mui/icons-material/CameraAltOutlined';
 import { ProductService, WishlistService, CartService } from '../../../services/api';
 import { toast } from 'react-toastify';
 
@@ -60,6 +62,11 @@ const Products = () => {
         }
     };
 
+    const getRandomBadge = (index: number) => {
+        const badges = ["GOOD", "LIST NEW", "EXCELLENT", "PREMIUM"];
+        return badges[index % badges.length];
+    };
+
     return (
         <Box>
             {/* Featured Products Tabbed Section Header */}
@@ -103,110 +110,153 @@ const Products = () => {
             ) : (
                 <Box sx={{
                     display: 'grid',
-                    gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(4, 1fr)' },
-                    gap: 4,
+                    gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+                    gap: 3,
                 }}>
                     {products.map((product, index) => (
-                        <Box key={product._id}>
-                            <Card
-                                elevation={0}
-                                onClick={() => navigate(`/product/${product._id}`)}
+                        <Card
+                            key={product._id}
+                            elevation={0}
+                            onClick={() => navigate(`/product/${product._id}`)}
+                            sx={{
+                                cursor: 'pointer',
+                                borderRadius: 4,
+                                border: '1px solid #f3f4f6',
+                                overflow: 'visible',
+                                transition: 'all 0.3s ease',
+                                '&:hover': {
+                                    transform: 'translateY(-8px)',
+                                    boxShadow: '0 12px 24px -10px rgba(0,0,0,0.1)'
+                                }
+                            }}
+                        >
+                            {/* Image Container */}
+                            <Box
+                                className="product-card-bg"
                                 sx={{
-                                    cursor: 'pointer',
-                                    borderRadius: 0,
-                                    bgcolor: 'transparent',
+                                    height: 320, // Slightly reduced height from 340 for better ratio with new width
+                                    bgcolor: bgColors[index % bgColors.length],
+                                    borderRadius: 4,
                                     position: 'relative',
-                                    overflow: 'visible',
-                                    '&:hover .action-buttons': { opacity: 1, transform: 'translateY(0)' },
-                                    '&:hover .product-card-bg': { transform: 'scale(1.02)' },
+                                    overflow: 'hidden',
+                                    mb: 2,
+                                    '&:hover .action-buttons': { opacity: 1, transform: 'translateY(0)' }
                                 }}
                             >
-                                <Box
-                                    className="product-card-bg"
+                                {/* Badge */}
+                                <Chip
+                                    label={getRandomBadge(index)}
+                                    size="small"
                                     sx={{
-                                        position: 'relative',
-                                        bgcolor: bgColors[index % bgColors.length],
-                                        borderRadius: 8,
-                                        overflow: 'hidden',
-                                        pt: '100%',
-                                        mb: 3,
-                                        transition: 'transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)',
+                                        position: 'absolute',
+                                        top: 12,
+                                        left: 12,
+                                        bgcolor: 'rgba(255,255,255,0.9)',
+                                        borderRadius: 1,
+                                        fontSize: '0.65rem',
+                                        fontWeight: 800,
+                                        height: 20,
+                                        zIndex: 2,
+                                        backdropFilter: 'blur(4px)'
+                                    }}
+                                />
+
+                                <CardMedia
+                                    component="img"
+                                    image={product.images?.[0] || product.thumbnail || 'https://via.placeholder.com/300'}
+                                    alt={product.title}
+                                    sx={{
+                                        width: '100%',
+                                        height: '100%',
+                                        objectFit: 'cover',
+                                        objectPosition: 'top center',
+                                        transition: 'transform 0.5s ease',
+                                        '&:hover': { transform: 'scale(1.05)' }
+                                    }}
+                                />
+
+                                {/* Old Style Overlay Buttons */}
+                                <Box
+                                    className="action-buttons"
+                                    sx={{
+                                        position: 'absolute',
+                                        bottom: 15,
+                                        right: 15,
+                                        display: 'flex',
+                                        gap: 1,
+                                        opacity: 0,
+                                        transform: 'translateY(10px)',
+                                        transition: 'all 0.3s ease',
+                                        zIndex: 2
                                     }}
                                 >
-                                    <CardMedia
-                                        component="img"
-                                        image={product.images?.[0] || product.thumbnail || 'https://via.placeholder.com/300'}
-                                        alt={product.title}
-                                        sx={{
-                                            position: 'absolute',
-                                            top: '60%',
-                                            left: '50%',
-                                            transform: 'translate(-50%, -50%)',
-                                            width: '140%',
-                                            height: '130%',
-                                            objectFit: 'contain',
-                                            filter: 'drop-shadow(0 20px 30px rgba(0,0,0,0.15))'
-                                        }}
-                                    />
-                                    <Box
-                                        className="action-buttons"
-                                        sx={{
-                                            position: 'absolute',
-                                            bottom: 20,
-                                            right: 20,
-                                            display: 'flex',
-                                            gap: 1.5,
-                                            opacity: 0,
-                                            transform: 'translateY(10px)',
-                                            transition: 'all 0.3s ease',
-                                            zIndex: 2
-                                        }}
-                                    >
-                                        <Tooltip title="Add to Cart" arrow>
-                                            <IconButton
-                                                onClick={(e) => handleAddToCart(e, product._id)}
-                                                sx={{
-                                                    bgcolor: 'white', color: 'black', width: 45, height: 45,
-                                                    boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-                                                    '&:hover': { bgcolor: 'black', color: 'white' }
-                                                }}
-                                            >
-                                                <ShoppingBagOutlinedIcon />
-                                            </IconButton>
-                                        </Tooltip>
-                                        <Tooltip title="Wishlist" arrow>
-                                            <IconButton
-                                                onClick={(e) => handleAddToWishlist(e, product._id)}
-                                                sx={{
-                                                    bgcolor: 'white', color: 'black', width: 45, height: 45,
-                                                    boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-                                                    '&:hover': { bgcolor: '#ef4444', color: 'white' }
-                                                }}
-                                            >
-                                                <FavoriteBorderIcon />
-                                            </IconButton>
-                                        </Tooltip>
-                                    </Box>
+                                    <Tooltip title="Visual Search" arrow>
+                                        <IconButton
+                                            sx={{
+                                                bgcolor: 'white', color: 'black', width: 40, height: 40,
+                                                boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                                                '&:hover': { bgcolor: 'black', color: 'white' }
+                                            }}
+                                        >
+                                            <CameraAltOutlinedIcon fontSize="small" />
+                                        </IconButton>
+                                    </Tooltip>
+                                    <Tooltip title="Add to Cart" arrow>
+                                        <IconButton
+                                            onClick={(e) => handleAddToCart(e, product._id)}
+                                            sx={{
+                                                bgcolor: 'white', color: 'black', width: 40, height: 40,
+                                                boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                                                '&:hover': { bgcolor: 'black', color: 'white' }
+                                            }}
+                                        >
+                                            <ShoppingCartOutlinedIcon fontSize="small" />
+                                        </IconButton>
+                                    </Tooltip>
+                                    <Tooltip title="Wishlist" arrow>
+                                        <IconButton
+                                            onClick={(e) => handleAddToWishlist(e, product._id)}
+                                            sx={{
+                                                bgcolor: 'white', color: 'black', width: 40, height: 40,
+                                                boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                                                '&:hover': { bgcolor: '#ef4444', color: 'white' }
+                                            }}
+                                        >
+                                            <FavoriteBorderIcon fontSize="small" />
+                                        </IconButton>
+                                    </Tooltip>
                                 </Box>
+                            </Box>
 
-                                <CardContent sx={{ p: 0, '&:last-child': { pb: 0 } }}>
-                                    <Typography
-                                        variant="h6"
-                                        sx={{
-                                            fontWeight: 900, fontSize: '1rem', textTransform: 'uppercase',
-                                            letterSpacing: 0.5, mb: 0.5, color: '#18181b',
-                                            overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-                                            fontFamily: 'sans-serif'
-                                        }}
-                                    >
-                                        {product.title}
+                            {/* Content */}
+                            <CardContent sx={{ p: 1 }}>
+                                <Typography
+                                    variant="subtitle1"
+                                    sx={{
+                                        fontWeight: 800,
+                                        mb: 0.5,
+                                        color: '#1e293b',
+                                        overflow: 'hidden',
+                                        textOverflow: 'ellipsis',
+                                        whiteSpace: 'nowrap'
+                                    }}
+                                >
+                                    {product.title}
+                                </Typography>
+
+                                {/* Location Line */}
+                                <Stack direction="row" alignItems="center" spacing={0.5} sx={{ mb: 1 }}>
+                                    <LocationOnIcon sx={{ fontSize: 14, color: '#f43f5e' }} />
+                                    <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 600 }}>
+                                        {product.location || 'Global Shipping'}
                                     </Typography>
-                                    <Typography variant="body2" sx={{ fontWeight: 500, color: '#9ca3af', fontSize: '0.9rem' }}>
-                                        ₹{product.price.toFixed(2)}
-                                    </Typography>
-                                </CardContent>
-                            </Card>
-                        </Box>
+                                </Stack>
+
+                                <Typography variant="h6" sx={{ fontWeight: 900, color: '#0f172a' }}>
+                                    ₹{product.price.toFixed(2)}
+                                </Typography>
+                            </CardContent>
+                        </Card>
                     ))}
                 </Box>
             )}
