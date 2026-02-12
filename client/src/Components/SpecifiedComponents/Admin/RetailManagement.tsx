@@ -32,6 +32,7 @@ const RetailManagement = () => {
 
     // Add Product Modal State
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [editingProduct, setEditingProduct] = useState<any>(null);
     const [newProduct, setNewProduct] = useState({
         title: '', price: '', category: '', brand: '', stock: '', description: '', images: ''
     });
@@ -98,13 +99,44 @@ const RetailManagement = () => {
     };
 
     const handleAddProduct = async () => {
+        // Validate required fields
+        if (!newProduct.title.trim()) {
+            toast.error('Product name is required');
+            return;
+        }
+        if (!newProduct.brand.trim()) {
+            toast.error('Brand is required');
+            return;
+        }
+        if (!newProduct.category.trim()) {
+            toast.error('Category is required');
+            return;
+        }
+        if (!newProduct.price || Number(newProduct.price) <= 0) {
+            toast.error('Valid price is required');
+            return;
+        }
+        if (!newProduct.stock || Number(newProduct.stock) < 0) {
+            toast.error('Valid stock count is required');
+            return;
+        }
+
         try {
+            const images = newProduct.images.split(',').map((img: string) => img.trim()).filter((img: string) => img !== '');
+
             const productData = {
-                ...newProduct,
+                title: newProduct.title.trim(),
                 price: Number(newProduct.price),
                 stock: Number(newProduct.stock),
-                images: newProduct.images.split(',').map((img: string) => img.trim()).filter((img: string) => img !== '')
+                category: newProduct.category.trim(),
+                brand: newProduct.brand.trim(),
+                description: newProduct.description.trim() || undefined,
+                images,
+                image: images[0] || 'https://via.placeholder.com/600'
             };
+
+            console.log('Creating retail product with payload:', productData);
+
             const { data } = await ProductService.create(productData);
             setProducts([data, ...products]);
             setIsModalOpen(false);
@@ -126,6 +158,79 @@ const RetailManagement = () => {
                 toast.error("Failed to delete product");
             }
         }
+    };
+
+    const handleEditProduct = (product: any) => {
+        setEditingProduct(product);
+        setNewProduct({
+            title: product.title || '',
+            price: product.price?.toString() || '',
+            category: product.category || '',
+            brand: product.brand || '',
+            stock: product.stock?.toString() || '',
+            description: product.description || '',
+            images: Array.isArray(product.images) ? product.images.join(', ') : ''
+        });
+        setIsModalOpen(true);
+    };
+
+    const handleUpdateProduct = async () => {
+        if (!editingProduct) return;
+
+        // Validate required fields
+        if (!newProduct.title.trim()) {
+            toast.error('Product name is required');
+            return;
+        }
+        if (!newProduct.brand.trim()) {
+            toast.error('Brand is required');
+            return;
+        }
+        if (!newProduct.category.trim()) {
+            toast.error('Category is required');
+            return;
+        }
+        if (!newProduct.price || Number(newProduct.price) <= 0) {
+            toast.error('Valid price is required');
+            return;
+        }
+        if (!newProduct.stock || Number(newProduct.stock) < 0) {
+            toast.error('Valid stock count is required');
+            return;
+        }
+
+        try {
+            const images = newProduct.images.split(',').map((img: string) => img.trim()).filter((img: string) => img !== '');
+
+            const productData = {
+                title: newProduct.title.trim(),
+                price: Number(newProduct.price),
+                stock: Number(newProduct.stock),
+                category: newProduct.category.trim(),
+                brand: newProduct.brand.trim(),
+                description: newProduct.description.trim() || undefined,
+                images,
+                image: images[0] || 'https://via.placeholder.com/600'
+            };
+
+            console.log('Updating product with payload:', productData);
+
+            const { data } = await ProductService.update(editingProduct._id, productData);
+            setProducts(products.map((p: any) => p._id === editingProduct._id ? data : p));
+            setIsModalOpen(false);
+            setEditingProduct(null);
+            setNewProduct({ title: '', price: '', category: '', brand: '', stock: '', description: '', images: '' });
+            toast.success("Product updated successfully!");
+        } catch (error: any) {
+            console.error("Failed to update product:", error.response?.data || error.message);
+            toast.error(`Failed to update product: ${error.response?.data?.message || error.message}`);
+        }
+    };
+
+    const handleCloseModal = () => {
+        setIsModalOpen(false);
+        setEditingProduct(null);
+        setNewProduct({ title: '', price: '', category: '', brand: '', stock: '', description: '', images: '' });
     };
 
     const menuItems = [
@@ -428,7 +533,7 @@ const RetailManagement = () => {
                                         <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mt: 'auto', pt: 3 }}>
                                             <Typography variant="h6" sx={{ fontWeight: 900, color: '#1e293b' }}>₹{product.price}</Typography>
                                             <Stack direction="row" spacing={0.5}>
-                                                <IconButton size="small" sx={{ color: '#94a3b8', '&:hover': { color: '#1e293b', bgcolor: '#f1f5f9' } }}><EditIcon fontSize="small" /></IconButton>
+                                                <IconButton size="small" onClick={() => handleEditProduct(product)} sx={{ color: '#94a3b8', '&:hover': { color: '#1e293b', bgcolor: '#f1f5f9' } }}><EditIcon fontSize="small" /></IconButton>
                                                 <IconButton size="small" sx={{ color: '#fee2e2', '&:hover': { color: '#ef4444', bgcolor: '#fef2f2' } }} onClick={() => handleDeleteProduct(product._id)}><DeleteIcon fontSize="small" /></IconButton>
                                             </Stack>
                                         </Stack>
@@ -443,12 +548,12 @@ const RetailManagement = () => {
                 {/* Add Product Modal */}
                 <Dialog
                     open={isModalOpen}
-                    onClose={() => setIsModalOpen(false)}
+                    onClose={handleCloseModal}
                     maxWidth="sm"
                     fullWidth
                     PaperProps={{ sx: { borderRadius: 6, p: 1 } }}
                 >
-                    <DialogTitle sx={{ fontWeight: 900, fontSize: '1.5rem', pb: 1 }}>List a New Product</DialogTitle>
+                    <DialogTitle sx={{ fontWeight: 900, fontSize: '1.5rem', pb: 1 }}>{editingProduct ? 'Edit Product' : 'List a New Product'}</DialogTitle>
                     <DialogContent>
                         <Typography variant="body2" sx={{ color: '#94a3b8', mb: 3, fontWeight: 500 }}>All fields are required to list a product in the marketplace.</Typography>
                         <Stack spacing={3}>
@@ -470,7 +575,7 @@ const RetailManagement = () => {
                             <TextField fullWidth multiline rows={4} label="Product Description" value={newProduct.description} onChange={(e) => setNewProduct({ ...newProduct, description: e.target.value })} variant="outlined" InputProps={{ sx: { borderRadius: 3 } }} />
 
                             <Box sx={{ p: 3, border: '2px dashed #f1f5f9', borderRadius: 4, bgcolor: '#f8fafc', textAlign: 'center' }}>
-                                <Typography variant="subtitle2" sx={{ fontWeight: 800, color: '#1e293b', mb: 2 }}>Product Images ({newProduct.images ? newProduct.images.split(',').length : 0}/3)</Typography>
+                                <Typography variant="subtitle2" sx={{ fontWeight: 800, color: '#1e293b', mb: 2 }}>Product Images ({newProduct.images.split(',').filter((x: string) => x.trim()).length}/3)</Typography>
                                 <Stack direction="row" spacing={1.5} sx={{ mb: 2.5, justifyContent: 'center' }}>
                                     {newProduct.images.split(',').map((img: string, idx: number) => {
                                         const trimmedImg = img.trim();
@@ -499,8 +604,8 @@ const RetailManagement = () => {
                         </Stack>
                     </DialogContent>
                     <DialogActions sx={{ p: 4 }}>
-                        <Button onClick={() => setIsModalOpen(false)} sx={{ color: '#94a3b8', textTransform: 'none', fontWeight: 700, mr: 2 }}>Cancel</Button>
-                        <Button variant="contained" onClick={handleAddProduct} sx={{ bgcolor: '#1e293b', color: 'white', borderRadius: 3, textTransform: 'none', px: 5, py: 1.2, fontWeight: 800, '&:hover': { bgcolor: '#000' } }}>Publish Product</Button>
+                        <Button onClick={handleCloseModal} sx={{ color: '#94a3b8', textTransform: 'none', fontWeight: 700, mr: 2 }}>Cancel</Button>
+                        <Button variant="contained" onClick={editingProduct ? handleUpdateProduct : handleAddProduct} sx={{ bgcolor: '#1e293b', color: 'white', borderRadius: 3, textTransform: 'none', px: 5, py: 1.2, fontWeight: 800, '&:hover': { bgcolor: '#000' } }}>{editingProduct ? 'Update Product' : 'Publish Product'}</Button>
                     </DialogActions>
                 </Dialog>
             </Box>

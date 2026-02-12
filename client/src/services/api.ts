@@ -120,12 +120,20 @@ export const UploadService = {
     uploadImage: (file: File) => {
         const formData = new FormData();
         formData.append('image', file);
-        return api.post('/upload', formData);
+        return api.post('/upload', formData, {
+            headers: {
+                'Content-Type': undefined
+            }
+        });
     },
     uploadImagePublic: (file: File) => {
         const formData = new FormData();
         formData.append('image', file);
-        return api.post('/upload/public', formData);
+        return api.post('/upload/public', formData, {
+            headers: {
+                'Content-Type': undefined
+            }
+        });
     }
 };
 

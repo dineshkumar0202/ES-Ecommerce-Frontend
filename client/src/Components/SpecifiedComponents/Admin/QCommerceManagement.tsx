@@ -24,7 +24,9 @@ import {
     DialogContent,
     DialogActions,
     CircularProgress,
-    MenuItem
+    MenuItem,
+    Chip,
+    IconButton
 } from '@mui/material';
 
 import DashboardIcon from '@mui/icons-material/Dashboard';
@@ -134,6 +136,28 @@ const QCommerceManagement = () => {
     };
 
     const handleCreateProduct = async () => {
+        // Validate required fields
+        if (!newProduct.title.trim()) {
+            toast.error('Product title is required');
+            return;
+        }
+        if (!newProduct.brand.trim()) {
+            toast.error('Brand is required');
+            return;
+        }
+        if (!newProduct.category.trim()) {
+            toast.error('Category is required');
+            return;
+        }
+        if (!newProduct.price || Number(newProduct.price) <= 0) {
+            toast.error('Valid price is required');
+            return;
+        }
+        if (!newProduct.mrp || Number(newProduct.mrp) <= 0) {
+            toast.error('Valid MRP is required');
+            return;
+        }
+
         setIsCreating(true);
         try {
             const images = newProduct.images
@@ -142,18 +166,20 @@ const QCommerceManagement = () => {
                 .filter((img: string) => img !== '');
 
             const payload = {
-                title: newProduct.title,
-                brand: newProduct.brand,
-                category: newProduct.category,
+                title: newProduct.title.trim(),
+                brand: newProduct.brand.trim(),
+                category: newProduct.category.trim(),
                 price: Number(newProduct.price),
                 mrp: Number(newProduct.mrp),
                 discount: newProduct.discount === '' ? 0 : Number(newProduct.discount),
                 stock: newProduct.stock === '' ? 0 : Number(newProduct.stock),
-                unit: newProduct.unit || undefined,
-                description: newProduct.description || undefined,
+                unit: newProduct.unit.trim() || undefined,
+                description: newProduct.description.trim() || undefined,
                 image: images[0] || 'https://via.placeholder.com/600',
                 images
             };
+
+            console.log('Creating Q-Commerce product with payload:', payload);
 
             const { data } = await QProductService.create(payload);
             setProducts([data, ...products]);
@@ -172,6 +198,7 @@ const QCommerceManagement = () => {
             });
             toast.success('Q-Commerce product created successfully!');
         } catch (error: any) {
+            console.error('Failed to create Q-Commerce product:', error);
             toast.error(`Failed to create: ${error.response?.data?.message || error.message}`);
         } finally {
             setIsCreating(false);
@@ -331,34 +358,34 @@ const QCommerceManagement = () => {
                                     String(p.brand || '').toLowerCase().includes(searchQuery.toLowerCase())
                             )
                             .map((item, i) => (
-                            <Grid key={item._id || i} size={{ xs: 12, sm: 6, md: 3 }}>
-                                <Paper elevation={0} sx={{ borderRadius: 5, overflow: 'hidden', bgcolor: 'white', border: '1px solid #f1f5f9', height: '100%', display: 'flex', flexDirection: 'column' }}>
-                                    <Box sx={{ position: 'relative', height: 180 }}>
-                                        <Box component="img" src={item.image || 'https://via.placeholder.com/300'} sx={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                                        <Box sx={{ position: 'absolute', top: 12, left: 12, bgcolor: '#22c55e', px: 1, py: 0.5, borderRadius: 1.5 }}>
-                                            <Typography sx={{ color: 'white', fontSize: '0.65rem', fontWeight: 900 }}>INSTOCK</Typography>
+                                <Grid key={item._id || i} size={{ xs: 12, sm: 6, md: 3 }}>
+                                    <Paper elevation={0} sx={{ borderRadius: 5, overflow: 'hidden', bgcolor: 'white', border: '1px solid #f1f5f9', height: '100%', display: 'flex', flexDirection: 'column' }}>
+                                        <Box sx={{ position: 'relative', height: 180 }}>
+                                            <Box component="img" src={item.image || 'https://via.placeholder.com/300'} sx={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                            <Box sx={{ position: 'absolute', top: 12, left: 12, bgcolor: '#22c55e', px: 1, py: 0.5, borderRadius: 1.5 }}>
+                                                <Typography sx={{ color: 'white', fontSize: '0.65rem', fontWeight: 900 }}>INSTOCK</Typography>
+                                            </Box>
                                         </Box>
-                                    </Box>
-                                    <Box sx={{ p: 2.5, flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
-                                        <Typography variant="subtitle1" sx={{ fontWeight: 800, color: '#1e293b', mb: 0.5 }}>{item.title}</Typography>
-                                        <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 700, display: 'block', mb: 2 }}>{item.category}</Typography>
+                                        <Box sx={{ p: 2.5, flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
+                                            <Typography variant="subtitle1" sx={{ fontWeight: 800, color: '#1e293b', mb: 0.5 }}>{item.title}</Typography>
+                                            <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 700, display: 'block', mb: 2 }}>{item.category}</Typography>
 
-                                        <Stack spacing={2} sx={{ mb: 3, mt: 'auto' }}>
-                                            <Box>
-                                                <Stack direction="row" justifyContent="space-between" sx={{ mb: 0.5 }}>
-                                                    <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 600 }}>Stock Level</Typography>
-                                                    <Typography variant="caption" sx={{ color: '#1e293b', fontWeight: 800 }}>{item.stock || 'N/A'}</Typography>
-                                                </Stack>
-                                                <LinearProgress variant="determinate" value={item.stock ? Math.min(100, item.stock) : 50} sx={{ height: 6, borderRadius: 3, bgcolor: '#f1f5f9', '& .MuiLinearProgress-bar': { bgcolor: '#22c55e', borderRadius: 3 } }} />
-                                            </Box>
-                                            <Box>
-                                                <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 600 }}>Price: ₹{item.price}</Typography>
-                                            </Box>
-                                        </Stack>
-                                    </Box>
-                                </Paper>
-                            </Grid>
-                        ))}
+                                            <Stack spacing={2} sx={{ mb: 3, mt: 'auto' }}>
+                                                <Box>
+                                                    <Stack direction="row" justifyContent="space-between" sx={{ mb: 0.5 }}>
+                                                        <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 600 }}>Stock Level</Typography>
+                                                        <Typography variant="caption" sx={{ color: '#1e293b', fontWeight: 800 }}>{item.stock || 'N/A'}</Typography>
+                                                    </Stack>
+                                                    <LinearProgress variant="determinate" value={item.stock ? Math.min(100, item.stock) : 50} sx={{ height: 6, borderRadius: 3, bgcolor: '#f1f5f9', '& .MuiLinearProgress-bar': { bgcolor: '#22c55e', borderRadius: 3 } }} />
+                                                </Box>
+                                                <Box>
+                                                    <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 600 }}>Price: ₹{item.price}</Typography>
+                                                </Box>
+                                            </Stack>
+                                        </Box>
+                                    </Paper>
+                                </Grid>
+                            ))}
                         {products.length === 0 && <Typography sx={{ p: 2, color: '#94a3b8' }}>No inventory items found.</Typography>}
                     </Grid>
                 </Box>
@@ -529,32 +556,29 @@ const QCommerceManagement = () => {
 
                             <Box sx={{ p: 3, border: '2px dashed #f1f5f9', borderRadius: 4, bgcolor: '#f8fafc', textAlign: 'center' }}>
                                 <Typography variant="subtitle2" sx={{ fontWeight: 800, color: '#1e293b', mb: 2 }}>
-                                    Product Images ({newProduct.images ? newProduct.images.split(',').filter((x: string) => x.trim()).length : 0}/5)
+                                    Product Images ({newProduct.images ? newProduct.images.split(',').filter((x: string) => x.trim()).length : 0}/3)
                                 </Typography>
-                                <Stack direction="row" spacing={1.5} sx={{ mb: 2.5, justifyContent: 'center', flexWrap: 'wrap' }}>
+                                <Stack direction="row" spacing={1.5} sx={{ mb: 2.5, justifyContent: 'center' }}>
                                     {newProduct.images.split(',').map((img: string, idx: number) => {
                                         const trimmedImg = img.trim();
                                         if (!trimmedImg) return null;
                                         return (
-                                            <Box key={idx} sx={{ position: 'relative', width: 70, height: 70, borderRadius: 2.5, overflow: 'hidden', border: '1.5px solid #e2e8f0', mb: 1 }}>
+                                            <Box key={idx} sx={{ position: 'relative', width: 70, height: 70, borderRadius: 2.5, overflow: 'hidden', border: '1.5px solid #e2e8f0' }}>
                                                 <Box component="img" src={trimmedImg} sx={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                                                <Button
+                                                <IconButton
+                                                    size="small"
                                                     onClick={() => removeImage(trimmedImg)}
                                                     sx={{
                                                         position: 'absolute',
                                                         top: 2,
                                                         right: 2,
-                                                        minWidth: 0,
-                                                        p: 0,
-                                                        width: 22,
-                                                        height: 22,
-                                                        borderRadius: 2,
                                                         bgcolor: 'rgba(255,255,255,0.9)',
+                                                        p: 0.5,
                                                         '&:hover': { bgcolor: 'white' }
                                                     }}
                                                 >
-                                                    <DeleteIcon sx={{ fontSize: 14, color: '#ef4444' }} />
-                                                </Button>
+                                                    <DeleteIcon sx={{ fontSize: 13, color: '#ef4444' }} />
+                                                </IconButton>
                                             </Box>
                                         );
                                     })}
@@ -563,8 +587,8 @@ const QCommerceManagement = () => {
                                     variant="text"
                                     component="label"
                                     startIcon={isUploading ? <CircularProgress size={16} /> : <CloudUploadIcon />}
-                                    disabled={isUploading}
-                                    sx={{ textTransform: 'none', fontWeight: 800, borderRadius: 2, color: '#1e293b' }}
+                                    disabled={isUploading || (newProduct.images ? newProduct.images.split(',').filter((x: string) => x.trim()).length >= 3 : false)}
+                                    sx={{ textTransform: 'none', fontWeight: 700, borderRadius: 2, color: '#1e293b' }}
                                 >
                                     {isUploading ? 'Uploading...' : 'Click to upload images'}
                                     <input type="file" hidden accept="image/*" multiple onChange={handleFileUpload} />
