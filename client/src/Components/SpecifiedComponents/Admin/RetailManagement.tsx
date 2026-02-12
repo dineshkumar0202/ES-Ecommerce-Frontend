@@ -1,25 +1,23 @@
 import { useEffect, useState } from 'react';
 import { Box, Typography, Paper, Stack, IconButton, List, ListItemButton, ListItemIcon, ListItemText, Grid, Chip, TextField, CircularProgress, Button, Dialog, DialogTitle, DialogContent, DialogActions, MenuItem } from '@mui/material';
 import { toast } from 'react-toastify';
-import {
-    Dashboard as DashboardIcon,
-    Store as StoreIcon,
-    Warehouse as WarehouseIcon,
-    FlashOn as FlashOnIcon,
-    Autorenew as AutorenewIcon,
-    WorkOutline as WorkOutlineIcon,
-    ExitToApp as ExitToAppIcon,
-    MoreVert as MoreVertIcon,
-    Delete as DeleteIcon,
-    Add as AddIcon,
-    Edit as EditIcon,
-    Inventory as InventoryIcon,
-    Headset as HeadsetIcon,
-    Chair as ChairIcon,
-    Keyboard as KeyboardIcon,
-    Laptop as LaptopIcon,
-    Monitor as MonitorIcon
-} from '@mui/icons-material';
+import DashboardIcon from '@mui/icons-material/Dashboard';
+import StoreIcon from '@mui/icons-material/Store';
+import WarehouseIcon from '@mui/icons-material/Warehouse';
+import FlashOnIcon from '@mui/icons-material/FlashOn';
+import AutorenewIcon from '@mui/icons-material/Autorenew';
+import WorkOutlineIcon from '@mui/icons-material/WorkOutline';
+import ExitToAppIcon from '@mui/icons-material/ExitToApp';
+import MoreVertIcon from '@mui/icons-material/MoreVert';
+import DeleteIcon from '@mui/icons-material/Delete';
+import AddIcon from '@mui/icons-material/Add';
+import EditIcon from '@mui/icons-material/Edit';
+import InventoryIcon from '@mui/icons-material/Inventory';
+import HeadsetIcon from '@mui/icons-material/Headset';
+import ChairIcon from '@mui/icons-material/Chair';
+import KeyboardIcon from '@mui/icons-material/Keyboard';
+import LaptopIcon from '@mui/icons-material/Laptop';
+import MonitorIcon from '@mui/icons-material/Monitor';
 import { useNavigate } from 'react-router-dom';
 import { OrderService, ProductService, UploadService } from '../../../services/api';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';

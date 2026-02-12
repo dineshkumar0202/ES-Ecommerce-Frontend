@@ -1,18 +1,16 @@
 import { useEffect, useState } from 'react';
 import { Box, Typography, Paper, Stack, IconButton, List, ListItemButton, ListItemIcon, ListItemText, Grid, Chip, Avatar, CircularProgress, Tabs, Tab, Button, Link } from '@mui/material';
 import { toast } from 'react-toastify';
-import {
-    Dashboard as DashboardIcon,
-    Store as StoreIcon,
-    Warehouse as WarehouseIcon,
-    FlashOn as FlashOnIcon,
-    Autorenew as AutorenewIcon,
-    WorkOutline as WorkOutlineIcon,
-    ExitToApp as ExitToAppIcon,
-    Delete as DeleteIcon,
-    Check as CheckIcon,
-    Close as CloseIcon
-} from '@mui/icons-material';
+import DashboardIcon from '@mui/icons-material/Dashboard';
+import StoreIcon from '@mui/icons-material/Store';
+import WarehouseIcon from '@mui/icons-material/Warehouse';
+import FlashOnIcon from '@mui/icons-material/FlashOn';
+import AutorenewIcon from '@mui/icons-material/Autorenew';
+import WorkOutlineIcon from '@mui/icons-material/WorkOutline';
+import ExitToAppIcon from '@mui/icons-material/ExitToApp';
+import DeleteIcon from '@mui/icons-material/Delete';
+import CheckIcon from '@mui/icons-material/Check';
+import CloseIcon from '@mui/icons-material/Close';
 import { useNavigate } from 'react-router-dom';
 import { FreelanceService, AdminService } from '../../../services/api';
 

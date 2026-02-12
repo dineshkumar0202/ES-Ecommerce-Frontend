@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
     Box,
     Typography,
@@ -8,33 +8,24 @@ import {
     ListItemButton,
     ListItemIcon,
     ListItemText,
-    IconButton,
-    CircularProgress,
     Button,
     TextField,
+    CircularProgress,
     InputAdornment,
     Grid,
-    Avatar,
-    Divider,
     Chip,
-    Badge
 } from '@mui/material';
-import { toast } from 'react-toastify';
-import {
-    Dashboard as DashboardIcon,
-    Store as StoreIcon,
-    Warehouse as WarehouseIcon,
-    FlashOn as FlashOnIcon,
-    Autorenew as AutorenewIcon,
-    WorkOutline as WorkOutlineIcon,
-    ExitToApp as ExitToAppIcon,
-    Search as SearchIcon,
-    Add as AddIcon,
-    Star as StarIcon,
-    FileDownload as FileDownloadIcon,
-    CheckCircleOutline as CheckCircleIcon,
-    Brightness4 as ThemeIcon
-} from '@mui/icons-material';
+
+import DashboardIcon from '@mui/icons-material/Dashboard';
+import StoreIcon from '@mui/icons-material/Store';
+import WarehouseIcon from '@mui/icons-material/Warehouse';
+import FlashOnIcon from '@mui/icons-material/FlashOn';
+import AutorenewIcon from '@mui/icons-material/Autorenew';
+import WorkOutlineIcon from '@mui/icons-material/WorkOutline';
+import ExitToAppIcon from '@mui/icons-material/ExitToApp';
+import SearchIcon from '@mui/icons-material/Search';
+import AddIcon from '@mui/icons-material/Add';
+import ThemeIcon from '@mui/icons-material/Brightness4';
 import { useNavigate } from 'react-router-dom';
 import { ResaleService } from '../../../services/api';
 
@@ -68,42 +59,7 @@ const ResaleManagement = () => {
         { name: 'Freelance', icon: <WorkOutlineIcon sx={{ fontSize: 20 }} />, path: '/admin/freelance' },
     ];
 
-    const recentlyListed = [
-        {
-            title: 'Leather Travel Tote',
-            image: 'https://images.unsplash.com/photo-1548036328-c9fa89d128fa?auto=format&fit=crop&q=80&w=400',
-            tag: 'NEAR MINT',
-            desc: 'Authentic Designer • 2022 Collection',
-            price: '$420.00',
-            originalPrice: '$850.00'
-        },
-        {
-            title: 'Vintage Film Camera',
-            image: 'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=crop&q=80&w=400',
-            tag: 'GOOD',
-            desc: '35mm Classic • Functional',
-            price: '$185.00'
-        },
-        {
-            title: 'Retro Run Sneakers',
-            image: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&q=80&w=400',
-            tag: 'BRAND NEW',
-            desc: 'Limited Edition • US Size 10',
-            price: '$125.00'
-        }
-    ];
 
-    const topResellers = [
-        { name: 'Elena Vintage', niche: 'Expert in Designer Handbags', image: 'https://i.pravatar.cc/150?u=elena', sales: '$14,240', rating: '4.9' },
-        { name: 'Marcus Tech', niche: 'Refurbished Electronics', image: 'https://i.pravatar.cc/150?u=marcus', sales: '$8,120', rating: '4.8' },
-        { name: 'Urban Threads', niche: 'Premium Streetwear', image: 'https://i.pravatar.cc/150?u=urban', sales: '$5,400', rating: '5.0' },
-        { name: 'John\'s Library', niche: 'Rare Books & Prints', image: 'https://i.pravatar.cc/150?u=john', sales: '$3,950', rating: '4.7' }
-    ];
-
-    const resaleHistory = [
-        { name: 'Smart Tech Exchange', time: 'APPROVED 2 HOURS AGO', id: 'RS-9021', units: '842 Units', status: 'ACTIVE' },
-        { name: 'Modern Living Resale', time: 'APPROVED 1 DAY AGO', id: 'RS-8724', units: '1,530 Units', status: 'ACTIVE' }
-    ];
 
     return (
         <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: 'white' }}>

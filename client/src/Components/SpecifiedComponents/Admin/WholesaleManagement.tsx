@@ -21,19 +21,16 @@ import {
     Grid
 } from '@mui/material';
 import { toast } from 'react-toastify';
-import {
-    Dashboard as DashboardIcon,
-    Store as StoreIcon,
-    Warehouse as WarehouseIcon,
-    FlashOn as FlashOnIcon,
-    Autorenew as AutorenewIcon,
-    WorkOutline as WorkOutlineIcon,
-    ExitToApp as ExitToAppIcon,
-    Delete as DeleteIcon,
-    Add as AddIcon,
-    Search as SearchIcon,
-    Visibility as VisibilityIcon
-} from '@mui/icons-material';
+import DashboardIcon from '@mui/icons-material/Dashboard';
+import StoreIcon from '@mui/icons-material/Store';
+import WarehouseIcon from '@mui/icons-material/Warehouse';
+import FlashOnIcon from '@mui/icons-material/FlashOn';
+import AutorenewIcon from '@mui/icons-material/Autorenew';
+import WorkOutlineIcon from '@mui/icons-material/WorkOutline';
+import ExitToAppIcon from '@mui/icons-material/ExitToApp';
+import DeleteIcon from '@mui/icons-material/Delete';
+import AddIcon from '@mui/icons-material/Add';
+import SearchIcon from '@mui/icons-material/Search';
 import { useNavigate } from 'react-router-dom';
 import { WholesaleService, UploadService } from '../../../services/api';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';

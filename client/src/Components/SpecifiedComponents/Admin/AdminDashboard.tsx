@@ -1,16 +1,14 @@
 import { Box, Typography, Paper, Stack, List, ListItemButton, ListItemIcon, ListItemText, Grid } from '@mui/material';
-import {
-    Dashboard as DashboardIcon,
-    Store as StoreIcon,
-    Warehouse as WarehouseIcon,
-    FlashOn as FlashOnIcon,
-    Autorenew as AutorenewIcon,
-    WorkOutline as WorkOutlineIcon,
-    ExitToApp as ExitToAppIcon,
-    Group as GroupIcon,
-    ShoppingBag as ShoppingBagIcon,
-    AttachMoney as AttachMoneyIcon,
-} from '@mui/icons-material';
+import DashboardIcon from '@mui/icons-material/Dashboard';
+import StoreIcon from '@mui/icons-material/Store';
+import WarehouseIcon from '@mui/icons-material/Warehouse';
+import FlashOnIcon from '@mui/icons-material/FlashOn';
+import AutorenewIcon from '@mui/icons-material/Autorenew';
+import WorkOutlineIcon from '@mui/icons-material/WorkOutline';
+import ExitToAppIcon from '@mui/icons-material/ExitToApp';
+import GroupIcon from '@mui/icons-material/Group';
+import ShoppingBagIcon from '@mui/icons-material/ShoppingBag';
+import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import { useNavigate } from 'react-router-dom';
 import { AdminService } from '../../../services/api';
 import { useEffect, useState } from 'react';

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
     Box,
     Typography,
@@ -8,8 +8,6 @@ import {
     ListItemButton,
     ListItemIcon,
     ListItemText,
-    IconButton,
-    CircularProgress,
     Button,
     TextField,
     InputAdornment,
@@ -22,23 +20,19 @@ import {
     TableRow,
     LinearProgress
 } from '@mui/material';
-import { toast } from 'react-toastify';
-import {
-    Dashboard as DashboardIcon,
-    Store as StoreIcon,
-    Warehouse as WarehouseIcon,
-    FlashOn as FlashOnIcon,
-    Autorenew as AutorenewIcon,
-    WorkOutline as WorkOutlineIcon,
-    ExitToApp as ExitToAppIcon,
-    Search as SearchIcon,
-    Add as AddIcon,
-    Refresh as RefreshIcon,
-    ElectricBolt as ElectricBoltIcon,
-    AccessTime as AccessTimeIcon,
-    DeliveryDining as DeliveryDiningIcon,
-    Brightness4 as ThemeIcon
-} from '@mui/icons-material';
+
+import DashboardIcon from '@mui/icons-material/Dashboard';
+import StoreIcon from '@mui/icons-material/Store';
+import WarehouseIcon from '@mui/icons-material/Warehouse';
+import FlashOnIcon from '@mui/icons-material/FlashOn';
+import AutorenewIcon from '@mui/icons-material/Autorenew';
+import WorkOutlineIcon from '@mui/icons-material/WorkOutline';
+import ExitToAppIcon from '@mui/icons-material/ExitToApp';
+import SearchIcon from '@mui/icons-material/Search';
+import AddIcon from '@mui/icons-material/Add';
+import RefreshIcon from '@mui/icons-material/Refresh';
+import ElectricBoltIcon from '@mui/icons-material/ElectricBolt';
+import ThemeIcon from '@mui/icons-material/Brightness4';
 import { useNavigate } from 'react-router-dom';
 import { QProductService, OrderService } from '../../../services/api';
 
