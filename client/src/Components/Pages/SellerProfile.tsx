@@ -9,7 +9,6 @@ import {
     Avatar,
     Chip,
     IconButton,
-    Grid,
     Divider,
     CircularProgress,
     List,
@@ -123,9 +122,9 @@ const SellerProfile = () => {
     // --- Component Renders ---
 
     const renderBusinessProfile = () => (
-        <Grid container spacing={4}>
+        <Box sx={{ display: 'flex', gap: 4, flexDirection: { xs: 'column', lg: 'row' } }}>
             {/* Left Column */}
-            <Grid item xs={12} lg={8.5}>
+            <Box sx={{ flex: { lg: 8.5 }, width: '100%' }}>
                 {/* Hero Header Card */}
                 <Paper elevation={0} sx={{ borderRadius: 6, overflow: 'hidden', mb: 4, position: 'relative' }}>
                     <Box sx={{ height: 200, bgcolor: '#d1d5db', position: 'relative' }}>
@@ -196,24 +195,24 @@ const SellerProfile = () => {
                             </Stack>
                             <Button startIcon={<EditIcon />} sx={{ textTransform: 'none', fontWeight: 800, color: '#64748b' }}>EDIT</Button>
                         </Stack>
-                        <Grid container spacing={4}>
-                            <Grid item xs={6}>
+                        <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 4 }}>
+                            <Box>
                                 <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase' }}>Legal Business Name</Typography>
                                 <Typography variant="subtitle1" sx={{ fontWeight: 700, color: '#1e293b' }}>{sellerProfile?.businessName || name}</Typography>
-                            </Grid>
-                            <Grid item xs={6}>
+                            </Box>
+                            <Box>
                                 <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase' }}>Business Type</Typography>
                                 <Typography variant="subtitle1" sx={{ fontWeight: 700, color: '#1e293b' }}>Private Limited Company</Typography>
-                            </Grid>
-                            <Grid item xs={6}>
+                            </Box>
+                            <Box>
                                 <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase' }}>Incorporation Date</Typography>
                                 <Typography variant="subtitle1" sx={{ fontWeight: 700, color: '#1e293b' }}>12 Oct 2018</Typography>
-                            </Grid>
-                            <Grid item xs={6}>
+                            </Box>
+                            <Box>
                                 <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase' }}>Primary Category</Typography>
                                 <Typography variant="subtitle1" sx={{ fontWeight: 700, color: '#1e293b' }}>Electronics & Office Supplies</Typography>
-                            </Grid>
-                        </Grid>
+                            </Box>
+                        </Box>
                     </Paper>
 
                     {/* Compliance & GST */}
@@ -225,19 +224,19 @@ const SellerProfile = () => {
                             </Stack>
                             <Button startIcon={<EditIcon />} sx={{ textTransform: 'none', fontWeight: 800, color: '#64748b' }}>EDIT</Button>
                         </Stack>
-                        <Grid container spacing={4} sx={{ mb: 4 }}>
-                            <Grid item xs={6}>
+                        <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 4, mb: 4 }}>
+                            <Box>
                                 <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase' }}>GSTIN</Typography>
                                 <Stack direction="row" spacing={1} alignItems="center">
                                     <Typography variant="subtitle1" sx={{ fontWeight: 800, color: '#1e293b' }}>29AAAAA0000A1Z5</Typography>
                                     <Chip label="Verified" size="small" icon={<CheckCircleIcon sx={{ fontSize: '12px !important' }} />} sx={{ height: 20, fontSize: '10px', fontWeight: 900, bgcolor: '#f0fdf4', color: '#16a34a' }} />
                                 </Stack>
-                            </Grid>
-                            <Grid item xs={6}>
+                            </Box>
+                            <Box>
                                 <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase' }}>PAN Number</Typography>
                                 <Typography variant="subtitle1" sx={{ fontWeight: 800, color: '#1e293b' }}>ABCDE1234F</Typography>
-                            </Grid>
-                        </Grid>
+                            </Box>
+                        </Box>
                         <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase', display: 'block', mb: 2 }}>Uploaded Documents</Typography>
                         <Stack direction="row" spacing={2}>
                             {[
@@ -268,23 +267,23 @@ const SellerProfile = () => {
                             <Button startIcon={<EditIcon />} sx={{ textTransform: 'none', fontWeight: 800, color: '#64748b' }}>EDIT</Button>
                         </Stack>
                         <Box sx={{ p: 3, borderRadius: 4, bgcolor: '#f8fafc', border: '1px solid #f1f5f9' }}>
-                            <Grid container spacing={4}>
-                                <Grid item xs={4}>
+                            <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 4 }}>
+                                <Box>
                                     <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase' }}>Bank Name</Typography>
                                     <Typography variant="subtitle1" sx={{ fontWeight: 800, color: '#1e293b' }}>International Finance Bank</Typography>
-                                </Grid>
-                                <Grid item xs={4}>
+                                </Box>
+                                <Box>
                                     <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase' }}>Account Number</Typography>
                                     <Stack direction="row" spacing={1} alignItems="center">
                                         <Typography variant="subtitle1" sx={{ fontWeight: 800, color: '#1e293b' }}>**** **** 8920</Typography>
                                         <Chip label="Verified" size="small" sx={{ height: 20, fontSize: '10px', fontWeight: 900, bgcolor: '#eff6ff', color: '#1d4ed8' }} />
                                     </Stack>
-                                </Grid>
-                                <Grid item xs={4}>
+                                </Box>
+                                <Box>
                                     <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase' }}>IFSC Code</Typography>
                                     <Typography variant="subtitle1" sx={{ fontWeight: 800, color: '#1e293b' }}>IFBK0009122</Typography>
-                                </Grid>
-                            </Grid>
+                                </Box>
+                            </Box>
                         </Box>
                     </Paper>
 
@@ -326,10 +325,10 @@ const SellerProfile = () => {
                         </Stack>
                     </Paper>
                 </Stack>
-            </Grid>
+            </Box>
 
             {/* Right Column */}
-            <Grid item xs={12} lg={3.5}>
+            <Box sx={{ flex: { lg: 3.5 }, width: '100%' }}>
                 <Stack spacing={4}>
                     {/* Profile Completion */}
                     <Paper elevation={0} sx={{ p: 4, borderRadius: 6, border: '1px solid #e2e8f0', textAlign: 'center' }}>
@@ -384,34 +383,32 @@ const SellerProfile = () => {
                         </Button>
                     </Paper>
                 </Stack>
-            </Grid>
-        </Grid>
+            </Box>
+        </Box>
     );
 
     const renderDashboard = () => (
         <Box>
             <Typography variant="h5" sx={{ fontWeight: 900, mb: 3 }}>Dashboard Overview</Typography>
-            <Grid container spacing={3} sx={{ mb: 4 }}>
+            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', md: 'repeat(4, 1fr)' }, gap: 3, mb: 4 }}>
                 {[
                     { label: 'Total Sales', value: stats.totalSales, icon: <AttachMoneyOutlinedIcon />, color: '#bef264' },
                     { label: 'Total Orders', value: stats.orders, icon: <ShoppingBagOutlinedIcon />, color: '#B4D5DC' },
                     { label: 'Active Listings', value: stats.products, icon: <Inventory2OutlinedIcon />, color: '#fca5a5' },
                     { label: 'Seller Rating', value: stats.rating, icon: <TrendingUpIcon />, color: '#c4b5fd' }
                 ].map((stat, i) => (
-                    <Grid item xs={12} sm={6} md={3} key={i}>
-                        <Paper elevation={0} sx={{ p: 3, borderRadius: 4, border: '1px solid #f1f5f9', bgcolor: 'white' }}>
-                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
-                                <Box sx={{ p: 1.5, borderRadius: 3, bgcolor: stat.color, color: 'black' }}>
-                                    {stat.icon}
-                                </Box>
-                                <Chip label="+12%" size="small" sx={{ bgcolor: '#f1f5f9', fontWeight: 800, fontSize: '0.65rem' }} />
+                    <Paper key={i} elevation={0} sx={{ p: 3, borderRadius: 4, border: '1px solid #f1f5f9', bgcolor: 'white' }}>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
+                            <Box sx={{ p: 1.5, borderRadius: 3, bgcolor: stat.color, color: 'black' }}>
+                                {stat.icon}
                             </Box>
-                            <Typography variant="h4" sx={{ fontWeight: 900, mb: 0.5 }}>{stat.value}</Typography>
-                            <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 700 }}>{stat.label}</Typography>
-                        </Paper>
-                    </Grid>
+                            <Chip label="+12%" size="small" sx={{ bgcolor: '#f1f5f9', fontWeight: 800, fontSize: '0.65rem' }} />
+                        </Box>
+                        <Typography variant="h4" sx={{ fontWeight: 900, mb: 0.5 }}>{stat.value}</Typography>
+                        <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 700 }}>{stat.label}</Typography>
+                    </Paper>
                 ))}
-            </Grid>
+            </Box>
 
             {/* Recent Orders Table */}
             <Paper elevation={0} sx={{ p: 4, borderRadius: 6, border: '1px solid #f1f5f9', bgcolor: 'white' }}>
