@@ -18,7 +18,13 @@ import {
     TableContainer,
     TableHead,
     TableRow,
-    LinearProgress
+    LinearProgress,
+    Dialog,
+    DialogTitle,
+    DialogContent,
+    DialogActions,
+    CircularProgress,
+    MenuItem
 } from '@mui/material';
 
 import DashboardIcon from '@mui/icons-material/Dashboard';
@@ -33,8 +39,11 @@ import AddIcon from '@mui/icons-material/Add';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import ElectricBoltIcon from '@mui/icons-material/ElectricBolt';
 import ThemeIcon from '@mui/icons-material/Brightness4';
+import CloudUploadIcon from '@mui/icons-material/CloudUpload';
+import DeleteIcon from '@mui/icons-material/Delete';
 import { useNavigate } from 'react-router-dom';
-import { QProductService, OrderService } from '../../../services/api';
+import { QProductService, OrderService, UploadService } from '../../../services/api';
+import { toast } from 'react-toastify';
 
 const QCommerceManagement = () => {
     const navigate = useNavigate();
@@ -42,6 +51,23 @@ const QCommerceManagement = () => {
     const [orders, setOrders] = useState<any[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
+
+    // Create Product Modal State (Retail-like)
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [newProduct, setNewProduct] = useState({
+        title: '',
+        brand: '',
+        category: '',
+        price: '',
+        mrp: '',
+        discount: '',
+        stock: '',
+        unit: '',
+        description: '',
+        images: '' // comma separated URLs
+    });
+    const [isUploading, setIsUploading] = useState(false);
+    const [isCreating, setIsCreating] = useState(false);
 
     useEffect(() => {
         fetchProducts();
@@ -66,6 +92,89 @@ const QCommerceManagement = () => {
             setOrders(data);
         } catch (error) {
             console.error("Failed to fetch orders", error);
+        }
+    };
+
+    const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const files = e.target.files;
+        if (!files || files.length === 0) return;
+
+        setIsUploading(true);
+        try {
+            const uploadPromises = Array.from(files).map(async (file) => {
+                const { data } = await UploadService.uploadImage(file);
+                return data.url;
+            });
+            const uploadedUrls = await Promise.all(uploadPromises);
+
+            setNewProduct(prev => {
+                const existingImages = prev.images
+                    ? prev.images.split(',').map((img: string) => img.trim()).filter((img: string) => img !== '')
+                    : [];
+                const nextImages = [...existingImages, ...uploadedUrls];
+                return { ...prev, images: nextImages.join(', ') };
+            });
+            toast.success(`${uploadedUrls.length} image(s) uploaded successfully!`);
+        } catch (error: any) {
+            toast.error(`Upload failed: ${error.response?.data?.message || error.message}`);
+        } finally {
+            setIsUploading(false);
+        }
+    };
+
+    const removeImage = (urlToRemove: string) => {
+        setNewProduct(prev => {
+            const currentImages = prev.images
+                .split(',')
+                .map((img: string) => img.trim())
+                .filter((img: string) => img !== '');
+            const filteredImages = currentImages.filter((url: string) => url !== urlToRemove);
+            return { ...prev, images: filteredImages.join(', ') };
+        });
+    };
+
+    const handleCreateProduct = async () => {
+        setIsCreating(true);
+        try {
+            const images = newProduct.images
+                .split(',')
+                .map((img: string) => img.trim())
+                .filter((img: string) => img !== '');
+
+            const payload = {
+                title: newProduct.title,
+                brand: newProduct.brand,
+                category: newProduct.category,
+                price: Number(newProduct.price),
+                mrp: Number(newProduct.mrp),
+                discount: newProduct.discount === '' ? 0 : Number(newProduct.discount),
+                stock: newProduct.stock === '' ? 0 : Number(newProduct.stock),
+                unit: newProduct.unit || undefined,
+                description: newProduct.description || undefined,
+                image: images[0] || 'https://via.placeholder.com/600',
+                images
+            };
+
+            const { data } = await QProductService.create(payload);
+            setProducts([data, ...products]);
+            setIsModalOpen(false);
+            setNewProduct({
+                title: '',
+                brand: '',
+                category: '',
+                price: '',
+                mrp: '',
+                discount: '',
+                stock: '',
+                unit: '',
+                description: '',
+                images: ''
+            });
+            toast.success('Q-Commerce product created successfully!');
+        } catch (error: any) {
+            toast.error(`Failed to create: ${error.response?.data?.message || error.message}`);
+        } finally {
+            setIsCreating(false);
         }
     };
 
@@ -99,14 +208,14 @@ const QCommerceManagement = () => {
                             sx={{
                                 mb: 1,
                                 borderRadius: 3,
-                                bgcolor: item.active ? '#CFE8EC' : 'transparent',
-                                color: item.active ? '#1e293b' : '#64748b',
-                                '&:hover': { bgcolor: item.active ? '#CFE8EC' : '#f8fafc' },
+                                bgcolor: item.active ? '#B4D5DC' : 'transparent',
+                                color: item.active ? 'black' : '#64748b',
+                                '&:hover': { bgcolor: item.active ? '#B4D5DC' : '#f8fafc' },
                                 py: 1.2,
                                 px: 2
                             }}
                         >
-                            <ListItemIcon sx={{ minWidth: 35, color: item.active ? '#1e293b' : '#64748b' }}>
+                            <ListItemIcon sx={{ minWidth: 35, color: item.active ? 'black' : '#64748b' }}>
                                 {item.icon}
                             </ListItemIcon>
                             <ListItemText
@@ -141,6 +250,8 @@ const QCommerceManagement = () => {
                         <TextField
                             size="small"
                             placeholder="Search dark store..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
                             sx={{
                                 width: 280,
                                 '& .MuiOutlinedInput-root': {
@@ -161,15 +272,16 @@ const QCommerceManagement = () => {
                         <Button
                             variant="contained"
                             startIcon={<AddIcon />}
+                            onClick={() => setIsModalOpen(true)}
                             sx={{
-                                bgcolor: '#CFE8EC',
-                                color: '#1e293b',
+                                bgcolor: '#B4D5DC',
+                                color: 'black',
                                 borderRadius: 3,
                                 px: 3,
                                 fontWeight: 700,
                                 textTransform: 'none',
                                 boxShadow: 'none',
-                                '&:hover': { bgcolor: '#b8dbe2', boxShadow: 'none' }
+                                '&:hover': { bgcolor: '#9cc8d1', boxShadow: 'none' }
                             }}
                         >
                             Create Entry
@@ -210,7 +322,15 @@ const QCommerceManagement = () => {
                     </Stack>
 
                     <Grid container spacing={3}>
-                        {(products.length > 0 ? products : []).map((item, i) => (
+                        {(products.length > 0 ? products : [])
+                            .filter((p: any) =>
+                                !searchQuery
+                                    ? true
+                                    : String(p.title || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+                                    String(p.category || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+                                    String(p.brand || '').toLowerCase().includes(searchQuery.toLowerCase())
+                            )
+                            .map((item, i) => (
                             <Grid key={item._id || i} size={{ xs: 12, sm: 6, md: 3 }}>
                                 <Paper elevation={0} sx={{ borderRadius: 5, overflow: 'hidden', bgcolor: 'white', border: '1px solid #f1f5f9', height: '100%', display: 'flex', flexDirection: 'column' }}>
                                     <Box sx={{ position: 'relative', height: 180 }}>
@@ -291,6 +411,190 @@ const QCommerceManagement = () => {
                         </Table>
                     </TableContainer>
                 </Box>
+
+                {/* Create Q-Commerce Product Modal (Retail-like) */}
+                <Dialog
+                    open={isModalOpen}
+                    onClose={() => setIsModalOpen(false)}
+                    maxWidth="sm"
+                    fullWidth
+                    PaperProps={{ sx: { borderRadius: 6, p: 1 } }}
+                >
+                    <DialogTitle sx={{ fontWeight: 900, fontSize: '1.5rem', pb: 1 }}>Add Q-Commerce Product</DialogTitle>
+                    <DialogContent>
+                        <Typography variant="body2" sx={{ color: '#94a3b8', mb: 3, fontWeight: 500 }}>
+                            Fill the details to add a product in Q‑Commerce.
+                        </Typography>
+                        <Stack spacing={3}>
+                            <TextField
+                                fullWidth
+                                label="Product Title"
+                                value={newProduct.title}
+                                onChange={(e) => setNewProduct({ ...newProduct, title: e.target.value })}
+                                variant="outlined"
+                                InputProps={{ sx: { borderRadius: 3 } }}
+                            />
+
+                            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={3}>
+                                <TextField
+                                    fullWidth
+                                    label="Brand"
+                                    value={newProduct.brand}
+                                    onChange={(e) => setNewProduct({ ...newProduct, brand: e.target.value })}
+                                    variant="outlined"
+                                    InputProps={{ sx: { borderRadius: 3 } }}
+                                />
+                                <TextField
+                                    fullWidth
+                                    select
+                                    label="Category"
+                                    value={newProduct.category}
+                                    onChange={(e) => setNewProduct({ ...newProduct, category: e.target.value })}
+                                    variant="outlined"
+                                    InputProps={{ sx: { borderRadius: 3 } }}
+                                >
+                                    {['Grocery', 'Snacks', 'Beverages', 'Dairy', 'Personal Care', 'Home'].map(cat => (
+                                        <MenuItem key={cat} value={cat}>{cat}</MenuItem>
+                                    ))}
+                                </TextField>
+                            </Stack>
+
+                            <Grid container spacing={3}>
+                                <Grid size={{ xs: 6 }}>
+                                    <TextField
+                                        fullWidth
+                                        type="number"
+                                        label="Price (₹)"
+                                        value={newProduct.price}
+                                        onChange={(e) => setNewProduct({ ...newProduct, price: e.target.value })}
+                                        variant="outlined"
+                                        InputProps={{ sx: { borderRadius: 3 } }}
+                                    />
+                                </Grid>
+                                <Grid size={{ xs: 6 }}>
+                                    <TextField
+                                        fullWidth
+                                        type="number"
+                                        label="MRP (₹)"
+                                        value={newProduct.mrp}
+                                        onChange={(e) => setNewProduct({ ...newProduct, mrp: e.target.value })}
+                                        variant="outlined"
+                                        InputProps={{ sx: { borderRadius: 3 } }}
+                                    />
+                                </Grid>
+                                <Grid size={{ xs: 6 }}>
+                                    <TextField
+                                        fullWidth
+                                        type="number"
+                                        label="Discount (%)"
+                                        value={newProduct.discount}
+                                        onChange={(e) => setNewProduct({ ...newProduct, discount: e.target.value })}
+                                        variant="outlined"
+                                        InputProps={{ sx: { borderRadius: 3 } }}
+                                    />
+                                </Grid>
+                                <Grid size={{ xs: 6 }}>
+                                    <TextField
+                                        fullWidth
+                                        type="number"
+                                        label="Stock"
+                                        value={newProduct.stock}
+                                        onChange={(e) => setNewProduct({ ...newProduct, stock: e.target.value })}
+                                        variant="outlined"
+                                        InputProps={{ sx: { borderRadius: 3 } }}
+                                    />
+                                </Grid>
+                            </Grid>
+
+                            <TextField
+                                fullWidth
+                                label="Unit (optional)"
+                                placeholder="e.g. 500g, 1L"
+                                value={newProduct.unit}
+                                onChange={(e) => setNewProduct({ ...newProduct, unit: e.target.value })}
+                                variant="outlined"
+                                InputProps={{ sx: { borderRadius: 3 } }}
+                            />
+
+                            <TextField
+                                fullWidth
+                                multiline
+                                rows={4}
+                                label="Description (optional)"
+                                value={newProduct.description}
+                                onChange={(e) => setNewProduct({ ...newProduct, description: e.target.value })}
+                                variant="outlined"
+                                InputProps={{ sx: { borderRadius: 3 } }}
+                            />
+
+                            <Box sx={{ p: 3, border: '2px dashed #f1f5f9', borderRadius: 4, bgcolor: '#f8fafc', textAlign: 'center' }}>
+                                <Typography variant="subtitle2" sx={{ fontWeight: 800, color: '#1e293b', mb: 2 }}>
+                                    Product Images ({newProduct.images ? newProduct.images.split(',').filter((x: string) => x.trim()).length : 0}/5)
+                                </Typography>
+                                <Stack direction="row" spacing={1.5} sx={{ mb: 2.5, justifyContent: 'center', flexWrap: 'wrap' }}>
+                                    {newProduct.images.split(',').map((img: string, idx: number) => {
+                                        const trimmedImg = img.trim();
+                                        if (!trimmedImg) return null;
+                                        return (
+                                            <Box key={idx} sx={{ position: 'relative', width: 70, height: 70, borderRadius: 2.5, overflow: 'hidden', border: '1.5px solid #e2e8f0', mb: 1 }}>
+                                                <Box component="img" src={trimmedImg} sx={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                                <Button
+                                                    onClick={() => removeImage(trimmedImg)}
+                                                    sx={{
+                                                        position: 'absolute',
+                                                        top: 2,
+                                                        right: 2,
+                                                        minWidth: 0,
+                                                        p: 0,
+                                                        width: 22,
+                                                        height: 22,
+                                                        borderRadius: 2,
+                                                        bgcolor: 'rgba(255,255,255,0.9)',
+                                                        '&:hover': { bgcolor: 'white' }
+                                                    }}
+                                                >
+                                                    <DeleteIcon sx={{ fontSize: 14, color: '#ef4444' }} />
+                                                </Button>
+                                            </Box>
+                                        );
+                                    })}
+                                </Stack>
+                                <Button
+                                    variant="text"
+                                    component="label"
+                                    startIcon={isUploading ? <CircularProgress size={16} /> : <CloudUploadIcon />}
+                                    disabled={isUploading}
+                                    sx={{ textTransform: 'none', fontWeight: 800, borderRadius: 2, color: '#1e293b' }}
+                                >
+                                    {isUploading ? 'Uploading...' : 'Click to upload images'}
+                                    <input type="file" hidden accept="image/*" multiple onChange={handleFileUpload} />
+                                </Button>
+                            </Box>
+                        </Stack>
+                    </DialogContent>
+                    <DialogActions sx={{ p: 4 }}>
+                        <Button onClick={() => setIsModalOpen(false)} sx={{ color: '#94a3b8', textTransform: 'none', fontWeight: 700, mr: 2 }}>
+                            Cancel
+                        </Button>
+                        <Button
+                            variant="contained"
+                            onClick={handleCreateProduct}
+                            disabled={isCreating}
+                            sx={{
+                                bgcolor: 'black',
+                                color: 'white',
+                                borderRadius: 3,
+                                textTransform: 'none',
+                                px: 5,
+                                py: 1.2,
+                                fontWeight: 900,
+                                '&:hover': { bgcolor: '#000' }
+                            }}
+                        >
+                            {isCreating ? 'Creating...' : 'Publish Product'}
+                        </Button>
+                    </DialogActions>
+                </Dialog>
             </Box>
         </Box>
     );

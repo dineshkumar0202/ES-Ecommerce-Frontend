@@ -1,4 +1,4 @@
-import { Box, Typography, Paper, Stack, Grid, Chip, Link } from '@mui/material';
+import { Box, Typography, Paper, Stack, Grid, Chip, Link, Button } from '@mui/material';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 
 // Interface for the post data
@@ -30,7 +30,7 @@ interface FreelancersFeedProps {
     showContactInfo?: boolean;
 }
 
-const FreelancersFeed = ({ posts, showContactInfo = false }: FreelancersFeedProps) => {
+const FreelancersFeed = ({ posts, showContactInfo = false, showInterestButton = false, onInterestClick }: FreelancersFeedProps) => {
 
     const filterDescription = (text: string) => {
         if (showContactInfo) return text;
@@ -148,10 +148,28 @@ const FreelancersFeed = ({ posts, showContactInfo = false }: FreelancersFeedProp
                                     {filterDescription(item.description).substring(0, 80)}...
                                 </Typography>
 
-                                <Stack direction="row" alignItems="center" justifyContent="flex-end" sx={{ pt: 2, borderTop: '1px solid #f1f5f9' }}>
+                                <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ pt: 2, borderTop: '1px solid #f1f5f9' }}>
                                     <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 500, fontSize: '0.75rem' }}>
                                         {item.status === 'APPROVED' ? 'Success' : item.status === 'PENDING' ? 'Pending' : item.status === 'REJECTED' ? 'Rejected' : 'Due in 4 days'}
                                     </Typography>
+                                    {showInterestButton && onInterestClick && (
+                                        <Button
+                                            onClick={() => onInterestClick(item.id)}
+                                            variant="contained"
+                                            size="small"
+                                            sx={{
+                                                bgcolor: 'black',
+                                                color: 'white',
+                                                fontWeight: 900,
+                                                textTransform: 'none',
+                                                borderRadius: 3,
+                                                px: 2,
+                                                '&:hover': { bgcolor: '#111' }
+                                            }}
+                                        >
+                                            Interested
+                                        </Button>
+                                    )}
                                 </Stack>
                             </Box>
                         </Paper>

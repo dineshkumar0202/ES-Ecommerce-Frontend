@@ -3,6 +3,7 @@ import mongoose, { Document, Schema } from 'mongoose';
 export interface IFreelanceInterest extends Document {
     post: mongoose.Types.ObjectId;
     user: mongoose.Types.ObjectId;
+    details?: string;
     status: 'Pending' | 'Approved' | 'Rejected';
     createdAt: Date;
 }
@@ -23,6 +24,10 @@ const interestSchema: Schema = new mongoose.Schema({
         default: 0
     },
     estimatedDuration: {
+        type: String,
+        default: ''
+    },
+    details: {
         type: String,
         default: ''
     },

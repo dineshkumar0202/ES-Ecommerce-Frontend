@@ -1,4 +1,4 @@
-import { Box, Container } from '@mui/material';
+import { Box, Container, Dialog, DialogActions, DialogContent, DialogTitle, TextField, Button, Stack, Typography } from '@mui/material';
 import Navbar from '../WrapperComponents/Navbar';
 import Footer from '../WrapperComponents/Footer';
 import FreelancersFeed from '../SpecifiedComponents/Freelancers/Components/FreelancersFeed';
@@ -30,12 +30,14 @@ interface Post {
 const Freelance = () => {
     const userRole = localStorage.getItem('userRole');
     const isBuyer = userRole === 'Buyer';
+    const isSeller = userRole === 'Seller';
     const [posts, setPosts] = useState<Post[]>([]);
     const [isFreelancerRegistered, setIsFreelancerRegistered] = useState(false);
 
     const [interestDialog, setInterestDialog] = useState(false);
     const [selectedPostId, setSelectedPostId] = useState<string | null>(null);
-    const [interestForm, setInterestForm] = useState({ price: '', days: '' });
+    const [interestForm, setInterestForm] = useState({ details: '', price: '', days: '' });
+    const [submittingInterest, setSubmittingInterest] = useState(false);
 
     const fetchPosts = async () => {
         try {
@@ -90,6 +92,11 @@ const Freelance = () => {
             return;
         }
 
+        if (!isSeller) {
+            alert("Only Seller accounts can submit interest requests.");
+            return;
+        }
+
         if (!isFreelancerRegistered) {
             alert("Registration is compulsory! Please register as a freelancer using the sidebar to show interest in this post.");
             return;
@@ -103,15 +110,19 @@ const Freelance = () => {
         if (!selectedPostId) return;
 
         try {
+            setSubmittingInterest(true);
             await FreelanceService.submitInterest(selectedPostId, {
+                details: interestForm.details,
                 proposedPrice: Number(interestForm.price),
                 estimatedDuration: interestForm.days
             });
             alert("Success! Your interest has been recorded. The admin will review your request shortly.");
             setInterestDialog(false);
-            setInterestForm({ price: '', days: '' });
+            setInterestForm({ details: '', price: '', days: '' });
         } catch (error: any) {
             alert(error.response?.data?.message || "Failed to submit interest");
+        } finally {
+            setSubmittingInterest(false);
         }
     };
 
@@ -135,7 +146,7 @@ const Freelance = () => {
                         <FreelancersFeed
                             posts={posts}
                             onInterestClick={handleInterestClick}
-                            showInterestButton={!isBuyer}
+                            showInterestButton={!isBuyer && isSeller}
                         />
                     </Box>
                     <Box sx={{ width: { xs: '100%', md: 340, lg: 380 }, flexShrink: 0, position: { md: 'sticky' }, top: 20 }}>
@@ -148,48 +159,53 @@ const Freelance = () => {
                 </Box>
             </Container>
 
-            {/* Interest Dialog */}
-            {interestDialog && (
-                <Box sx={{ position: 'fixed', inset: 0, bgcolor: 'rgba(0,0,0,0.5)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <Box sx={{ bgcolor: 'white', p: 4, borderRadius: 2, width: 400, maxWidth: '90%' }}>
-                        <h2 style={{ marginTop: 0 }}>Submit Interest</h2>
-                        <Box sx={{ mb: 2 }}>
-                            <label style={{ display: 'block', marginBottom: 5, fontWeight: 'bold' }}>Proposed Price (₹)</label>
-                            <input
-                                type="number"
-                                style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
-                                value={interestForm.price}
-                                onChange={(e) => setInterestForm({ ...interestForm, price: e.target.value })}
-                                placeholder="Enter your price"
-                            />
-                        </Box>
-                        <Box sx={{ mb: 3 }}>
-                            <label style={{ display: 'block', marginBottom: 5, fontWeight: 'bold' }}>Estimated Duration (Days)</label>
-                            <input
-                                type="text"
-                                style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
-                                value={interestForm.days}
-                                onChange={(e) => setInterestForm({ ...interestForm, days: e.target.value })}
-                                placeholder="e.g. 5 days"
-                            />
-                        </Box>
-                        <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
-                            <button
-                                onClick={() => setInterestDialog(false)}
-                                style={{ padding: '8px 16px', borderRadius: '4px', border: '1px solid #ccc', background: 'white', cursor: 'pointer' }}
-                            >
-                                Cancel
-                            </button>
-                            <button
-                                onClick={submitInterestForm}
-                                style={{ padding: '8px 16px', borderRadius: '4px', border: 'none', background: '#bef264', color: 'black', fontWeight: 'bold', cursor: 'pointer' }}
-                            >
-                                Submit
-                            </button>
-                        </Box>
-                    </Box>
-                </Box>
-            )}
+            {/* Interest Dialog (Seller -> backend: /posts/:id/interest) */}
+            <Dialog open={interestDialog} onClose={() => setInterestDialog(false)} maxWidth="sm" fullWidth>
+                <DialogTitle sx={{ fontWeight: 900 }}>Submit Interest</DialogTitle>
+                <DialogContent>
+                    <Typography variant="body2" sx={{ color: '#64748b', mb: 2 }}>
+                        Fill the details, your proposed price, and delivery days. This request will appear in the Admin panel under <b>Interest Requests</b>.
+                    </Typography>
+                    <Stack spacing={2.5} sx={{ pt: 1 }}>
+                        <TextField
+                            label="Details"
+                            multiline
+                            rows={3}
+                            value={interestForm.details}
+                            onChange={(e) => setInterestForm({ ...interestForm, details: e.target.value })}
+                            placeholder="Explain your plan / what you will deliver"
+                            fullWidth
+                        />
+                        <TextField
+                            label="Price (₹)"
+                            type="number"
+                            value={interestForm.price}
+                            onChange={(e) => setInterestForm({ ...interestForm, price: e.target.value })}
+                            fullWidth
+                        />
+                        <TextField
+                            label="Delivery days"
+                            value={interestForm.days}
+                            onChange={(e) => setInterestForm({ ...interestForm, days: e.target.value })}
+                            placeholder="e.g. 5"
+                            fullWidth
+                        />
+                    </Stack>
+                </DialogContent>
+                <DialogActions sx={{ p: 3 }}>
+                    <Button onClick={() => setInterestDialog(false)} sx={{ fontWeight: 800, color: '#64748b' }}>
+                        Cancel
+                    </Button>
+                    <Button
+                        onClick={submitInterestForm}
+                        disabled={submittingInterest}
+                        variant="contained"
+                        sx={{ bgcolor: 'black', color: 'white', fontWeight: 900, '&:hover': { bgcolor: '#111' } }}
+                    >
+                        {submittingInterest ? 'Submitting...' : 'Submit'}
+                    </Button>
+                </DialogActions>
+            </Dialog>
 
             <Footer />
         </Box>

@@ -124,7 +124,7 @@ const FreelanceManagement = () => {
             {/* Sidebar */}
             <Box sx={{ width: 260, bgcolor: 'white', borderRight: '1px solid #e2e8f0', p: 3, display: 'flex', flexDirection: 'column', height: '100vh', position: 'sticky', top: 0 }}>
                 <Stack direction="row" alignItems="center" spacing={1.5} sx={{ mb: 5, px: 2 }}>
-                    <Box sx={{ bgcolor: '#bef264', p: 0.5, borderRadius: 1, display: 'flex' }}>
+                    <Box sx={{ bgcolor: '#B4D5DC', p: 0.5, borderRadius: 1, display: 'flex' }}>
                         <WorkOutlineIcon sx={{ color: 'black' }} />
                     </Box>
                     <Typography variant="h6" sx={{ fontWeight: 800 }}>freelance</Typography>
@@ -138,9 +138,9 @@ const FreelanceManagement = () => {
                             sx={{
                                 mb: 1,
                                 borderRadius: 3,
-                                bgcolor: item.active ? '#bef264' : 'transparent',
+                                bgcolor: item.active ? '#B4D5DC' : 'transparent',
                                 color: item.active ? 'black' : '#64748b',
-                                '&:hover': { bgcolor: item.active ? '#bef264' : '#f1f5f9' },
+                                '&:hover': { bgcolor: item.active ? '#B4D5DC' : '#f1f5f9' },
                                 py: 1.5
                             }}
                         >
@@ -177,7 +177,7 @@ const FreelanceManagement = () => {
                 </Box>
 
                 {isLoading ? (
-                    <Box sx={{ display: 'flex', justifyContent: 'center', p: 5 }}><CircularProgress sx={{ color: '#bef264' }} /></Box>
+                    <Box sx={{ display: 'flex', justifyContent: 'center', p: 5 }}><CircularProgress sx={{ color: '#B4D5DC' }} /></Box>
                 ) : (
                     <>
                         {tab === 0 && (
