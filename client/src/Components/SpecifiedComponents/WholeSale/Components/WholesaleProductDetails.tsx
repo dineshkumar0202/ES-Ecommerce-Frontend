@@ -21,11 +21,17 @@ import LocationOnOutlinedIcon from '@mui/icons-material/LocationOnOutlined';
 import EmailOutlinedIcon from '@mui/icons-material/EmailOutlined';
 import PhoneEnabledOutlinedIcon from '@mui/icons-material/PhoneEnabledOutlined';
 import NavigateNextIcon from '@mui/icons-material/NavigateNext';
-
 import Navbar from '../../../WrapperComponents/Navbar';
 import Footer from '../../../WrapperComponents/Footer';
-import { WholesaleService, WishlistService, OrderService } from '../../../../services/api';
+import { WholesaleService, WishlistService } from '../../../../services/api';
 import { toast } from 'react-toastify';
+
+/** Normalize phone to digits for tel: and WhatsApp (e.g. +91 80802 21133 -> 918080221133). */
+const toWhatsAppNumber = (phone: string | undefined) => {
+    if (!phone) return '';
+    const digits = phone.replace(/\D/g, '');
+    return digits.startsWith('91') ? digits : '91' + digits;
+};
 
 const WholesaleProductDetails = () => {
     const { id } = useParams<{ id: string }>();
@@ -66,49 +72,36 @@ const WholesaleProductDetails = () => {
             if (isFavorite) {
                 setIsFavorite(false);
             } else {
-                await WishlistService.addToWishlist({ productId: product._id, type: 'Wholesale' });
+                await WishlistService.addToWishlist({ productId: product._id });
                 setIsFavorite(true);
                 toast.success('Added to wishlist!');
             }
-        } catch (error) {
-            console.error("Error with wishlist:", error);
+        } catch (err: any) {
+            const status = err?.response?.status;
+            if (status === 404 || err?.response?.data?.message === 'Product not found') {
+                toast.info('Wishlist is for retail products. Use WhatsApp or call to save this wholesale item.');
+                return;
+            }
+            console.error('Wishlist error:', err);
             toast.error('Please login to add to wishlist');
         }
     };
 
+    const sellerPhone = product?.phoneNumber || '+918080221133';
+    const whatsappNum = toWhatsAppNumber(sellerPhone);
+    const telHref = `tel:${sellerPhone.replace(/\s/g, '')}`;
 
+    const handleGetCustomQuote = () => {
+        const text = encodeURIComponent(
+            `Hi, I'm interested in a custom quote for *${product?.title}*.\n` +
+            `Quantity: ${quoteData.quantity || '—'}\nTimeline: ${quoteData.timeline}\nNotes: ${quoteData.notes || '—'}`
+        );
+        window.open(`https://wa.me/${whatsappNum}?text=${text}`, '_blank', 'noopener,noreferrer');
+        toast.success('Opening WhatsApp to get your quote');
+    };
 
-    const handleBuyNow = async () => {
-        try {
-            const orderData = {
-                orderItems: [{
-                    title: product.title,
-                    qty: 1,
-                    image: product.images?.[0] || product.image,
-                    price: product.price || product.pricePerUnit || 100,
-                    product: product._id
-                }],
-                shippingAddress: {
-                    address: '123 Test St',
-                    city: 'Test City',
-                    postalCode: '123456',
-                    country: 'India'
-                },
-                paymentMethod: 'Online',
-                itemsPrice: product.price || product.pricePerUnit || 100,
-                taxPrice: 0,
-                shippingPrice: 0,
-                totalPrice: product.price || product.pricePerUnit || 100,
-                orderType: 'Wholesale'
-            };
-
-            await OrderService.create(orderData);
-            toast.success('Sample Order placed successfully!');
-            navigate('/profile');
-        } catch (error) {
-            console.error(error);
-            toast.error('Failed to place order');
-        }
+    const handleBuyNow = () => {
+        window.location.href = telHref;
     };
 
     if (isLoading) {
@@ -322,6 +315,7 @@ const WholesaleProductDetails = () => {
                                     <Button
                                         variant="contained"
                                         fullWidth
+                                        onClick={handleGetCustomQuote}
                                         sx={{
                                             bgcolor: '#b2d8d8',
                                             color: '#1e293b',
@@ -339,7 +333,8 @@ const WholesaleProductDetails = () => {
                                     <Button
                                         variant="outlined"
                                         fullWidth
-                                        onClick={handleBuyNow}
+                                        component="a"
+                                        href={telHref}
                                         sx={{
                                             mt: 2,
                                             borderColor: '#0f172a',
@@ -352,7 +347,7 @@ const WholesaleProductDetails = () => {
                                             '&:hover': { bgcolor: '#f1f5f9', borderColor: '#0f172a' }
                                         }}
                                     >
-                                        Buy Sample Now
+                                        Buy Sample Now — Call seller
                                     </Button>
 
 

@@ -14,7 +14,7 @@ class OrderService {
         const finalOrderData = {
             ...rest,
             user: userId,
-            status: 'Ordered'
+            status: 'Placed'
         };
 
         // Only add paymentResult if it exists and has basic fields

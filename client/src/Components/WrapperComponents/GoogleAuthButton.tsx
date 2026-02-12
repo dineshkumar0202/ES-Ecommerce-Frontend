@@ -4,7 +4,7 @@ import GoogleIcon from '@mui/icons-material/Google';
 const GoogleAuthButton = () => {
     const handleGoogleLogin = () => {
         // Redirect to backend Google OAuth route
-        window.location.href = 'http://localhost:5000/api/auth/google';
+        window.location.href = '/api/auth/google';
     };
 
     return (

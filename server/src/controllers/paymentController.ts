@@ -73,26 +73,35 @@ class PaymentController {
 
 
     async createRazorpayOrder(req: Request, res: Response) {
-        const Razorpay = require('razorpay');
         const { amount } = req.body;
+        const keyId = process.env.RAZORPAY_KEY_ID || '';
+        const keySecret = process.env.RAZORPAY_KEY_SECRET || '';
+        const isMock = !keyId.startsWith('rzp_') || !keySecret;
 
-        const razorpay = new Razorpay({
-            key_id: process.env.RAZORPAY_KEY_ID || 'rzp_test_YourKeyHere', // Default test key
-            key_secret: process.env.RAZORPAY_KEY_SECRET || 'YourSecretHere',
-        });
+        if (isMock) {
+            return res.status(200).json({
+                id: 'order_mock_' + Date.now(),
+                amount: Math.round(Number(amount) * 100),
+                currency: 'INR',
+                receipt: `receipt_${Date.now()}`,
+                isMock: true,
+            });
+        }
 
+        const Razorpay = require('razorpay');
+        const razorpay = new Razorpay({ key_id: keyId, key_secret: keySecret });
         const options = {
-            amount: Math.round(amount * 100), // amount in the smallest currency unit (paise)
-            currency: "INR",
-            receipt: `receipt_${Date.now()}`
+            amount: Math.round(Number(amount) * 100),
+            currency: 'INR',
+            receipt: `receipt_${Date.now()}`,
         };
 
         try {
             const order = await razorpay.orders.create(options);
             res.json(order);
         } catch (error: any) {
-            console.error("Razorpay Error:", error);
-            res.status(500).json({ message: error.message });
+            console.error('Razorpay Error:', error);
+            res.status(500).json({ message: error?.message || 'Razorpay order failed' });
         }
     }
 }
