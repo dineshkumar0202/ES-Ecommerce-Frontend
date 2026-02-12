@@ -98,7 +98,7 @@ const PaymentSuccess = () => {
                                             secondary={`Quantity: ${item.quantity}`}
                                         />
                                         <Typography sx={{ fontWeight: 800 }}>
-                                            ₹{(item.price * item.quantity).toLocaleString()}
+                                            ₹{((Number(item.price) || 0) * (Number(item.quantity) || 0)).toLocaleString('en-IN')}
                                         </Typography>
                                     </ListItem>
                                 );
@@ -108,20 +108,20 @@ const PaymentSuccess = () => {
                         <Stack spacing={2} sx={{ mt: 4, p: 3, bgcolor: 'white', borderRadius: 4, border: '1px solid #e2e8f0' }}>
                             <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                                 <Typography sx={{ color: '#64748b' }}>Subtotal</Typography>
-                                <Typography sx={{ fontWeight: 600 }}>₹{order?.itemsPrice.toLocaleString()}</Typography>
+                                <Typography sx={{ fontWeight: 600 }}>₹{(Number(order?.itemsPrice) || 0).toLocaleString('en-IN')}</Typography>
                             </Box>
                             <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                                 <Typography sx={{ color: '#64748b' }}>Shipping</Typography>
-                                <Typography sx={{ fontWeight: 600 }}>₹{order?.shippingPrice.toLocaleString()}</Typography>
+                                <Typography sx={{ fontWeight: 600 }}>₹{(Number(order?.shippingPrice) || 0).toLocaleString('en-IN')}</Typography>
                             </Box>
                             <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                                 <Typography sx={{ color: '#64748b' }}>Tax (GST)</Typography>
-                                <Typography sx={{ fontWeight: 600 }}>₹{order?.taxPrice.toLocaleString()}</Typography>
+                                <Typography sx={{ fontWeight: 600 }}>₹{(Number(order?.taxPrice) || 0).toLocaleString('en-IN')}</Typography>
                             </Box>
                             <Divider />
                             <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                                 <Typography sx={{ fontWeight: 800, fontSize: '1.2rem' }}>Total Amount</Typography>
-                                <Typography sx={{ fontWeight: 900, fontSize: '1.2rem', color: '#000' }}>₹{order?.totalPrice.toLocaleString()}</Typography>
+                                <Typography sx={{ fontWeight: 900, fontSize: '1.2rem', color: '#000' }}>₹{(Number(order?.totalPrice) || 0).toLocaleString('en-IN')}</Typography>
                             </Box>
                         </Stack>
 

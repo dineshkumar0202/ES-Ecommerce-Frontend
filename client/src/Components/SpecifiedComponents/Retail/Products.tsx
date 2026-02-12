@@ -253,7 +253,7 @@ const Products = () => {
                                 </Stack>
 
                                 <Typography variant="h6" sx={{ fontWeight: 900, color: '#0f172a' }}>
-                                    ₹{product.price.toFixed(2)}
+                                    ₹{(Number(product?.price ?? product?.pricePerUnit ?? 0) || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                 </Typography>
                             </CardContent>
                         </Card>

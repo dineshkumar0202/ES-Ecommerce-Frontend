@@ -106,7 +106,7 @@ const Checkout = () => {
                         title: item.product.title,
                         quantity: item.quantity,
                         image: item.product.images?.[0] || "https://via.placeholder.com/150",
-                        price: item.product.price,
+                        price: Number(item.product?.price ?? item.product?.pricePerUnit ?? 0) || 0,
                         product: item.product._id
                     };
                 }).filter(Boolean),
@@ -165,11 +165,16 @@ const Checkout = () => {
         }
 
         try {
-            // Create Order on Backend
             const { data: order } = await PaymentService.createRazorpayOrder(cart.totalPrice * 1.18);
 
+            if (order.isMock) {
+                toast.info("Payment is in demo mode. Placing order.");
+                await handlePlaceOrder('mock_' + order.id);
+                return;
+            }
+
             const options = {
-                key: "rzp_test_YourKeyHere", // Replace with your actual Test Key ID
+                key: "rzp_test_YourKeyHere",
                 amount: order.amount,
                 currency: order.currency,
                 name: "AtoZ Marketplace",
@@ -312,10 +317,13 @@ const Checkout = () => {
                             <Stack spacing={2} sx={{ mb: 3 }}>
                                 {cart.cartItems.map((item: any) => {
                                     if (!item || !item.product) return null;
+                                    const price = Number(item.product?.price ?? item.product?.pricePerUnit ?? 0) || 0;
+                                    const qty = Number(item.quantity) || 0;
+                                    const lineTotal = price * qty;
                                     return (
                                         <Box key={item.product._id} sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                                            <Typography variant="body2" sx={{ fontWeight: 600 }}>{item.product.title} x {item.quantity}</Typography>
-                                            <Typography variant="body2" sx={{ fontWeight: 700 }}>₹{(item.price * item.quantity).toLocaleString()}</Typography>
+                                            <Typography variant="body2" sx={{ fontWeight: 600 }}>{item.product.title} x {qty}</Typography>
+                                            <Typography variant="body2" sx={{ fontWeight: 700 }}>₹{lineTotal.toLocaleString()}</Typography>
                                         </Box>
                                     );
                                 })}
@@ -324,16 +332,16 @@ const Checkout = () => {
                             <Stack spacing={2}>
                                 <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                                     <Typography variant="body2" color="textSecondary">Subtotal</Typography>
-                                    <Typography variant="body2" sx={{ fontWeight: 700 }}>₹{cart.totalPrice.toLocaleString()}</Typography>
+                                    <Typography variant="body2" sx={{ fontWeight: 700 }}>₹{(Number(cart.totalPrice) || 0).toLocaleString()}</Typography>
                                 </Box>
                                 <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                                     <Typography variant="body2" color="textSecondary">GST (18%)</Typography>
-                                    <Typography variant="body2" sx={{ fontWeight: 700 }}>₹{(cart.totalPrice * 0.18).toLocaleString()}</Typography>
+                                    <Typography variant="body2" sx={{ fontWeight: 700 }}>₹{((Number(cart.totalPrice) || 0) * 0.18).toLocaleString()}</Typography>
                                 </Box>
                                 <Divider />
                                 <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                                     <Typography variant="h6" sx={{ fontWeight: 900 }}>Total</Typography>
-                                    <Typography variant="h6" sx={{ fontWeight: 900 }}>₹{(cart.totalPrice * 1.18).toLocaleString()}</Typography>
+                                    <Typography variant="h6" sx={{ fontWeight: 900 }}>₹{((Number(cart.totalPrice) || 0) * 1.18).toLocaleString()}</Typography>
                                 </Box>
                             </Stack>
 

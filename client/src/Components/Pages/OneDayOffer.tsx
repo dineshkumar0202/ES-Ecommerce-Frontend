@@ -133,17 +133,17 @@ const OneDayOffer = () => {
                                     <Box sx={{ mt: 'auto' }}>
                                         <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 1, mb: 0.5 }}>
                                             <Typography variant="h6" sx={{ fontWeight: 800, color: '#212121' }}>
-                                                ₹{product.price.toLocaleString()}
+                                                ₹{(Number(product?.price ?? product?.pricePerUnit ?? 0) || 0).toLocaleString('en-IN')}
                                             </Typography>
-                                            {(product.mrp && product.mrp > product.price) && (
+                                            {(product.mrp != null && product.mrp > (Number(product?.price ?? 0) || 0)) && (
                                                 <Typography variant="body2" sx={{ color: '#878787', textDecoration: 'line-through' }}>
-                                                    ₹{product.mrp.toLocaleString()}
+                                                    ₹{Number(product.mrp).toLocaleString('en-IN')}
                                                 </Typography>
                                             )}
                                         </Box>
                                         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                                             <Typography variant="caption" sx={{ color: '#388e3c', fontWeight: 700 }}>
-                                                Save ₹{((product.mrp || product.price) - product.price).toLocaleString()}
+                                                Save ₹{(Math.max(0, (Number(product?.mrp ?? product?.price ?? 0) || 0) - (Number(product?.price ?? 0) || 0))).toLocaleString('en-IN')}
                                             </Typography>
                                             <IconButton
                                                 sx={{

@@ -145,7 +145,7 @@ const CategoryPage = () => {
 
                                         <Stack direction="row" alignItems="center" justifyContent="space-between">
                                             <Typography variant="h5" sx={{ fontWeight: 900 }}>
-                                                ₹{product.price?.toLocaleString()}
+                                                ₹{(Number(product?.price ?? product?.pricePerUnit ?? 0) || 0).toLocaleString('en-IN')}
                                             </Typography>
                                             <IconButton
                                                 sx={{

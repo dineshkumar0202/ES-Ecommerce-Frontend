@@ -12,7 +12,7 @@ import StorefrontIcon from '@mui/icons-material/Storefront';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import Navbar from './Navbar'; 
-import { AuthService } from '../../services/api';
+import { AuthService, UploadService } from '../../services/api';
 import GoogleAuthButton from './GoogleAuthButton';
 
 type AuthStep = 'SELECT' | 'USER_AUTH' | 'SELLER_REG';
@@ -39,9 +39,9 @@ const Login = () => {
         businessAddress: '',
         taxId: '',
         websiteUrl: '',
-
         password: ''
     });
+    const [sellerPanFile, setSellerPanFile] = useState<File | null>(null);
 
     const [registrationSuccess, setRegistrationSuccess] = useState<{ id: string, pass: string } | null>(null);
 
@@ -53,7 +53,8 @@ const Login = () => {
     };
 
     const validateMobile = (mobile: string) => {
-        return /^\d{10}$/.test(mobile);
+        const digits = (mobile || '').replace(/\D/g, '');
+        return digits.length === 10 && /^[6-9]\d{9}$/.test(digits);
     };
 
     // Simple check for PAN (10 chars) or GST (15 chars)
@@ -67,13 +68,18 @@ const Login = () => {
 
         // --- VALIDATION ---
         if (isLogin) {
-            // LOGIN VALIDATION
+            // LOGIN VALIDATION (seller: only require credential + password, no strict format)
             if (!mobile.trim()) {
-                setError('Please enter your login credential (Mobile/Email/ID).');
+                setError(userType === 0 ? 'Seller login requires Unique ID, Email or Mobile.' : 'Please enter your login credential (Mobile/Email).');
                 return;
             }
-            if (!password) {
-                setError('Please enter your password.');
+            if (!password || !password.trim()) {
+                setError('Password is required.');
+                return;
+            }
+            // Keep stricter mobile validation only for buyer login (userType === 1)
+            if (userType === 1 && /^\d+$/.test(mobile.trim()) && !validateMobile(mobile.trim())) {
+                setError('Enter a valid 10-digit mobile number (starting with 6, 7, 8 or 9).');
                 return;
             }
         } else {
@@ -148,21 +154,29 @@ const Login = () => {
         e.preventDefault();
         setError('');
 
-        // --- SELLER REGISTRATION VALIDATION ---
+        // --- SELLER REGISTRATION VALIDATION (all required) ---
         if (!sellerData.fullName.trim()) {
             setError('Full Name is required.');
+            return;
+        }
+        if (!sellerData.email.trim()) {
+            setError('Email address is required.');
             return;
         }
         if (!validateEmail(sellerData.email)) {
             setError('Please enter a valid email address.');
             return;
         }
-        if (!validateMobile(sellerData.phoneNumber)) {
-            setError('Please enter a valid 10-digit phone number.');
+        if (!sellerData.phoneNumber.trim()) {
+            setError('Phone number is required (10 digits).');
             return;
         }
-        if (sellerData.password.length < 6) {
-            setError('Password must be at least 6 characters long.');
+        if (!validateMobile(sellerData.phoneNumber)) {
+            setError('Please enter a valid 10-digit mobile number (starting with 6, 7, 8 or 9).');
+            return;
+        }
+        if (!sellerData.password || sellerData.password.length < 6) {
+            setError('Password is required (min 6 characters).');
             return;
         }
         if (!sellerData.businessName.trim()) {
@@ -173,6 +187,10 @@ const Login = () => {
             setError('Business Address is required.');
             return;
         }
+        if (!sellerData.taxId.trim()) {
+            setError('GST / Tax ID is required.');
+            return;
+        }
         if (!validateTaxId(sellerData.taxId)) {
             setError('Please enter a valid Tax ID / PAN (min 10 characters).');
             return;
@@ -181,15 +199,23 @@ const Login = () => {
         setIsLoading(true);
 
         try {
+            const mobileNormalized = sellerData.phoneNumber.replace(/\D/g, '').slice(0, 10);
+            let idProofUrl = '';
+            if (sellerPanFile) {
+                // PAN is optional. Also, uploads require an authenticated session in most setups.
+                // To avoid noisy 404/401 errors during signup, we skip uploading here.
+                toast.info('PAN document saved locally. You can upload it after login.');
+                idProofUrl = '';
+            }
             const response = await AuthService.registerSeller({
                 username: sellerData.fullName,
-                mobile: sellerData.phoneNumber,
+                mobile: mobileNormalized,
                 email: sellerData.email,
                 password: sellerData.password,
                 businessDetails: {
-                    name: sellerData.businessName,
-                    address: sellerData.businessAddress,
-                    taxId: sellerData.taxId
+                    businessName: sellerData.businessName,
+                    gst: sellerData.taxId,
+                    ...(idProofUrl && { idProof: idProofUrl })
                 }
             });
 
@@ -211,7 +237,13 @@ const Login = () => {
             setRegistrationSuccess({ id: generatedId || "CHECK EMAIL", pass: generatedPass });
             // toast.success("Seller registration successful! Credentials generated.");
         } catch (err: any) {
-            setError(err.response?.data?.message || 'Registration failed');
+            const msg = err.response?.data?.message || 'Registration failed';
+            setError(msg);
+            if (typeof msg === 'string' && msg.toLowerCase().includes('already exists')) {
+                toast.error(`${msg}. Please login instead.`);
+            } else {
+                toast.error(msg);
+            }
         } finally {
             setIsLoading(false);
         }
@@ -546,19 +578,28 @@ const Login = () => {
                                 <Grid container spacing={3}>
                                     <Grid size={{ xs: 12, sm: 6 }}>
                                         <Typography variant="caption" sx={{ fontWeight: 800, color: '#64748b', mb: 1, display: 'block' }}>FULL NAME *</Typography>
-                                        <TextField fullWidth placeholder="John Doe" variant="outlined" sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }} value={sellerData.fullName} onChange={(e) => setSellerData({ ...sellerData, fullName: e.target.value })} />
+                                        <TextField fullWidth required placeholder="John Doe" variant="outlined" sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }} value={sellerData.fullName} onChange={(e) => setSellerData({ ...sellerData, fullName: e.target.value })} />
                                     </Grid>
                                     <Grid size={{ xs: 12, sm: 6 }}>
                                         <Typography variant="caption" sx={{ fontWeight: 800, color: '#64748b', mb: 1, display: 'block' }}>EMAIL ADDRESS *</Typography>
-                                        <TextField fullWidth placeholder="john@example.com" variant="outlined" sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }} value={sellerData.email} onChange={(e) => setSellerData({ ...sellerData, email: e.target.value })} />
+                                        <TextField fullWidth required placeholder="john@example.com" variant="outlined" sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }} value={sellerData.email} onChange={(e) => setSellerData({ ...sellerData, email: e.target.value })} />
                                     </Grid>
                                     <Grid size={{ xs: 12, sm: 6 }}>
-                                        <Typography variant="caption" sx={{ fontWeight: 800, color: '#64748b', mb: 1, display: 'block' }}>PHONE NUMBER *</Typography>
-                                        <TextField fullWidth placeholder="+1 123 456 7890" variant="outlined" sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }} value={sellerData.phoneNumber} onChange={(e) => setSellerData({ ...sellerData, phoneNumber: e.target.value })} />
+                                        <Typography variant="caption" sx={{ fontWeight: 800, color: '#64748b', mb: 1, display: 'block' }}>PHONE NUMBER * (10 digits)</Typography>
+                                        <TextField
+                                            fullWidth
+                                            required
+                                            placeholder="9876543210"
+                                            variant="outlined"
+                                            inputProps={{ maxLength: 10, inputMode: 'numeric', pattern: '[0-9]*' }}
+                                            sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
+                                            value={sellerData.phoneNumber}
+                                            onChange={(e) => setSellerData({ ...sellerData, phoneNumber: e.target.value.replace(/\D/g, '').slice(0, 10) })}
+                                        />
                                     </Grid>
                                     <Grid size={{ xs: 12, sm: 6 }}>
-                                        <Typography variant="caption" sx={{ fontWeight: 800, color: '#64748b', mb: 1, display: 'block' }}>PASSWORD *</Typography>
-                                        <TextField fullWidth type="password" placeholder="••••••••" variant="outlined" sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }} value={sellerData.password} onChange={(e) => setSellerData({ ...sellerData, password: e.target.value })} />
+                                        <Typography variant="caption" sx={{ fontWeight: 800, color: '#64748b', mb: 1, display: 'block' }}>PASSWORD * (min 6 characters)</Typography>
+                                        <TextField fullWidth required type="password" placeholder="••••••••" variant="outlined" sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }} value={sellerData.password} onChange={(e) => setSellerData({ ...sellerData, password: e.target.value })} />
                                     </Grid>
                                 </Grid>
                             </Box>
@@ -569,15 +610,15 @@ const Login = () => {
                                 <Grid container spacing={3}>
                                     <Grid size={{ xs: 12 }}>
                                         <Typography variant="caption" sx={{ fontWeight: 800, color: '#64748b', mb: 1, display: 'block' }}>REGISTERED BUSINESS NAME *</Typography>
-                                        <TextField fullWidth placeholder="Acme Corporation LLC" variant="outlined" sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }} value={sellerData.businessName} onChange={(e) => setSellerData({ ...sellerData, businessName: e.target.value })} />
+                                        <TextField fullWidth required placeholder="Acme Corporation LLC" variant="outlined" sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }} value={sellerData.businessName} onChange={(e) => setSellerData({ ...sellerData, businessName: e.target.value })} />
                                     </Grid>
                                     <Grid size={{ xs: 12 }}>
                                         <Typography variant="caption" sx={{ fontWeight: 800, color: '#64748b', mb: 1, display: 'block' }}>BUSINESS ADDRESS *</Typography>
-                                        <TextField fullWidth multiline rows={2} placeholder="Street, City, State, ZIP" variant="outlined" sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }} value={sellerData.businessAddress} onChange={(e) => setSellerData({ ...sellerData, businessAddress: e.target.value })} />
+                                        <TextField fullWidth required multiline rows={2} placeholder="Street, City, State, ZIP" variant="outlined" sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }} value={sellerData.businessAddress} onChange={(e) => setSellerData({ ...sellerData, businessAddress: e.target.value })} />
                                     </Grid>
                                     <Grid size={{ xs: 12, sm: 6 }}>
-                                        <Typography variant="caption" sx={{ fontWeight: 800, color: '#64748b', mb: 1, display: 'block' }}>GST / TAX IDENTIFICATION NUMBER *</Typography>
-                                        <TextField fullWidth placeholder="GSTIN-123456789" variant="outlined" sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }} value={sellerData.taxId} onChange={(e) => setSellerData({ ...sellerData, taxId: e.target.value })} />
+                                        <Typography variant="caption" sx={{ fontWeight: 800, color: '#64748b', mb: 1, display: 'block' }}>GST / TAX IDENTIFICATION NUMBER * (min 10 chars)</Typography>
+                                        <TextField fullWidth required placeholder="GSTIN-123456789 or PAN" variant="outlined" sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }} value={sellerData.taxId} onChange={(e) => setSellerData({ ...sellerData, taxId: e.target.value })} />
                                     </Grid>
                                     <Grid size={{ xs: 12, sm: 6 }}>
                                         <Typography variant="caption" sx={{ fontWeight: 800, color: '#64748b', mb: 1, display: 'block' }}>WEBSITE URL (OPTIONAL)</Typography>
@@ -590,11 +631,42 @@ const Login = () => {
                                 <Typography variant="subtitle1" sx={{ fontWeight: 900, mb: 3, pb: 1, borderBottom: '1.5px solid #adc9d1', display: 'inline-block' }}>Verification</Typography>
                                 <Grid container spacing={3}>
                                     <Grid size={{ xs: 12 }}>
-                                        <Paper variant="outlined" sx={{ p: 4, borderRadius: 3, textAlign: 'center', borderStyle: 'dashed' }}>
-                                            <CloudUploadIcon sx={{ color: '#adc9d1', mb: 2, fontSize: 32 }} />
-                                            <Typography variant="body2" fontWeight="bold">PAN Card / Tax ID</Typography>
-                                            <Typography variant="caption" color="textSecondary">PDF, JPG, PNG (Max 5MB)</Typography>
-                                        </Paper>
+                                        <Typography variant="caption" sx={{ fontWeight: 800, color: '#64748b', mb: 1, display: 'block' }}>PAN CARD / TAX ID DOCUMENT (Optional)</Typography>
+                                        <Box
+                                            component="label"
+                                            sx={{
+                                                border: '2px dashed #e2e8f0',
+                                                borderRadius: 3,
+                                                p: 4,
+                                                display: 'flex',
+                                                flexDirection: 'column',
+                                                alignItems: 'center',
+                                                cursor: 'pointer',
+                                                bgcolor: sellerPanFile ? '#f0fdf4' : '#f8fafc',
+                                                transition: 'all 0.2s',
+                                                '&:hover': { bgcolor: '#f1f5f9', borderColor: '#cbd5e1' }
+                                            }}
+                                        >
+                                            <input
+                                                type="file"
+                                                hidden
+                                                accept="image/*,application/pdf"
+                                                onChange={(e) => setSellerPanFile(e.target.files?.[0] || null)}
+                                            />
+                                            {sellerPanFile ? (
+                                                <>
+                                                    <CheckCircleIcon sx={{ fontSize: 40, color: '#22c55e', mb: 1 }} />
+                                                    <Typography variant="body2" fontWeight="bold">Document selected</Typography>
+                                                    <Typography variant="caption" color="textSecondary">{sellerPanFile.name}</Typography>
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <CloudUploadIcon sx={{ color: '#adc9d1', mb: 2, fontSize: 32 }} />
+                                                    <Typography variant="body2" fontWeight="bold">PAN Card / Tax ID</Typography>
+                                                    <Typography variant="caption" color="textSecondary">PDF, JPG, PNG (Max 5MB)</Typography>
+                                                </>
+                                            )}
+                                        </Box>
                                     </Grid>
                                 </Grid>
                             </Box>

@@ -174,7 +174,7 @@ const ProductDetails = () => {
                         {/* Price Badge */}
                         <Box sx={{ display: 'inline-block', bgcolor: '#b4d5dc', px: 2, py: 0.5, borderRadius: 5, mb: 4 }}>
                             <Typography variant="h6" sx={{ fontWeight: 800, color: '#1a202c' }}>
-                                ₹{product.price.toFixed(2)}
+                                ₹{(Number(product?.price ?? product?.pricePerUnit ?? 0) || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                             </Typography>
                         </Box>
 

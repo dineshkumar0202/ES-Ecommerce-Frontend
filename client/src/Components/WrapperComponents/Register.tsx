@@ -53,11 +53,14 @@ const Register = () => {
             tempErrors.email = "Please enter a valid email address";
         }
 
-        // Mobile validation - Indian format
+        // Mobile validation - exactly 10 digits, Indian format (6-9 followed by 9 digits)
+        const mobileDigits = formData.mobile.replace(/\D/g, '');
         if (!formData.mobile.trim()) {
             tempErrors.mobile = "Mobile number is required";
-        } else if (!/^[6-9]\d{9}$/.test(formData.mobile)) {
-            tempErrors.mobile = "Enter a valid 10-digit mobile number starting with 6-9";
+        } else if (mobileDigits.length !== 10) {
+            tempErrors.mobile = "Mobile number must be exactly 10 digits";
+        } else if (!/^[6-9]\d{9}$/.test(mobileDigits)) {
+            tempErrors.mobile = "Enter a valid 10-digit mobile number (must start with 6, 7, 8 or 9)";
         }
 
         // Password validation - Strong requirements
@@ -80,6 +83,13 @@ const Register = () => {
             tempErrors.confirmPassword = "Passwords do not match";
         }
 
+        // Seller-specific validation
+        if (userType === 0) {
+            if (!sellerData.businessName.trim()) {
+                tempErrors.businessName = "Business name is required for sellers";
+            }
+        }
+
         setErrors(tempErrors);
         return Object.keys(tempErrors).length === 0;
     };
@@ -91,9 +101,7 @@ const Register = () => {
         } else {
             setFormData((prev: any) => ({ ...prev, [name]: value }));
         }
-        if (errors[name]) {
-            setErrors((prev: any) => ({ ...prev, [name]: '' }));
-        }
+        if (errors[name]) setErrors((prev: any) => ({ ...prev, [name]: '' }));
     };
 
     const handleRegister = async (e: React.FormEvent) => {
@@ -107,9 +115,10 @@ const Register = () => {
         setIsLoading(true);
 
         try {
+            const mobileNormalized = formData.mobile.replace(/\D/g, '').slice(0, 10);
             const payload = {
                 username: formData.name,
-                mobile: formData.mobile,
+                mobile: mobileNormalized,
                 email: formData.email || undefined,
                 password: formData.password,
                 ...(userType === 0 && {
@@ -237,6 +246,7 @@ const Register = () => {
                         <Box component="form" onSubmit={handleRegister} noValidate sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
                             <TextField
                                 fullWidth
+                                required
                                 name="name"
                                 label="Full Name"
                                 placeholder="e.g. John Doe"
@@ -250,13 +260,19 @@ const Register = () => {
                             <Box sx={{ display: 'flex', gap: 2, flexDirection: { xs: 'column', sm: 'row' } }}>
                                 <TextField
                                     fullWidth
+                                    required
                                     name="mobile"
-                                    label="Mobile"
+                                    label="Mobile (10 digits)"
                                     placeholder="9876543210"
                                     value={formData.mobile}
-                                    onChange={handleInputChange}
+                                    onChange={(e) => {
+                                        const v = e.target.value.replace(/\D/g, '').slice(0, 10);
+                                        setFormData((prev: any) => ({ ...prev, mobile: v }));
+                                        if (errors.mobile) setErrors((prev: any) => ({ ...prev, mobile: '' }));
+                                    }}
                                     error={!!errors.mobile}
-                                    helperText={errors.mobile}
+                                    helperText={errors.mobile || "Exactly 10 digits, starting with 6–9"}
+                                    inputProps={{ maxLength: 10, inputMode: 'numeric', pattern: '[0-9]*' }}
                                     InputProps={{ startAdornment: <InputAdornment position="start">+91</InputAdornment> }}
                                     sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
                                 />
@@ -282,6 +298,8 @@ const Register = () => {
                                         placeholder="My Awesome Store"
                                         value={sellerData.businessName}
                                         onChange={handleInputChange}
+                                        error={!!errors.businessName}
+                                        helperText={errors.businessName}
                                         sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
                                     />
                                     <TextField
@@ -325,6 +343,7 @@ const Register = () => {
 
                             <TextField
                                 fullWidth
+                                required
                                 name="password"
                                 label="Password"
                                 type={showPassword ? 'text' : 'password'}
@@ -346,6 +365,7 @@ const Register = () => {
 
                             <TextField
                                 fullWidth
+                                required
                                 name="confirmPassword"
                                 label="Confirm Password"
                                 type="password"

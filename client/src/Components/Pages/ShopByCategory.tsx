@@ -161,7 +161,7 @@ const ShopByCategory = () => {
                                         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                                             <Box>
                                                 <Typography variant="h6" sx={{ fontWeight: 800, fontSize: '1.3rem' }}> {/* INCREASED FONT SIZE */}
-                                                    ₹{product.price.toLocaleString()}
+                                                    ₹{(Number(product?.price ?? product?.pricePerUnit ?? 0) || 0).toLocaleString('en-IN')}
                                                 </Typography>
                                             </Box>
                                             <IconButton

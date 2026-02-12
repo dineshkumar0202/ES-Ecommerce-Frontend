@@ -100,7 +100,7 @@ const KeepShopping = () => {
                                         </Typography>
                                         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                                             <Typography variant="h6" sx={{ fontWeight: 900 }}>
-                                                ₹{product.price.toLocaleString()}
+                                                ₹{(Number(product?.price ?? product?.pricePerUnit ?? 0) || 0).toLocaleString('en-IN')}
                                             </Typography>
                                             <IconButton sx={{ bgcolor: 'black', color: 'white', '&:hover': { bgcolor: '#27272a' } }} size="small">
                                                 <ShoppingCartOutlinedIcon fontSize="small" />

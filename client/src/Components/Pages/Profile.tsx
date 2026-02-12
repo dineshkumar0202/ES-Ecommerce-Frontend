@@ -306,10 +306,10 @@ const Profile = () => {
                                                                 <Box sx={{ flex: 1 }}>
                                                                     <Typography variant="subtitle2" sx={{ fontWeight: 800, mb: 0.5 }}>{item.title}</Typography>
                                                                     <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 600, display: 'block', mb: 1 }}>
-                                                                        Qty {item.quantity} • ₹{item.price}
+                                                                        Qty {item.quantity} • ₹{(Number(item.price) || 0).toLocaleString('en-IN')}
                                                                     </Typography>
                                                                 </Box>
-                                                                <Typography variant="subtitle1" sx={{ fontWeight: 900 }}>₹{item.price * item.quantity}</Typography>
+                                                                <Typography variant="subtitle1" sx={{ fontWeight: 900 }}>₹{((Number(item.price) || 0) * (Number(item.quantity) || 0)).toLocaleString('en-IN')}</Typography>
                                                             </Stack>
                                                         ))}
                                                     </Stack>

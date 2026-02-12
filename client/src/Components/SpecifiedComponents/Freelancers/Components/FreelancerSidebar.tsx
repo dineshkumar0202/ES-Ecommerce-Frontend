@@ -917,12 +917,21 @@ const FreelancerSidebar = () => {
                             if (step === 1) {
                                 setStep(2);
                             } else {
-                                // Check PAN
-                                if (panError || !validatePan(registerData.panNumber) || !registerData.panFile) {
-                                    if (!registerData.panNumber) alert("Please enter PAN Number");
-                                    else if (panError || !validatePan(registerData.panNumber)) alert("Invalid PAN Number");
-                                    else alert("Please upload PAN Card document");
-                                    return;
+                                // Check PAN (optional)
+                                if (registerData.panNumber || registerData.panFile) {
+                                    // User is providing PAN, validate both number and file
+                                    if (!registerData.panNumber) {
+                                        alert("Please enter PAN Number");
+                                        return;
+                                    }
+                                    if (panError || !validatePan(registerData.panNumber)) {
+                                        alert("Invalid PAN Number");
+                                        return;
+                                    }
+                                    if (!registerData.panFile) {
+                                        alert("Please upload PAN Card document");
+                                        return;
+                                    }
                                 }
                                 // Check Task or Freelancer ID
                                 if (registerData.freelancerId || registerData.freelancerIdFile) {
@@ -948,17 +957,20 @@ const FreelancerSidebar = () => {
                                     let panUrl = '';
                                     if (registerData.panFile) {
                                         const res = await UploadService.uploadImage(registerData.panFile);
-                                        panUrl = res.data.url;
+                                        panUrl = res.data?.url || res.data?.secure_url || '';
+                                        if (!panUrl) throw new Error(res.data?.message || 'PAN upload failed');
                                     }
                                     let idUrl = '';
                                     if (registerData.freelancerIdFile) {
                                         const res = await UploadService.uploadImage(registerData.freelancerIdFile);
-                                        idUrl = res.data.url;
+                                        idUrl = res.data?.url || res.data?.secure_url || '';
+                                        if (!idUrl) throw new Error(res.data?.message || 'ID document upload failed');
                                     }
                                     let taskUrl = '';
                                     if (registerData.taskFile) {
                                         const res = await UploadService.uploadImage(registerData.taskFile);
-                                        taskUrl = res.data.url;
+                                        taskUrl = res.data?.url || res.data?.secure_url || '';
+                                        if (!taskUrl) throw new Error(res.data?.message || 'Task file upload failed');
                                     }
 
                                     await UserService.registerFreelancer({
