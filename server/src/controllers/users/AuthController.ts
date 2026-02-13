@@ -58,7 +58,7 @@ class AuthController {
     }
 
     /** Validate Indian mobile: exactly 10 digits, starting with 6, 7, 8 or 9 */
-    private validateMobile10(mobile: string): { valid: boolean; message?: string } {
+    private validateMobile10 = (mobile: string): { valid: boolean; message?: string } => {
         if (!mobile || typeof mobile !== 'string') return { valid: false, message: "Mobile number is required" };
         const digits = mobile.replace(/\D/g, '');
         if (digits.length !== 10) return { valid: false, message: "Mobile number must be exactly 10 digits" };
@@ -66,7 +66,7 @@ class AuthController {
         return { valid: true };
     }
 
-    async registerBuyer(req: Request, res: Response) {
+    registerBuyer = async (req: Request, res: Response) => {
         try {
             const userData = req.body;
             if (!userData.email || userData.email.trim() === '') delete userData.email;
@@ -86,7 +86,7 @@ class AuthController {
         }
     }
 
-    async registerSeller(req: Request, res: Response) {
+    registerSeller = async (req: Request, res: Response) => {
         try {
             const userData = req.body;
             if (!userData.email || userData.email.trim() === '') delete userData.email;
@@ -120,7 +120,7 @@ class AuthController {
         }
     }
 
-    async loginSeller(req: Request, res: Response) {
+    loginSeller = async (req: Request, res: Response) => {
         try {
             const loginData = req.body;
             const hasCredential = loginData.mobile || loginData.email || loginData.uniqueId;

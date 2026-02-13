@@ -23,9 +23,11 @@ class ProductService {
 
         // Keyword search (title or description)
         if (keyword) {
+            // Escape special regex characters
+            const escapedKeyword = keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
             filter.$or = [
-                { title: { $regex: keyword, $options: 'i' } },
-                { description: { $regex: keyword, $options: 'i' } }
+                { title: { $regex: escapedKeyword, $options: 'i' } },
+                { description: { $regex: escapedKeyword, $options: 'i' } }
             ];
         }
 

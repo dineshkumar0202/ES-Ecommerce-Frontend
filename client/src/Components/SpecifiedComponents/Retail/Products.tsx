@@ -115,12 +115,13 @@ const Products = () => {
                 </Stack>
             </Box>
 
+
             {/* Products Grid */}
             {loading ? (
                 <Box sx={{ display: 'flex', justifyContent: 'center', py: 10 }}>
                     <CircularProgress sx={{ color: 'black' }} />
                 </Box>
-            ) : (
+            ) : products.length > 0 ? (
                 <Box sx={{
                     display: 'grid',
                     gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
@@ -272,7 +273,14 @@ const Products = () => {
                         </Card>
                     ))}
                 </Box>
+            ) : (
+                <Box sx={{ textAlign: 'center', py: 10 }}>
+                    <Typography variant="h6" sx={{ color: '#64748b', fontWeight: 700 }}>
+                        No products found matching your search.
+                    </Typography>
+                </Box>
             )}
+
         </Box>
     );
 };

@@ -1,14 +1,7 @@
 import { useState, useEffect } from 'react';
-import { Box, Container, Stack, Typography, Divider, InputBase, IconButton, Avatar, Menu, MenuItem, Badge } from '@mui/material';
+import { Box, Container, Stack, Typography, InputBase, IconButton, Menu, MenuItem, Badge } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import ShoppingCartOutlinedIcon from '@mui/icons-material/ShoppingCartOutlined';
-
-import HubIcon from '@mui/icons-material/Hub';
-import StorefrontIcon from '@mui/icons-material/Storefront';
-import FactoryIcon from '@mui/icons-material/Factory';
-import RocketLaunchIcon from '@mui/icons-material/RocketLaunch';
-import AutorenewIcon from '@mui/icons-material/Autorenew';
-import WorkIcon from '@mui/icons-material/Work';
 import PersonOutlineIcon from '@mui/icons-material/PersonOutline';
 import FavoriteBorderOutlinedIcon from '@mui/icons-material/FavoriteBorderOutlined';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -26,6 +19,30 @@ const Navbar = () => {
     const [showSuggestions, setShowSuggestions] = useState(false);
     const [notification, setNotification] = useState<{ message: string; type: 'success' | 'info' | 'error' } | null>(null);
 
+    // Search History State
+    const [searchHistory, setSearchHistory] = useState<string[]>([]);
+
+    useEffect(() => {
+        const history = localStorage.getItem('searchHistory');
+        if (history) {
+            setSearchHistory(JSON.parse(history));
+        }
+    }, []);
+
+    const addToHistory = (term: string) => {
+        if (!term) return;
+        let newHistory = [term, ...searchHistory.filter(t => t !== term)];
+        if (newHistory.length > 10) newHistory = newHistory.slice(0, 10);
+        setSearchHistory(newHistory);
+        localStorage.setItem('searchHistory', JSON.stringify(newHistory));
+    };
+
+    const removeFromHistory = (term: string) => {
+        const newHistory = searchHistory.filter(t => t !== term);
+        setSearchHistory(newHistory);
+        localStorage.setItem('searchHistory', JSON.stringify(newHistory));
+    };
+
     // Debounce search suggestions
     useEffect(() => {
         const fetchSuggestions = async () => {
@@ -39,7 +56,8 @@ const Navbar = () => {
                 }
             } else {
                 setSuggestions([]);
-                setShowSuggestions(false);
+                // Keep showing suggestions if focused, to show history
+                // setShowSuggestions(false); 
             }
         };
 
@@ -148,7 +166,9 @@ const Navbar = () => {
                                     maxWidth: '700px',
                                     height: '45px',
                                     overflow: 'hidden',
-                                    border: '1px solid #e5e7eb'
+                                    border: '1px solid #e5e7eb',
+                                    boxShadow: showSuggestions ? '0 0 0 2px #B4D5DC' : 'none', // Updated highlight color
+                                    transition: 'box-shadow 0.1s'
                                 }}>
                                     <InputBase
                                         placeholder="Search for products, brands and more..."
@@ -156,29 +176,33 @@ const Navbar = () => {
                                         onChange={(e) => setSearchTerm(e.target.value)}
                                         onKeyDown={handleSearch}
                                         onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
-                                        onFocus={() => searchTerm.length > 2 && setShowSuggestions(true)}
-                                        sx={{ ml: 2, flex: 1, fontSize: '0.9rem', color: '#6b7280' }}
+                                        onFocus={() => setShowSuggestions(true)}
+                                        sx={{ ml: 2, flex: 1, fontSize: '1rem', color: '#111827' }}
                                     />
                                     <Box
-                                        onClick={() => searchTerm.trim() && navigate(`/retail?search=${encodeURIComponent(searchTerm)}`)}
+                                        onClick={() => {
+                                            if (searchTerm.trim()) {
+                                                addToHistory(searchTerm.trim());
+                                                navigate(`/retail?search=${encodeURIComponent(searchTerm)}`);
+                                                setShowSuggestions(false);
+                                            }
+                                        }}
                                         sx={{
-                                            bgcolor: 'black',
-                                            color: 'white',
-                                            px: 4,
+                                            bgcolor: 'black', // Updated to black
+                                            color: 'white', // Updated to white
+                                            px: 3,
                                             display: 'flex',
                                             alignItems: 'center',
                                             cursor: 'pointer',
-                                            fontWeight: 600,
-                                            fontSize: '0.9rem',
-                                            '&:hover': { bgcolor: '#1f2937' }
+                                            '&:hover': { bgcolor: '#333' }
                                         }}
                                     >
-                                        Search
+                                        <SearchIcon />
                                     </Box>
                                 </Box>
 
                                 {/* Search Suggestions Dropdown */}
-                                {showSuggestions && suggestions.length > 0 && (
+                                {showSuggestions && (
                                     <Box sx={{
                                         position: 'absolute',
                                         top: '100%',
@@ -187,17 +211,19 @@ const Navbar = () => {
                                         maxWidth: '700px',
                                         mx: 'auto',
                                         bgcolor: 'white',
-                                        borderRadius: '0 0 8px 8px',
-                                        boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+                                        borderRadius: '0 0 4px 4px',
+                                        boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
                                         zIndex: 1500,
-                                        mt: 0.5,
-                                        border: '1px solid #f3f4f6',
+                                        border: '1px solid #B4D5DC', // Updated to match validation color
+                                        borderTop: 'none',
                                         overflow: 'hidden'
                                     }}>
-                                        {suggestions.map((product) => (
+                                        {/* 1. If user is typing and we have product suggestions */}
+                                        {searchTerm.trim().length > 2 && suggestions.length > 0 && suggestions.map((product) => (
                                             <Box
                                                 key={product._id}
                                                 onClick={() => {
+                                                    addToHistory(product.title);
                                                     navigate(`/product/${product._id}`);
                                                     setShowSuggestions(false);
                                                     setSearchTerm('');
@@ -205,37 +231,88 @@ const Navbar = () => {
                                                 sx={{
                                                     display: 'flex',
                                                     alignItems: 'center',
-                                                    p: 1.5,
+                                                    p: 1,
+                                                    px: 2,
                                                     cursor: 'pointer',
-                                                    '&:hover': { bgcolor: '#f8fafc' },
-                                                    borderBottom: '1px solid #f3f4f6'
+                                                    '&:hover': { bgcolor: '#f0f9fa' } // Very light blue hover
                                                 }}
                                             >
-                                                <Box sx={{ width: 40, height: 40, borderRadius: 1, overflow: 'hidden', bgcolor: '#f1f5f9', mr: 2, flexShrink: 0 }}>
-                                                    <img
-                                                        src={product.images?.[0] || product.image || 'https://via.placeholder.com/40'}
-                                                        alt=""
-                                                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                                                    />
-                                                </Box>
-                                                <Box>
-                                                    <Typography variant="body2" sx={{ fontWeight: 600, color: '#1e293b' }}>
-                                                        {product.title}
-                                                    </Typography>
-                                                    <Typography variant="caption" sx={{ color: '#64748b' }}>
-                                                        {product.category}
-                                                    </Typography>
-                                                </Box>
+                                                <Typography variant="body1" sx={{ fontWeight: 700, color: 'black', flex: 1 }}>
+                                                    {product.title}
+                                                </Typography>
+                                                <Typography variant="caption" sx={{ color: '#64748b' }}>
+                                                    {product.category}
+                                                </Typography>
                                             </Box>
                                         ))}
-                                        <Box
-                                            onClick={() => navigate(`/retail?search=${encodeURIComponent(searchTerm)}`)}
-                                            sx={{ p: 1.5, textAlign: 'center', bgcolor: '#f8fafc', cursor: 'pointer', '&:hover': { bgcolor: '#f1f5f9' } }}
-                                        >
-                                            <Typography variant="caption" sx={{ fontWeight: 700, color: 'black' }}>
-                                                View all results for "{searchTerm}"
-                                            </Typography>
-                                        </Box>
+
+                                        {/* 2. If user is NOT typing or typing matches nothing, show history or trending */}
+                                        {(searchTerm.trim().length <= 2 || suggestions.length === 0) && (
+                                            <>
+                                                {searchHistory.length > 0 ? (
+                                                    searchHistory.filter(term => term.toLowerCase().includes(searchTerm.toLowerCase())).map((term, index) => (
+                                                        <Box
+                                                            key={index}
+                                                            sx={{
+                                                                display: 'flex',
+                                                                alignItems: 'center',
+                                                                justifyContent: 'space-between',
+                                                                p: 1,
+                                                                px: 2,
+                                                                cursor: 'pointer',
+                                                                '&:hover': { bgcolor: '#f0f9fa' } // Very light blue hover
+                                                            }}
+                                                        >
+                                                            <Box
+                                                                onClick={() => {
+                                                                    setSearchTerm(term);
+                                                                    navigate(`/retail?search=${encodeURIComponent(term)}`);
+                                                                    setShowSuggestions(false);
+                                                                }}
+                                                                sx={{ flex: 1, display: 'flex', alignItems: 'center' }}
+                                                            >
+                                                                <Typography variant="body1" sx={{ fontWeight: 700, color: '#800080', mr: 2 }}>
+                                                                    {term}
+                                                                </Typography>
+                                                            </Box>
+                                                            <IconButton
+                                                                size="small"
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    removeFromHistory(term);
+                                                                }}
+                                                                sx={{ color: '#9ca3af', '&:hover': { color: '#ef4444' } }}
+                                                            >
+                                                                <span style={{ fontSize: '1.2rem', lineHeight: 1 }}>×</span>
+                                                            </IconButton>
+                                                        </Box>
+                                                    ))
+                                                ) : (
+                                                    // Optional: Trending if history is empty
+                                                    ['kitchen and dining', 'cleaning tools', 'jeans', 'desktop computers', 'computer accessories'].map((term) => (
+                                                        <Box
+                                                            key={term}
+                                                            onClick={() => {
+                                                                addToHistory(term);
+                                                                setSearchTerm(term);
+                                                                navigate(`/retail?search=${encodeURIComponent(term)}`);
+                                                                setShowSuggestions(false);
+                                                            }}
+                                                            sx={{
+                                                                p: 1,
+                                                                px: 2,
+                                                                cursor: 'pointer',
+                                                                '&:hover': { bgcolor: '#f0f9fa' } // Very light blue hover
+                                                            }}
+                                                        >
+                                                            <Typography variant="body1" sx={{ fontWeight: 700, color: 'black' }}>
+                                                                {term}
+                                                            </Typography>
+                                                        </Box>
+                                                    ))
+                                                )}
+                                            </>
+                                        )}
                                     </Box>
                                 )}
                             </Box>

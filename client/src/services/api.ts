@@ -19,6 +19,27 @@ api.interceptors.request.use((config) => {
     return config;
 });
 
+// Add interceptor to handle 401 Unauthorized errors
+api.interceptors.response.use(
+    (response) => response,
+    (error) => {
+        if (error.response && error.response.status === 401) {
+            // Clear local storage and redirect to login if token is invalid
+            localStorage.removeItem('token');
+            localStorage.removeItem('userRole');
+            localStorage.removeItem('userName');
+            localStorage.removeItem('userId');
+
+            // Optional: Redirect to login page or reload to reset state
+            if (window.location.pathname !== '/login' && window.location.pathname !== '/register') {
+                // window.location.href = '/login'; 
+                // Better to just let the UI handle the missing token state refresh
+            }
+        }
+        return Promise.reject(error);
+    }
+);
+
 export const QProductService = {
     getAll: () => api.get('/q-commerce'),
     getById: (id: string) => api.get(`/q-commerce/${id}`),
@@ -63,7 +84,8 @@ export const FreelanceService = {
     update: (id: string, data: any) => api.put(`/posts/${id}`, data),
     updateStatus: (id: string, status: string) => api.put(`/posts/${id}/status`, { status }),
     delete: (id: string) => api.delete(`/posts/${id}`),
-    submitInterest: (postId: string, data?: any) => api.post(`/posts/${postId}/interest`, data)
+    submitInterest: (postId: string, data?: any) => api.post(`/posts/${postId}/interest`, data),
+    getMyInterests: () => api.get('/posts/my/interests')
 };
 
 export const OrderService = {
@@ -88,7 +110,7 @@ export const UserService = {
     getById: (id: string) => api.get(`/users/${id}`),
     delete: (id: string) => api.delete(`/users/${id}`),
     registerFreelancer: (data: any) => api.post('/users/freelancer/register', data),
-    updateUserProfile: (id: string, data: any) => api.put(`/users/${id}`, data),
+    updateUserProfile: (data: any) => api.put('/users/profile', data),
     updateSellerProfile: (id: string, data: any) => api.put(`/users/seller/${id}`, data)
 };
 

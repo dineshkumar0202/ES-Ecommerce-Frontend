@@ -16,6 +16,7 @@ import QCommerceManagement from './Components/SpecifiedComponents/Admin/QCommerc
 import ResaleManagement from './Components/SpecifiedComponents/Admin/ResaleManagement';
 import FreelanceManagement from './Components/SpecifiedComponents/Admin/FreelanceManagement';
 import SellerProfile from './Components/Pages/SellerProfile';
+import EditSellerProfile from './Components/Pages/EditSellerProfile';
 import CategoryPage from './Components/Pages/CategoryPage';
 import ShopByCategory from './Components/Pages/ShopByCategory';
 import AllProducts from './Components/Pages/AllProducts';
@@ -52,6 +53,7 @@ function App() {
                 <Route path="/auth/success" element={<AuthSuccess />} />
                 <Route path="/profile" element={<Profile />} />
                 <Route path="/seller/profile" element={<SellerProfile />} />
+                <Route path="/seller/edit-profile" element={<EditSellerProfile />} />
 
                 {/* Shopping Flow */}
                 <Route path="/checkout" element={<Checkout />} />

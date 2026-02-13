@@ -1,11 +1,11 @@
 import { Box, Typography, Stack, Avatar } from '@mui/material';
 
-const categories = [
+const retailCategories = [
     { name: 'Home Decor', image: 'https://images.unsplash.com/photo-1513519245088-0e12902e5a38?auto=format&fit=crop&q=80&w=200' },
     { name: 'Footwear', image: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&q=80&w=200' },
     { name: 'Electronics', image: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&q=80&w=200' },
     { name: 'Accessories', image: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&q=80&w=200' },
-    { name: 'Smart Tech', image: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&q=80&w=200' }, // Replaced with similar
+    { name: 'Smart Tech', image: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&q=80&w=200' },
     { name: 'Men\'s Apparel', image: 'https://images.unsplash.com/photo-15162579848b2-7713504ae76d?auto=format&fit=crop&q=80&w=200' },
     { name: 'Bags', image: 'https://images.unsplash.com/photo-1548036328-c9fa89d128fa?auto=format&fit=crop&q=80&w=200' }
 ];
@@ -15,9 +15,13 @@ interface RetailCategoriesProps {
 }
 
 const RetailCategories = ({ onCategoryClick }: RetailCategoriesProps) => {
+
     return (
         <Box sx={{ width: '100%', mb: 8, mt: 4 }}>
-            {/* Section Header */}
+
+
+
+            {/* 3. Top Retail Categories (Existing functionality) */}
             <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 6 }}>
                 <Box sx={{ width: 40, height: 4, bgcolor: '#B4D5DC', borderRadius: 2 }} />
                 <Typography variant="h5" sx={{ fontWeight: 800, color: '#2c3e50', letterSpacing: 0.5 }}>
@@ -25,7 +29,6 @@ const RetailCategories = ({ onCategoryClick }: RetailCategoriesProps) => {
                 </Typography>
             </Stack>
 
-            {/* Categories List */}
             <Stack
                 direction="row"
                 spacing={{ xs: 2, md: 4 }}
@@ -38,7 +41,7 @@ const RetailCategories = ({ onCategoryClick }: RetailCategoriesProps) => {
                     justifyContent: { xs: 'flex-start', md: 'space-between' }
                 }}
             >
-                {categories.map((cat, index) => (
+                {retailCategories.map((cat, index) => (
                     <Stack
                         key={index}
                         onClick={onCategoryClick}

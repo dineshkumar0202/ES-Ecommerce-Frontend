@@ -93,7 +93,10 @@ class AuthService {
             mobile,
             password,
             email,
-            role: 'Buyer'
+            role: 'Buyer',
+            profile: {
+                name: username
+            }
         });
 
         // ... (rest of function)
@@ -105,6 +108,7 @@ class AuthService {
                 mobile: buyer.mobile,
                 email: buyer.email,
                 role: buyer.role,
+                profile: buyer.profile || {},
                 token: this.generateToken(buyer._id as string, 'Buyer'),
             };
         } else {
@@ -149,6 +153,7 @@ class AuthService {
             mobile: buyer.mobile,
             email: buyer.email,
             role: buyer.role,
+            profile: buyer.profile || {},
             token: this.generateToken(buyer._id as string, 'Buyer'),
         };
     }
@@ -177,6 +182,9 @@ class AuthService {
             email,
             uniqueId,
             role: 'Seller',
+            profile: {
+                name: username
+            },
             businessDetails,
             bankDetails,
             isVerified: false // Default to false
@@ -191,6 +199,7 @@ class AuthService {
                 email: seller.email,
                 uniqueId: seller.uniqueId,
                 role: seller.role,
+                profile: seller.profile || {},
                 token: this.generateToken(seller._id as string, 'Seller'),
             };
         } else {
@@ -250,6 +259,7 @@ class AuthService {
             email: seller.email,
             uniqueId: seller.uniqueId,
             role: seller.role,
+            profile: seller.profile || {},
             token: this.generateToken(seller._id as string, 'Seller'),
         };
     }
@@ -276,6 +286,7 @@ class AuthService {
             username: admin.username,
             email: admin.email,
             role: admin.role,
+            profile: admin.profile || {},
             token: this.generateToken(admin._id as string, 'Admin'),
         };
     }
@@ -318,6 +329,7 @@ class AuthService {
             mobile: user.mobile,
             email: user.email,
             role: user.role,
+            profile: user.profile || {},
             token: this.generateToken(user._id as string, user.role),
         };
     }

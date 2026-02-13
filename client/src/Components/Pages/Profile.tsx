@@ -88,11 +88,23 @@ const Profile = () => {
             localStorage.setItem('userName', editName);
             localStorage.setItem('userProfileImage', editAvatar);
             if (userData.uniqueId) {
-                await UserService.updateUserProfile(userData.uniqueId, {
+                const { data } = await UserService.updateUserProfile({
                     username: editName,
                     email: editEmail,
                     profile: { ...userData.profile, avatar: editAvatar, phone: editPhone }
-                }).catch(() => { });
+                });
+
+                if (data) {
+                    setUserData((prev: any) => ({
+                        ...prev,
+                        name: data.username || data.profile?.name || prev.name,
+                        email: data.email || data.profile?.email || prev.email,
+                        phone: data.profile?.phone || prev.phone,
+                        avatar: data.profile?.avatar || prev.avatar,
+                        profile: data.profile || prev.profile
+                    }));
+                    toast.success("Profile updated on database!");
+                }
             }
         } finally {
             setSavingProfile(false);
@@ -156,7 +168,7 @@ const Profile = () => {
                     ...prev,
                     name: d.username || d.profile?.name || prev.name,
                     email: d.email || d.profile?.email || prev.email,
-                    phone: d.phone || d.profile?.phone || prev.phone,
+                    phone: d.mobile || d.phone || d.profile?.phone || prev.phone,
                     role: d.role || prev.role,
                     uniqueId: d.uniqueId || d._id,
                     avatar: d.profile?.avatar || prev.avatar,

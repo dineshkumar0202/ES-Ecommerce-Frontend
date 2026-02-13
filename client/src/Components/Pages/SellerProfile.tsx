@@ -36,36 +36,24 @@ import {
     Description as FileIcon,
     Launch as LaunchIcon,
     Download as DownloadIcon,
-    AttachMoney as AttachMoneyOutlinedIcon,
-    ShoppingBag as ShoppingBagOutlinedIcon,
-    Inventory2 as Inventory2OutlinedIcon,
-    TrendingUp as TrendingUpIcon,
-    EditOutlined as EditOutlinedIcon,
-    DeleteOutline as DeleteOutlineIcon
+    WorkOutline as WorkIcon,
+    Warehouse as WarehouseIcon
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
-import { WholesaleService, OrderService, AuthService, ProductService } from '../../services/api';
+import { AuthService, FreelanceService, WholesaleService } from '../../services/api';
 
 const SellerProfile = () => {
     const navigate = useNavigate();
     const [activeTab, setActiveTab] = useState('Business Profile');
-    const [products, setProducts] = useState<any[]>([]);
-    const [orders, setOrders] = useState<any[]>([]);
+    const [myInterests, setMyInterests] = useState<any[]>([]);
+    const [wholesaleProducts, setWholesaleProducts] = useState<any[]>([]);
     const [sellerProfile, setSellerProfile] = useState<any>(null);
 
     const name = sellerProfile?.username || sellerProfile?.profile?.name || 'Seller Name';
     const avatar = sellerProfile?.profile?.avatar || '';
     const uniqueId = sellerProfile?.uniqueId || sellerProfile?.freelancer?.freelancerId || 'LOADING...';
-    // const navItems = ['Dashboard', 'Business Profile', 'Orders', 'Inventory'];
-    const navItems = ['Business Profile', 'Dashboard', 'Orders', 'Inventory']; // Reordered to match likely user preference if Profile is the main view in HEAD
 
-    // Mock Data for Dashboard
-    const stats = {
-        totalSales: '₹1,24,500',
-        orders: 45,
-        products: products.length || 0,
-        rating: 4.8
-    };
+    const navItems = ['Business Profile', 'Wholesale', 'Freelance'];
 
     useEffect(() => {
         fetchSellerData();
@@ -76,92 +64,23 @@ const SellerProfile = () => {
             const { data } = await AuthService.getMe();
             setSellerProfile(data);
 
-            const prodRes = await WholesaleService.getMyProducts();
-            const wholesaleProducts = prodRes.data || [];
-
-            // Fetch Retail Products
-            let retailProducts: any[] = [];
             try {
-                const retailRes = await ProductService.getAll({ seller: data._id });
-                retailProducts = retailRes.data?.products || [];
-            } catch (err) {
-                console.error("Error fetching retail products", err);
+                const interestRes = await FreelanceService.getMyInterests();
+                setMyInterests(interestRes.data || []);
+            } catch (error) {
+                console.error("Error fetching interests", error);
             }
 
-            // Combine products, marking their source type if needed
-            const allProducts = [
-                ...wholesaleProducts.map((p: any) => ({ ...p, type: 'Wholesale' })),
-                ...retailProducts.map((p: any) => ({ ...p, type: 'Retail' }))
-            ];
-            setProducts(allProducts);
-
-            const ordersRes = await OrderService.getSellerOrders();
-            setOrders(ordersRes.data.map((o: any) => ({
-                id: o._id,
-                product: o.orderItems.map((i: any) => i.title).join(', '),
-                customer: o.user?.username || 'Guest',
-                date: new Date(o.createdAt).toLocaleDateString(),
-                status: o.status,
-                amount: `₹${o.totalPrice}`
-            })) || []);
+            try {
+                const prodRes = await WholesaleService.getMyProducts();
+                setWholesaleProducts(prodRes.data || []);
+            } catch (error) {
+                console.error("Error fetching wholesale products", error);
+            }
 
         } catch (error) {
-            console.error("Error loading dashboard:", error);
+            console.error("Error loading seller profile:", error);
         }
-    };
-
-    const handleProductDelete = async (id: string, type: string) => {
-        if (window.confirm('Are you sure you want to delete this product?')) {
-            try {
-                if (type === 'Retail') {
-                    await ProductService.delete(id);
-                } else {
-                    await WholesaleService.delete(id);
-                }
-                fetchSellerData(); // Refresh list
-            } catch (error) {
-                console.error("Delete failed:", error);
-                alert("Failed to delete product");
-            }
-        }
-    };
-
-    const handleProductEdit = (id: string, type: string) => {
-        // Navigate to edit page depending on type
-        // For now, assuming a generic edit or specific routes
-        if (type === 'Retail') {
-            // Assuming there's a retail edit route or using the same upload form with edit mode
-            navigate(`/retail/edit/${id}`); // Placeholder route
-            alert(`Edit Retail Product: ${id} (Feature to be implemented)`);
-        } else {
-            navigate(`/wholesale/edit/${id}`);
-            alert(`Edit Wholesale Product: ${id} (Feature to be implemented)`);
-        }
-    };
-
-    const handleStatusUpdate = async (id: string, newStatus: string) => {
-        try {
-            await OrderService.updateStatus(id, newStatus);
-            fetchSellerData();
-        } catch (e) {
-            console.error("Status update failed:", e);
-        }
-    };
-
-    const StatusChip = ({ status }: { status: string }) => {
-        let color = '#e2e8f0';
-        let textColor = '#475569';
-
-        switch (status) {
-            case 'Ordered': color = '#fef3c7'; textColor = '#b45309'; break;
-            case 'Processing': color = '#dbeafe'; textColor = '#1e40af'; break;
-            case 'Shipped': color = '#f3e8ff'; textColor = '#6b21a8'; break;
-            case 'Out for Delivery': color = '#ffedd5'; textColor = '#9a3412'; break;
-            case 'Delivered': color = '#dcfce7'; textColor = '#166534'; break;
-            case 'Cancelled': color = '#fee2e2'; textColor = '#991b1b'; break;
-        }
-
-        return <Chip label={status} size="small" sx={{ bgcolor: color, color: textColor, fontWeight: 800, borderRadius: 2 }} />;
     };
 
     // --- Component Renders ---
@@ -180,6 +99,7 @@ const SellerProfile = () => {
                         />
                         <Button
                             startIcon={<CameraIcon />}
+                            onClick={() => navigate('/seller/edit-profile')}
                             sx={{
                                 position: 'absolute',
                                 bottom: 16,
@@ -203,7 +123,11 @@ const SellerProfile = () => {
                                 src={avatar || "https://img.logo.com/outputs/7438183/1000x1000.png"}
                                 sx={{ width: 140, height: 140, borderRadius: 5, border: '6px solid white', boxShadow: '0 10px 30px rgba(0,0,0,0.1)', bgcolor: '#f8fafc' }}
                             />
-                            <IconButton size="small" sx={{ position: 'absolute', top: -10, right: -10, bgcolor: '#CFE8EC', color: '#1e293b', border: '3px solid white', '&:hover': { bgcolor: '#b8dbe2' } }}>
+                            <IconButton
+                                size="small"
+                                onClick={() => navigate('/seller/edit-profile')}
+                                sx={{ position: 'absolute', top: -10, right: -10, bgcolor: '#CFE8EC', color: '#1e293b', border: '3px solid white', '&:hover': { bgcolor: '#b8dbe2' } }}
+                            >
                                 <EditIcon sx={{ fontSize: 16 }} />
                             </IconButton>
                         </Box>
@@ -238,7 +162,7 @@ const SellerProfile = () => {
                                 <BusinessIcon sx={{ color: '#94a3b8' }} />
                                 <Typography variant="h6" sx={{ fontWeight: 800 }}>General Info</Typography>
                             </Stack>
-                            <Button startIcon={<EditIcon />} sx={{ textTransform: 'none', fontWeight: 800, color: '#64748b' }}>EDIT</Button>
+                            <Button startIcon={<EditIcon />} sx={{ textTransform: 'none', fontWeight: 800, color: '#64748b' }} onClick={() => navigate('/seller/edit-profile')}>EDIT</Button>
                         </Stack>
                         <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 4 }}>
                             <Box>
@@ -267,7 +191,7 @@ const SellerProfile = () => {
                                 <VerifiedIcon sx={{ color: '#94a3b8' }} />
                                 <Typography variant="h6" sx={{ fontWeight: 800 }}>Compliance & GST</Typography>
                             </Stack>
-                            <Button startIcon={<EditIcon />} sx={{ textTransform: 'none', fontWeight: 800, color: '#64748b' }}>EDIT</Button>
+                            <Button startIcon={<EditIcon />} sx={{ textTransform: 'none', fontWeight: 800, color: '#64748b' }} onClick={() => navigate('/seller/edit-profile')}>EDIT</Button>
                         </Stack>
                         <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 4, mb: 4 }}>
                             <Box>
@@ -309,7 +233,7 @@ const SellerProfile = () => {
                                 <BankIcon sx={{ color: '#94a3b8' }} />
                                 <Typography variant="h6" sx={{ fontWeight: 800 }}>Bank Details for Payouts</Typography>
                             </Stack>
-                            <Button startIcon={<EditIcon />} sx={{ textTransform: 'none', fontWeight: 800, color: '#64748b' }}>EDIT</Button>
+                            <Button startIcon={<EditIcon />} sx={{ textTransform: 'none', fontWeight: 800, color: '#64748b' }} onClick={() => navigate('/seller/edit-profile')}>EDIT</Button>
                         </Stack>
                         <Box sx={{ p: 3, borderRadius: 4, bgcolor: '#f8fafc', border: '1px solid #f1f5f9' }}>
                             <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 4 }}>
@@ -432,162 +356,158 @@ const SellerProfile = () => {
         </Box>
     );
 
-    const renderDashboard = () => (
+    const renderWholesale = () => (
         <Box>
-            <Typography variant="h5" sx={{ fontWeight: 900, mb: 3 }}>Dashboard Overview</Typography>
-            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', md: 'repeat(4, 1fr)' }, gap: 3, mb: 4 }}>
-                {[
-                    { label: 'Total Sales', value: stats.totalSales, icon: <AttachMoneyOutlinedIcon />, color: '#bef264' },
-                    { label: 'Total Orders', value: stats.orders, icon: <ShoppingBagOutlinedIcon />, color: '#B4D5DC' },
-                    { label: 'Active Listings', value: stats.products, icon: <Inventory2OutlinedIcon />, color: '#fca5a5' },
-                    { label: 'Seller Rating', value: stats.rating, icon: <TrendingUpIcon />, color: '#c4b5fd' }
-                ].map((stat, i) => (
-                    <Paper key={i} elevation={0} sx={{ p: 3, borderRadius: 4, border: '1px solid #f1f5f9', bgcolor: 'white' }}>
-                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
-                            <Box sx={{ p: 1.5, borderRadius: 3, bgcolor: stat.color, color: 'black' }}>
-                                {stat.icon}
-                            </Box>
-                            <Chip label="+12%" size="small" sx={{ bgcolor: '#f1f5f9', fontWeight: 800, fontSize: '0.65rem' }} />
-                        </Box>
-                        <Typography variant="h4" sx={{ fontWeight: 900, mb: 0.5 }}>{stat.value}</Typography>
-                        <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 700 }}>{stat.label}</Typography>
-                    </Paper>
-                ))}
-            </Box>
+            <Typography variant="h5" sx={{ fontWeight: 900, mb: 3 }}>Wholesale Details</Typography>
 
-            {/* Recent Orders Table */}
-            <Paper elevation={0} sx={{ p: 4, borderRadius: 6, border: '1px solid #f1f5f9', bgcolor: 'white' }}>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-                    <Typography variant="h6" sx={{ fontWeight: 800 }}>Recent Orders</Typography>
-                    <Button sx={{ fontWeight: 800, textTransform: 'none' }} onClick={() => setActiveTab('Orders')}>View All</Button>
-                </Box>
-                <TableContainer>
-                    <Table>
-                        <TableHead>
-                            <TableRow>
-                                <TableCell sx={{ fontWeight: 800, color: '#94a3b8' }}>ORDER ID</TableCell>
-                                <TableCell sx={{ fontWeight: 800, color: '#94a3b8' }}>PRODUCT</TableCell>
-                                <TableCell sx={{ fontWeight: 800, color: '#94a3b8' }}>CUSTOMER</TableCell>
-                                <TableCell sx={{ fontWeight: 800, color: '#94a3b8' }}>STATUS</TableCell>
-                                <TableCell sx={{ fontWeight: 800, color: '#94a3b8' }}>AMOUNT</TableCell>
-                                <TableCell sx={{ fontWeight: 800, color: '#94a3b8' }}>ACTION</TableCell>
-                            </TableRow>
-                        </TableHead>
-                        <TableBody>
-                            {orders.slice(0, 5).map((order) => (
-                                <TableRow key={order.id}>
-                                    <TableCell sx={{ fontWeight: 700 }}>{order.id}</TableCell>
-                                    <TableCell sx={{ fontWeight: 600 }}>{order.product}</TableCell>
-                                    <TableCell sx={{ fontWeight: 600, color: '#64748b' }}>{order.customer}</TableCell>
-                                    <TableCell><StatusChip status={order.status} /></TableCell>
-                                    <TableCell sx={{ fontWeight: 800 }}>{order.amount}</TableCell>
-                                    <TableCell>
-                                        <IconButton size="small"><EditOutlinedIcon fontSize="small" /></IconButton>
-                                    </TableCell>
-                                </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
-                </TableContainer>
-            </Paper>
-        </Box>
-    );
-
-    const renderOrders = () => (
-        <Box>
-            <Typography variant="h5" sx={{ fontWeight: 900, mb: 3 }}>Order Management</Typography>
-            <Paper elevation={0} sx={{ p: 0, borderRadius: 6, border: '1px solid #f1f5f9', bgcolor: 'white', overflow: 'hidden' }}>
-                <TableContainer>
-                    <Table>
-                        <TableHead sx={{ bgcolor: '#f8fafc' }}>
-                            <TableRow>
-                                <TableCell sx={{ fontWeight: 800 }}>Order Detail</TableCell>
-                                <TableCell sx={{ fontWeight: 800 }}>Date</TableCell>
-                                <TableCell sx={{ fontWeight: 800 }}>Status</TableCell>
-                                <TableCell sx={{ fontWeight: 800 }}>Update Status</TableCell>
-                            </TableRow>
-                        </TableHead>
-                        <TableBody>
-                            {orders.map((order) => (
-                                <TableRow key={order.id} hover>
-                                    <TableCell>
-                                        <Typography variant="subtitle2" sx={{ fontWeight: 800 }}>{order.id}</Typography>
-                                        <Typography variant="body2" sx={{ color: '#64748b' }}>{order.product}</Typography>
-                                        <Typography variant="caption" sx={{ color: '#94a3b8' }}>Customer: {order.customer}</Typography>
-                                    </TableCell>
-                                    <TableCell sx={{ fontWeight: 600, color: '#64748b' }}>{order.date}</TableCell>
-                                    <TableCell><StatusChip status={order.status} /></TableCell>
-                                    <TableCell>
-                                        <Stack direction="row" spacing={1}>
-                                            <Button size="small" variant="contained" color="primary" disabled={order.status === 'Shipped'} onClick={() => handleStatusUpdate(order.id, 'Shipped')} sx={{ boxShadow: 'none', borderRadius: 2 }}>Ship</Button>
-                                            <Button size="small" variant="contained" color="success" disabled={order.status === 'Delivered'} onClick={() => handleStatusUpdate(order.id, 'Delivered')} sx={{ boxShadow: 'none', borderRadius: 2 }}>Deliver</Button>
-                                        </Stack>
-                                    </TableCell>
-                                </TableRow>
-                            ))}
-                            {orders.length === 0 && <TableRow><TableCell colSpan={4} align="center">No orders found.</TableCell></TableRow>}
-                        </TableBody>
-                    </Table>
-                </TableContainer>
-            </Paper>
-        </Box>
-    );
-
-    const renderInventory = () => (
-        <Box>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}>
-                <Typography variant="h5" sx={{ fontWeight: 900 }}>Product Inventory</Typography>
-                <Button variant="contained" startIcon={<AddIcon />} sx={{ bgcolor: 'black', color: 'white', fontWeight: 800, borderRadius: 3, textTransform: 'none' }} onClick={() => navigate('/wholesale', { state: { view: 'upload' } })}>
-                    Add New Product
-                </Button>
-            </Box>
-
-            <Paper elevation={0} sx={{ p: 4, borderRadius: 6, border: '1px solid #f1f5f9', bgcolor: 'white' }}>
-                {products.length === 0 ? (
-                    <Box sx={{ textAlign: 'center', py: 5 }}>
-                        <Inventory2OutlinedIcon sx={{ fontSize: 48, color: '#e2e8f0', mb: 2 }} />
-                        <Typography sx={{ color: '#94a3b8' }}>No products found in your inventory.</Typography>
+            <Paper elevation={0} sx={{ p: 4, borderRadius: 6, border: '1px solid #f1f5f9', bgcolor: 'white', mb: 4 }}>
+                <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 3 }}>
+                    <Box sx={{ p: 1.5, bgcolor: '#e0f2fe', borderRadius: 2, color: '#0284c7' }}>
+                        <WarehouseIcon />
                     </Box>
-                ) : (
+                    <Box>
+                        <Typography variant="h4" sx={{ fontWeight: 900, color: '#0f172a' }}>{wholesaleProducts.length}</Typography>
+                        <Typography variant="caption" sx={{ fontWeight: 700, color: '#64748b' }}>ACTIVE WHOLESALE LISTINGS</Typography>
+                    </Box>
+                </Stack>
+
+                {wholesaleProducts.length > 0 ? (
                     <TableContainer>
                         <Table>
-                            <TableHead>
+                            <TableHead sx={{ bgcolor: '#f8fafc' }}>
                                 <TableRow>
-                                    <TableCell sx={{ fontWeight: 800 }}>PRODUCT</TableCell>
-                                    <TableCell sx={{ fontWeight: 800 }}>CATEGORY</TableCell>
-                                    <TableCell sx={{ fontWeight: 800 }}>STOCK</TableCell>
-                                    <TableCell sx={{ fontWeight: 800 }}>PRICE</TableCell>
-                                    <TableCell sx={{ fontWeight: 800 }}>ACTIONS</TableCell>
+                                    <TableCell sx={{ fontWeight: 800, color: '#64748b' }}>PRODUCT</TableCell>
+                                    <TableCell sx={{ fontWeight: 800, color: '#64748b' }}>CATEGORY</TableCell>
+                                    <TableCell sx={{ fontWeight: 800, color: '#64748b' }}>PRICE / UNIT</TableCell>
+                                    <TableCell sx={{ fontWeight: 800, color: '#64748b' }}>MIN ORDER</TableCell>
+                                    <TableCell sx={{ fontWeight: 800, color: '#64748b' }}>STOCK</TableCell>
                                 </TableRow>
                             </TableHead>
                             <TableBody>
-                                {products.map((p) => (
-                                    <TableRow key={p._id}>
-                                        <TableCell sx={{ display: 'flex', gap: 2, alignItems: 'center', borderBottom: 'none' }}>
-                                            <Avatar src={p.images?.[0]} variant="rounded" sx={{ width: 50, height: 50 }} />
-                                            <Box>
-                                                <Typography variant="subtitle2" sx={{ fontWeight: 800 }}>{p.title}</Typography>
-                                                <Typography variant="caption" sx={{ color: '#64748b' }}>ID: {p._id.slice(-6).toUpperCase()}</Typography>
-                                            </Box>
-                                        </TableCell>
-                                        <TableCell>{p.category || 'Retail'}</TableCell>
+                                {wholesaleProducts.map((product: any) => (
+                                    <TableRow key={product._id} hover>
                                         <TableCell>
-                                            <Chip label="In Stock" size="small" color="success" variant="outlined" sx={{ fontWeight: 800 }} />
+                                            <Stack direction="row" spacing={2} alignItems="center">
+                                                <Avatar variant="rounded" src={product.images?.[0]} sx={{ width: 48, height: 48 }} />
+                                                <Box>
+                                                    <Typography variant="subtitle2" sx={{ fontWeight: 800, color: '#0f172a' }}>{product.title}</Typography>
+                                                    <Typography variant="caption" sx={{ color: '#94a3b8' }}>SKU: {product.sku || 'N/A'}</Typography>
+                                                </Box>
+                                            </Stack>
                                         </TableCell>
-                                        <TableCell sx={{ fontWeight: 800 }}>₹{p.price || p.pricePerUnit}</TableCell>
+                                        <TableCell sx={{ fontWeight: 600, color: '#475569' }}>{product.category}</TableCell>
+                                        <TableCell sx={{ fontWeight: 800, color: '#0f172a' }}>₹{product.pricePerUnit}</TableCell>
+                                        <TableCell sx={{ fontWeight: 600, color: '#475569' }}>{product.minOrderQuantity} units</TableCell>
                                         <TableCell>
-                                            <IconButton size="small" onClick={() => handleProductEdit(p._id, p.type || 'Wholesale')}><EditOutlinedIcon /></IconButton>
-                                            <IconButton size="small" color="error" onClick={() => handleProductDelete(p._id, p.type || 'Wholesale')}><DeleteOutlineIcon /></IconButton>
+                                            <Chip
+                                                label={product.stock > 0 ? 'In Stock' : 'Out of Stock'}
+                                                size="small"
+                                                color={product.stock > 0 ? 'success' : 'error'}
+                                                sx={{ fontWeight: 800, height: 24 }}
+                                            />
                                         </TableCell>
                                     </TableRow>
                                 ))}
                             </TableBody>
                         </Table>
                     </TableContainer>
+                ) : (
+                    <Box sx={{ textAlign: 'center', py: 4 }}>
+                        <Typography variant="body1" sx={{ color: '#94a3b8', fontWeight: 600 }}>No active wholesale listings found.</Typography>
+                        <Button
+                            variant="text"
+                            startIcon={<AddIcon />}
+                            sx={{ mt: 1, fontWeight: 800, textTransform: 'none' }}
+                            onClick={() => navigate('/wholesale')}
+                        >
+                            Go to Wholesale Management
+                        </Button>
+                    </Box>
                 )}
             </Paper>
         </Box>
     );
+
+    const renderFreelance = () => {
+        const freelancer = sellerProfile?.freelancer;
+        const isRegistered = freelancer?.isRegistered;
+        const status = freelancer?.status;
+
+        return (
+            <Box>
+                <Typography variant="h5" sx={{ fontWeight: 900, mb: 3 }}>Freelance Profile</Typography>
+
+                <Paper elevation={0} sx={{ p: 4, borderRadius: 6, border: '1px solid #f1f5f9', bgcolor: 'white', mb: 4 }}>
+                    <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 2 }}>
+                        <Typography variant="h6" sx={{ fontWeight: 800 }}>Registration Status</Typography>
+                        {isRegistered ? (
+                            <Chip label={status?.toUpperCase() || 'PENDING'} color={status === 'Approved' ? 'success' : 'warning'} sx={{ fontWeight: 800 }} />
+                        ) : (
+                            <Button variant="contained" size="small" onClick={() => navigate('/freelance')} sx={{ bgcolor: 'black' }}>Register Now</Button>
+                        )}
+                    </Stack>
+                    {isRegistered && (
+                        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 3 }}>
+                            <Box>
+                                <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 700 }}>Category</Typography>
+                                <Typography variant="body1" sx={{ fontWeight: 600 }}>{freelancer.category || 'N/A'}</Typography>
+                            </Box>
+                            <Box>
+                                <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 700 }}>Freelancer ID</Typography>
+                                <Typography variant="body1" sx={{ fontWeight: 600 }}>{freelancer.freelancerId || 'N/A'}</Typography>
+                            </Box>
+                            <Box sx={{ gridColumn: { sm: 'span 2' } }}>
+                                <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 700 }}>Portfolio</Typography>
+                                <Typography variant="body1" sx={{ fontWeight: 600 }}>{freelancer.portfolio ? <a href={freelancer.portfolio} target="_blank" rel="noopener noreferrer">View Portfolio</a> : 'N/A'}</Typography>
+                            </Box>
+                        </Box>
+                    )}
+                </Paper>
+
+                <Typography variant="h6" sx={{ fontWeight: 900, mb: 2 }}>My Submitted Interests</Typography>
+                <Paper elevation={0} sx={{ p: 0, borderRadius: 6, border: '1px solid #f1f5f9', bgcolor: 'white', overflow: 'hidden' }}>
+                    <TableContainer>
+                        <Table>
+                            <TableHead sx={{ bgcolor: '#f8fafc' }}>
+                                <TableRow>
+                                    <TableCell sx={{ fontWeight: 800 }}>Post Title</TableCell>
+                                    <TableCell sx={{ fontWeight: 800 }}>Proposed Price</TableCell>
+                                    <TableCell sx={{ fontWeight: 800 }}>Duration</TableCell>
+                                    <TableCell sx={{ fontWeight: 800 }}>Status</TableCell>
+                                    <TableCell sx={{ fontWeight: 800 }}>My Proposal</TableCell>
+                                </TableRow>
+                            </TableHead>
+                            <TableBody>
+                                {myInterests.map((interest: any) => (
+                                    <TableRow key={interest._id} hover>
+                                        <TableCell>
+                                            <Typography variant="subtitle2" sx={{ fontWeight: 800 }}>{interest.post?.title || 'Unknown'}</Typography>
+                                        </TableCell>
+                                        <TableCell sx={{ fontWeight: 700 }}>₹{interest.proposedPrice}</TableCell>
+                                        <TableCell>{interest.estimatedDuration}</TableCell>
+                                        <TableCell>
+                                            <Chip size="small" label={interest.status} color={interest.status === 'Approved' ? 'success' : interest.status === 'Rejected' ? 'error' : 'default'} sx={{ fontWeight: 800 }} />
+                                        </TableCell>
+                                        <TableCell sx={{ maxWidth: 300 }}>
+                                            <Typography variant="body2" sx={{ color: '#64748b', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{interest.details}</Typography>
+                                        </TableCell>
+                                    </TableRow>
+                                ))}
+                                {myInterests.length === 0 && (
+                                    <TableRow>
+                                        <TableCell colSpan={5} align="center" sx={{ py: 4 }}>
+                                            <WorkIcon sx={{ fontSize: 40, color: '#e2e8f0', mb: 1 }} />
+                                            <Typography variant="body2" sx={{ color: '#94a3b8' }}>You haven't expressed interest in any freelance posts yet.</Typography>
+                                        </TableCell>
+                                    </TableRow>
+                                )}
+                            </TableBody>
+                        </Table>
+                    </TableContainer>
+                </Paper>
+            </Box>
+        );
+    };
 
     return (
         <Box sx={{ minHeight: '100vh', bgcolor: '#f1f5f9', pb: 8 }}>
@@ -653,11 +573,8 @@ const SellerProfile = () => {
 
             <Container maxWidth="xl" sx={{ mt: 4 }}>
                 {activeTab === 'Business Profile' && renderBusinessProfile()}
-                {activeTab === 'Dashboard' && renderDashboard()}
-                {activeTab === 'Orders' && renderOrders()}
-                {activeTab === 'Inventory' && renderInventory()}
-                {/* Fallback for other tabs not yet implemented with new UI */}
-                {/* {activeTab === 'Payouts' && renderBusinessProfile()} Using Business Profile as placeholder */}
+                {activeTab === 'Wholesale' && renderWholesale()}
+                {activeTab === 'Freelance' && renderFreelance()}
             </Container>
 
             {/* Seller Footer */}

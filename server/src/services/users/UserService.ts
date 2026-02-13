@@ -62,6 +62,14 @@ class UserService {
                 user.profile = { ...user.profile, ...updateData.profile };
             }
 
+            // Sync with Seller specific fields if they exist
+            if (updateData.businessDetails) {
+                user.businessDetails = { ...user.businessDetails, ...updateData.businessDetails };
+            }
+            if (updateData.bankDetails) {
+                user.bankDetails = { ...user.bankDetails, ...updateData.bankDetails };
+            }
+
             const updatedUser = await user.save();
             return {
                 _id: updatedUser._id,
@@ -69,6 +77,9 @@ class UserService {
                 email: updatedUser.email,
                 role: updatedUser.role,
                 profile: updatedUser.profile,
+                businessDetails: (updatedUser as any).businessDetails,
+                bankDetails: (updatedUser as any).bankDetails,
+                uniqueId: (updatedUser as any).uniqueId,
             };
         }
         return null;

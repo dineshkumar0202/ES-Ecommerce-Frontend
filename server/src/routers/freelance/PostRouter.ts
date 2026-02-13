@@ -6,6 +6,7 @@ import { protect } from "../../middleware/authMiddleware";
 const router = express.Router();
 
 router.get("/", PostController.getPosts);
+router.get("/my/interests", protect, PostController.getMyInterests);
 router.get("/:id", PostController.getPostById);
 router.post("/", protect, PostController.createPost);
 router.post("/:id/interest", protect, PostController.submitInterest);

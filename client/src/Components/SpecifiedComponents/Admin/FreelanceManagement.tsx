@@ -261,133 +261,227 @@ const FreelanceManagement = () => {
                             </Grid>
                         )}
                         {tab === 1 && (
-                            <Grid container spacing={3}>
-                                {pendingFreelancers.map((user) => (
-                                    <Grid size={{ xs: 12, sm: 12, md: 6 }} key={user._id}>
-                                        <Paper sx={{ p: 3, bgcolor: 'white', borderRadius: 3, height: '100%', display: 'flex', flexDirection: 'column', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}>
-                                            <Typography variant="h6" sx={{ fontWeight: 700, mb: 1 }}>{user.freelancer?.category || "Unknown Category"}</Typography>
-                                            <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 2 }}>
-                                                <Avatar sx={{ width: 32, height: 32 }}>{user.profile?.name?.[0] || user.username?.[0]}</Avatar>
-                                                <Box>
-                                                    <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>{user.profile?.name || user.username}</Typography>
-                                                    <Typography variant="caption" sx={{ color: '#64748b' }}>{user.email}</Typography>
-                                                </Box>
-                                            </Stack>
+                            <>
+                                {/* Summary Statistics for Verification Requests */}
+                                <Box sx={{ mb: 4 }}>
+                                    <Typography variant="h5" sx={{ fontWeight: 800, mb: 3, color: '#0f172a' }}>Verification Requests Overview</Typography>
+                                    <Grid container spacing={3} sx={{ mb: 4 }}>
+                                        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                                            <Paper sx={{ p: 3, bgcolor: '#fef3c7', borderRadius: 3, border: '1px solid #fde68a' }}>
+                                                <Typography variant="caption" sx={{ color: '#92400e', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5 }}>Total Pending</Typography>
+                                                <Typography variant="h3" sx={{ fontWeight: 900, color: '#78350f', mt: 1 }}>{pendingFreelancers.length}</Typography>
+                                            </Paper>
+                                        </Grid>
+                                        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                                            <Paper sx={{ p: 3, bgcolor: '#dbeafe', borderRadius: 3, border: '1px solid #bfdbfe' }}>
+                                                <Typography variant="caption" sx={{ color: '#1e3a8a', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5 }}>Categories</Typography>
+                                                <Typography variant="h3" sx={{ fontWeight: 900, color: '#1e40af', mt: 1 }}>
+                                                    {new Set(pendingFreelancers.map(u => u.freelancer?.category).filter(Boolean)).size}
+                                                </Typography>
+                                            </Paper>
+                                        </Grid>
+                                        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                                            <Paper sx={{ p: 3, bgcolor: '#e0e7ff', borderRadius: 3, border: '1px solid #c7d2fe' }}>
+                                                <Typography variant="caption" sx={{ color: '#3730a3', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5 }}>With Documents</Typography>
+                                                <Typography variant="h3" sx={{ fontWeight: 900, color: '#4338ca', mt: 1 }}>
+                                                    {pendingFreelancers.filter(u => u.freelancer?.panFile || u.freelancer?.freelancerIdFile).length}
+                                                </Typography>
+                                            </Paper>
+                                        </Grid>
+                                        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                                            <Paper sx={{ p: 3, bgcolor: '#fce7f3', borderRadius: 3, border: '1px solid #fbcfe8' }}>
+                                                <Typography variant="caption" sx={{ color: '#831843', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5 }}>Completed Tests</Typography>
+                                                <Typography variant="h3" sx={{ fontWeight: 900, color: '#9f1239', mt: 1 }}>
+                                                    {pendingFreelancers.filter(u => u.freelancer?.answers && u.freelancer.answers.length > 0).length}
+                                                </Typography>
+                                            </Paper>
+                                        </Grid>
+                                    </Grid>
+                                </Box>
 
-                                            <Box sx={{ mb: 2 }}>
-                                                <Typography variant="body2" sx={{ fontWeight: 600, mb: 1 }}>Identity Info:</Typography>
-                                                <Stack spacing={1} sx={{ p: 1.5, bgcolor: '#f8fafc', borderRadius: 2 }}>
-                                                    <Typography variant="caption" sx={{ color: '#64748b' }}><strong>PAN:</strong> {user.freelancer?.panNumber || 'N/A'}</Typography>
-                                                    <Typography variant="caption" sx={{ color: '#64748b' }}><strong>ID:</strong> {user.freelancer?.freelancerId || 'N/A'}</Typography>
+                                {/* Detailed Cards */}
+                                <Typography variant="h6" sx={{ fontWeight: 800, mb: 2, color: '#475569' }}>Pending Applications</Typography>
+                                <Grid container spacing={3}>
+                                    {pendingFreelancers.map((user) => (
+                                        <Grid size={{ xs: 12, sm: 12, md: 6 }} key={user._id}>
+                                            <Paper sx={{ p: 3, bgcolor: 'white', borderRadius: 3, height: '100%', display: 'flex', flexDirection: 'column', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}>
+                                                <Typography variant="h6" sx={{ fontWeight: 700, mb: 1 }}>{user.freelancer?.category || "Unknown Category"}</Typography>
+                                                <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 2 }}>
+                                                    <Avatar sx={{ width: 32, height: 32 }}>{user.profile?.name?.[0] || user.username?.[0]}</Avatar>
+                                                    <Box>
+                                                        <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>{user.profile?.name || user.username}</Typography>
+                                                        <Typography variant="caption" sx={{ color: '#64748b' }}>{user.email}</Typography>
+                                                    </Box>
                                                 </Stack>
-                                            </Box>
 
-                                            <Box sx={{ mb: 2 }}>
-                                                <Typography variant="body2" sx={{ fontWeight: 600, mb: 1 }}>Documents & Links:</Typography>
-                                                <Stack direction="row" spacing={1} flexWrap="wrap" gap={1}>
-                                                    {user.freelancer?.panFile && (
-                                                        <Button component={Link} href={user.freelancer.panFile} target="_blank" variant="outlined" size="small" sx={{ borderRadius: 2, textTransform: 'none' }}>PAN Card</Button>
-                                                    )}
-                                                    {user.freelancer?.freelancerIdFile && (
-                                                        <Button component={Link} href={user.freelancer.freelancerIdFile} target="_blank" variant="outlined" size="small" sx={{ borderRadius: 2, textTransform: 'none' }}>ID Card</Button>
-                                                    )}
-                                                    {user.freelancer?.taskFile && (
-                                                        <Button component={Link} href={user.freelancer.taskFile} target="_blank" variant="outlined" size="small" sx={{ borderRadius: 2, textTransform: 'none' }}>Task File</Button>
-                                                    )}
-                                                    {user.freelancer?.taskLink && (
-                                                        <Button component={Link} href={user.freelancer.taskLink} target="_blank" variant="outlined" size="small" sx={{ borderRadius: 2, textTransform: 'none' }}>Task Link</Button>
-                                                    )}
-                                                    {user.freelancer?.portfolio && (
-                                                        <Button component={Link} href={user.freelancer.portfolio} target="_blank" variant="outlined" size="small" sx={{ borderRadius: 2, textTransform: 'none' }}>Portfolio</Button>
-                                                    )}
-                                                </Stack>
-                                            </Box>
-
-                                            {user.freelancer?.answers && user.freelancer.answers.length > 0 && (
-                                                <Box sx={{ mb: 3 }}>
-                                                    <Typography variant="body2" sx={{ fontWeight: 600, mb: 1 }}>Skill Assessment:</Typography>
-                                                    <Stack spacing={1} sx={{ p: 1.5, bgcolor: '#f1f5f9', borderRadius: 2 }}>
-                                                        {user.freelancer.answers.map((answer: string, idx: number) => (
-                                                            <Typography key={idx} variant="caption" sx={{ color: '#475569', display: 'block' }}>
-                                                                <strong>Q{idx + 1}:</strong> {answer}
-                                                            </Typography>
-                                                        ))}
+                                                <Box sx={{ mb: 2 }}>
+                                                    <Typography variant="body2" sx={{ fontWeight: 600, mb: 1 }}>Identity Info:</Typography>
+                                                    <Stack spacing={1} sx={{ p: 1.5, bgcolor: '#f8fafc', borderRadius: 2 }}>
+                                                        <Typography variant="caption" sx={{ color: '#64748b' }}><strong>PAN:</strong> {user.freelancer?.panNumber || 'N/A'}</Typography>
+                                                        <Typography variant="caption" sx={{ color: '#64748b' }}><strong>ID:</strong> {user.freelancer?.freelancerId || 'N/A'}</Typography>
                                                     </Stack>
                                                 </Box>
-                                            )}
 
-                                            <Stack direction="row" spacing={2} sx={{ mt: 'auto' }}>
-                                                <Button
-                                                    variant="contained"
-                                                    color="success"
-                                                    onClick={() => handleFreelancerStatus(user._id, 'Approved')}
-                                                    fullWidth
-                                                >
-                                                    Approve
-                                                </Button>
-                                                <Button
-                                                    variant="contained"
-                                                    color="error"
-                                                    onClick={() => handleFreelancerStatus(user._id, 'Rejected')}
-                                                    fullWidth
-                                                >
-                                                    Reject
-                                                </Button>
-                                            </Stack>
-                                        </Paper>
-                                    </Grid>
-                                ))}
-                                {pendingFreelancers.length === 0 && <Typography sx={{ m: 2 }}>No pending verification requests.</Typography>}
-                            </Grid>
+                                                <Box sx={{ mb: 2 }}>
+                                                    <Typography variant="body2" sx={{ fontWeight: 600, mb: 1 }}>Documents & Links:</Typography>
+                                                    <Stack direction="row" spacing={1} flexWrap="wrap" gap={1}>
+                                                        {user.freelancer?.panFile && (
+                                                            <Button component={Link} href={user.freelancer.panFile} target="_blank" variant="outlined" size="small" sx={{ borderRadius: 2, textTransform: 'none' }}>PAN Card</Button>
+                                                        )}
+                                                        {user.freelancer?.freelancerIdFile && (
+                                                            <Button component={Link} href={user.freelancer.freelancerIdFile} target="_blank" variant="outlined" size="small" sx={{ borderRadius: 2, textTransform: 'none' }}>ID Card</Button>
+                                                        )}
+                                                        {user.freelancer?.taskFile && (
+                                                            <Button component={Link} href={user.freelancer.taskFile} target="_blank" variant="outlined" size="small" sx={{ borderRadius: 2, textTransform: 'none' }}>Task File</Button>
+                                                        )}
+                                                        {user.freelancer?.taskLink && (
+                                                            <Button component={Link} href={user.freelancer.taskLink} target="_blank" variant="outlined" size="small" sx={{ borderRadius: 2, textTransform: 'none' }}>Task Link</Button>
+                                                        )}
+                                                        {user.freelancer?.portfolio && (
+                                                            <Button component={Link} href={user.freelancer.portfolio} target="_blank" variant="outlined" size="small" sx={{ borderRadius: 2, textTransform: 'none' }}>Portfolio</Button>
+                                                        )}
+                                                    </Stack>
+                                                </Box>
+
+                                                {user.freelancer?.answers && user.freelancer.answers.length > 0 && (
+                                                    <Box sx={{ mb: 3 }}>
+                                                        <Typography variant="body2" sx={{ fontWeight: 600, mb: 1 }}>Skill Assessment:</Typography>
+                                                        <Stack spacing={1} sx={{ p: 1.5, bgcolor: '#f1f5f9', borderRadius: 2 }}>
+                                                            {user.freelancer.answers.map((answer: string, idx: number) => (
+                                                                <Typography key={idx} variant="caption" sx={{ color: '#475569', display: 'block' }}>
+                                                                    <strong>Q{idx + 1}:</strong> {answer}
+                                                                </Typography>
+                                                            ))}
+                                                        </Stack>
+                                                    </Box>
+                                                )}
+
+                                                <Stack direction="row" spacing={2} sx={{ mt: 'auto' }}>
+                                                    <Button
+                                                        variant="contained"
+                                                        color="success"
+                                                        onClick={() => handleFreelancerStatus(user._id, 'Approved')}
+                                                        fullWidth
+                                                    >
+                                                        Approve
+                                                    </Button>
+                                                    <Button
+                                                        variant="contained"
+                                                        color="error"
+                                                        onClick={() => handleFreelancerStatus(user._id, 'Rejected')}
+                                                        fullWidth
+                                                    >
+                                                        Reject
+                                                    </Button>
+                                                </Stack>
+                                            </Paper>
+                                        </Grid>
+                                    ))}
+                                    {pendingFreelancers.length === 0 && <Typography sx={{ m: 2 }}>No pending verification requests.</Typography>}
+                                </Grid>
+                            </>
                         )}
                         {tab === 2 && (
-                            <Grid container spacing={3}>
-                                {verifiedFreelancers.map((user) => (
-                                    <Grid size={{ xs: 12, sm: 12, md: 6 }} key={user._id}>
-                                        <Paper sx={{ p: 3, bgcolor: 'white', borderRadius: 3, height: '100%', display: 'flex', flexDirection: 'column', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}>
-                                            <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 2 }}>
-                                                <Typography variant="h6" sx={{ fontWeight: 700 }}>{user.freelancer?.category || "Unknown Category"}</Typography>
-                                                <Chip label="VERIFIED" size="small" color="success" sx={{ fontWeight: 800, fontSize: '0.65rem', borderRadius: 1 }} />
-                                            </Stack>
-                                            <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 2 }}>
-                                                <Avatar sx={{ width: 32, height: 32, bgcolor: '#bef264', color: 'black' }}>{user.profile?.name?.[0] || user.username?.[0]}</Avatar>
-                                                <Box>
-                                                    <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>{user.profile?.name || user.username}</Typography>
-                                                    <Typography variant="caption" sx={{ color: '#64748b' }}>{user.email}</Typography>
-                                                </Box>
-                                            </Stack>
-
-                                            <Box sx={{ mb: 2 }}>
-                                                <Typography variant="body2" sx={{ fontWeight: 600, mb: 1 }}>Identity Info:</Typography>
-                                                <Stack spacing={1} sx={{ p: 1.5, bgcolor: '#f8fafc', borderRadius: 2 }}>
-                                                    <Typography variant="caption" sx={{ color: '#64748b' }}><strong>PAN:</strong> {user.freelancer?.panNumber || 'N/A'}</Typography>
-                                                    <Typography variant="caption" sx={{ color: '#64748b' }}><strong>ID:</strong> {user.freelancer?.freelancerId || 'N/A'}</Typography>
-                                                </Stack>
-                                            </Box>
-
-                                            <Box sx={{ mb: 2 }}>
-                                                <Typography variant="body2" sx={{ fontWeight: 600, mb: 1 }}>Documents & Portfolio:</Typography>
-                                                <Stack direction="row" spacing={1} flexWrap="wrap" gap={1}>
-                                                    {user.freelancer?.panFile && <Button component={Link} href={user.freelancer.panFile} target="_blank" variant="outlined" size="small" sx={{ borderRadius: 2, textTransform: 'none' }}>PAN</Button>}
-                                                    {user.freelancer?.freelancerIdFile && <Button component={Link} href={user.freelancer.freelancerIdFile} target="_blank" variant="outlined" size="small" sx={{ borderRadius: 2, textTransform: 'none' }}>ID</Button>}
-                                                    {user.freelancer?.portfolio && <Button component={Link} href={user.freelancer.portfolio} target="_blank" variant="outlined" size="small" sx={{ borderRadius: 2, textTransform: 'none' }}>Portfolio</Button>}
-                                                </Stack>
-                                            </Box>
-
-                                            <Button
-                                                variant="outlined"
-                                                color="error"
-                                                size="small"
-                                                onClick={() => handleFreelancerStatus(user._id, 'Rejected')}
-                                                sx={{ mt: 'auto', borderRadius: 2, textTransform: 'none', fontWeight: 600 }}
-                                            >
-                                                Revoke Verification
-                                            </Button>
-                                        </Paper>
+                            <>
+                                {/* Summary Statistics for Verified Freelancers */}
+                                <Box sx={{ mb: 4 }}>
+                                    <Typography variant="h5" sx={{ fontWeight: 800, mb: 3, color: '#0f172a' }}>Verified Freelancers Overview</Typography>
+                                    <Grid container spacing={3} sx={{ mb: 4 }}>
+                                        <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                                            <Paper sx={{ p: 3, bgcolor: '#dcfce7', borderRadius: 3, border: '1px solid #bbf7d0' }}>
+                                                <Typography variant="caption" sx={{ color: '#14532d', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5 }}>Total Verified</Typography>
+                                                <Typography variant="h3" sx={{ fontWeight: 900, color: '#166534', mt: 1 }}>{verifiedFreelancers.length}</Typography>
+                                            </Paper>
+                                        </Grid>
+                                        <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                                            <Paper sx={{ p: 3, bgcolor: '#dbeafe', borderRadius: 3, border: '1px solid #bfdbfe' }}>
+                                                <Typography variant="caption" sx={{ color: '#1e3a8a', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5 }}>Active Categories</Typography>
+                                                <Typography variant="h3" sx={{ fontWeight: 900, color: '#1e40af', mt: 1 }}>
+                                                    {new Set(verifiedFreelancers.map(u => u.freelancer?.category).filter(Boolean)).size}
+                                                </Typography>
+                                            </Paper>
+                                        </Grid>
+                                        <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                                            <Paper sx={{ p: 3, bgcolor: '#e0e7ff', borderRadius: 3, border: '1px solid #c7d2fe' }}>
+                                                <Typography variant="caption" sx={{ color: '#3730a3', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5 }}>With Portfolio</Typography>
+                                                <Typography variant="h3" sx={{ fontWeight: 900, color: '#4338ca', mt: 1 }}>
+                                                    {verifiedFreelancers.filter(u => u.freelancer?.portfolio).length}
+                                                </Typography>
+                                            </Paper>
+                                        </Grid>
                                     </Grid>
-                                ))}
-                                {verifiedFreelancers.length === 0 && <Typography sx={{ m: 2 }}>No verified freelancers found.</Typography>}
-                            </Grid>
+
+                                    {/* Category Breakdown */}
+                                    {verifiedFreelancers.length > 0 && (
+                                        <Box sx={{ mb: 4, p: 3, bgcolor: '#f8fafc', borderRadius: 3, border: '1px solid #e2e8f0' }}>
+                                            <Typography variant="subtitle2" sx={{ fontWeight: 800, mb: 2, color: '#475569' }}>Category Breakdown</Typography>
+                                            <Stack direction="row" spacing={1} flexWrap="wrap" gap={1}>
+                                                {Array.from(new Set(verifiedFreelancers.map(u => u.freelancer?.category).filter(Boolean))).map((category: any) => {
+                                                    const count = verifiedFreelancers.filter(u => u.freelancer?.category === category).length;
+                                                    return (
+                                                        <Chip
+                                                            key={category}
+                                                            label={`${category} (${count})`}
+                                                            size="small"
+                                                            sx={{ bgcolor: '#dcfce7', color: '#166534', fontWeight: 700, borderRadius: 2 }}
+                                                        />
+                                                    );
+                                                })}
+                                            </Stack>
+                                        </Box>
+                                    )}
+                                </Box>
+
+                                {/* Detailed Cards */}
+                                <Typography variant="h6" sx={{ fontWeight: 800, mb: 2, color: '#475569' }}>Verified Freelancer Profiles</Typography>
+                                <Grid container spacing={3}>
+                                    {verifiedFreelancers.map((user) => (
+                                        <Grid size={{ xs: 12, sm: 12, md: 6 }} key={user._id}>
+                                            <Paper sx={{ p: 3, bgcolor: 'white', borderRadius: 3, height: '100%', display: 'flex', flexDirection: 'column', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}>
+                                                <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 2 }}>
+                                                    <Typography variant="h6" sx={{ fontWeight: 700 }}>{user.freelancer?.category || "Unknown Category"}</Typography>
+                                                    <Chip label="VERIFIED" size="small" color="success" sx={{ fontWeight: 800, fontSize: '0.65rem', borderRadius: 1 }} />
+                                                </Stack>
+                                                <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 2 }}>
+                                                    <Avatar sx={{ width: 32, height: 32, bgcolor: '#bef264', color: 'black' }}>{user.profile?.name?.[0] || user.username?.[0]}</Avatar>
+                                                    <Box>
+                                                        <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>{user.profile?.name || user.username}</Typography>
+                                                        <Typography variant="caption" sx={{ color: '#64748b' }}>{user.email}</Typography>
+                                                    </Box>
+                                                </Stack>
+
+                                                <Box sx={{ mb: 2 }}>
+                                                    <Typography variant="body2" sx={{ fontWeight: 600, mb: 1 }}>Identity Info:</Typography>
+                                                    <Stack spacing={1} sx={{ p: 1.5, bgcolor: '#f8fafc', borderRadius: 2 }}>
+                                                        <Typography variant="caption" sx={{ color: '#64748b' }}><strong>PAN:</strong> {user.freelancer?.panNumber || 'N/A'}</Typography>
+                                                        <Typography variant="caption" sx={{ color: '#64748b' }}><strong>ID:</strong> {user.freelancer?.freelancerId || 'N/A'}</Typography>
+                                                    </Stack>
+                                                </Box>
+
+                                                <Box sx={{ mb: 2 }}>
+                                                    <Typography variant="body2" sx={{ fontWeight: 600, mb: 1 }}>Documents & Portfolio:</Typography>
+                                                    <Stack direction="row" spacing={1} flexWrap="wrap" gap={1}>
+                                                        {user.freelancer?.panFile && <Button component={Link} href={user.freelancer.panFile} target="_blank" variant="outlined" size="small" sx={{ borderRadius: 2, textTransform: 'none' }}>PAN</Button>}
+                                                        {user.freelancer?.freelancerIdFile && <Button component={Link} href={user.freelancer.freelancerIdFile} target="_blank" variant="outlined" size="small" sx={{ borderRadius: 2, textTransform: 'none' }}>ID</Button>}
+                                                        {user.freelancer?.portfolio && <Button component={Link} href={user.freelancer.portfolio} target="_blank" variant="outlined" size="small" sx={{ borderRadius: 2, textTransform: 'none' }}>Portfolio</Button>}
+                                                    </Stack>
+                                                </Box>
+
+                                                <Button
+                                                    variant="outlined"
+                                                    color="error"
+                                                    size="small"
+                                                    onClick={() => handleFreelancerStatus(user._id, 'Rejected')}
+                                                    sx={{ mt: 'auto', borderRadius: 2, textTransform: 'none', fontWeight: 600 }}
+                                                >
+                                                    Revoke Verification
+                                                </Button>
+                                            </Paper>
+                                        </Grid>
+                                    ))}
+                                    {verifiedFreelancers.length === 0 && <Typography sx={{ m: 2 }}>No verified freelancers found.</Typography>}
+                                </Grid>
+                            </>
                         )}
                         {tab === 3 && (
                             <Grid container spacing={3}>

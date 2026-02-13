@@ -16,6 +16,7 @@ const AuthSuccess = () => {
             // Store token and user info
             localStorage.setItem('token', token);
             localStorage.setItem('userRole', role);
+            if (name) localStorage.setItem('userName', decodeURIComponent(name));
 
             // Show success message
             toast.success(`Welcome back, ${name || 'User'}! 🎉`);

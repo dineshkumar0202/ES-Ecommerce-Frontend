@@ -43,6 +43,18 @@ class PostController {
         }
     }
 
+    async getMyInterests(req: Request, res: Response) {
+        try {
+            const userId = (req as any).user?._id;
+            const interests = await Interest.find({ user: userId })
+                .populate('post', 'title description status image price currency')
+                .populate('user', 'username email');
+            res.json(interests);
+        } catch (error: any) {
+            res.status(500).json({ message: error.message });
+        }
+    }
+
     async createPost(req: Request, res: Response) {
         try {
             const userId = (req as any).user?._id;
