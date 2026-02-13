@@ -3,6 +3,10 @@ import mongoose, { Document, Model, Schema } from 'mongoose';
 export interface IWishlist extends Document {
     user: mongoose.Types.ObjectId;
     products: mongoose.Types.ObjectId[];
+    wholesaleProducts: mongoose.Types.ObjectId[];
+    qCommerceProducts: mongoose.Types.ObjectId[];
+    resaleProducts: mongoose.Types.ObjectId[];
+    freelancePosts: mongoose.Types.ObjectId[];
     createdAt: Date;
 }
 
