@@ -29,7 +29,7 @@ const Retail = () => {
 
             <Container maxWidth="xl" sx={{ mt: 4, mb: 12 }}>
                 {/* Hero Section */}
-                <RetailBanner />
+                <RetailBanner onShopNowClick={scrollToProducts} />
 
                 {/* Categories Section */}
                 <RetailCategories onCategoryClick={scrollToProducts} />

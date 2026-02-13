@@ -1,6 +1,10 @@
 import { Box, Container, Typography, Button, Stack } from '@mui/material';
 
-const QBanner = () => {
+interface QBannerProps {
+    onShopByCategoryClick?: () => void;
+}
+
+const QBanner = ({ onShopByCategoryClick }: QBannerProps) => {
     return (
         <Container maxWidth="xl" sx={{ mt: 4, mb: 6 }}>
             <Box sx={{
@@ -25,7 +29,7 @@ const QBanner = () => {
                 }
             }}>
                 <Box sx={{ position: 'relative', zIndex: 1, p: 6 }}>
-                    <Stack spacing={3} sx={{ maxWidth: '500px' }}>
+                    <Stack spacing={3} sx={{ maxWidth: '600px' }}>
                         <Typography variant="h2" sx={{
                             fontWeight: 900,
                             color: 'white',
@@ -37,7 +41,7 @@ const QBanner = () => {
                         <Typography variant="body1" sx={{ color: 'rgba(255,255,255,0.9)', fontSize: '1.1rem' }}>
                             Fresh groceries & essentials delivered to your doorstep
                         </Typography>
-                        <Box>
+                        <Stack direction="row" spacing={2}>
                             <Button
                                 variant="contained"
                                 sx={{
@@ -52,7 +56,22 @@ const QBanner = () => {
                             >
                                 ORDER NOW
                             </Button>
-                        </Box>
+                            <Button
+                                variant="outlined"
+                                onClick={onShopByCategoryClick}
+                                sx={{
+                                    borderColor: 'white',
+                                    color: 'white',
+                                    px: 4,
+                                    py: 1.5,
+                                    fontWeight: 800,
+                                    borderRadius: 3,
+                                    '&:hover': { bgcolor: 'rgba(255,255,255,0.1)', borderColor: 'white' }
+                                }}
+                            >
+                                SHOP BY CATEGORY
+                            </Button>
+                        </Stack>
                     </Stack>
                 </Box>
             </Box>

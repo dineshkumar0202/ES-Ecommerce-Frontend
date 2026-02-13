@@ -17,7 +17,7 @@ const Products = () => {
     const [loading, setLoading] = useState(true);
     const [selectedTab, setSelectedTab] = useState('All');
 
-    const categoriesList = ['All', 'Electronics', 'Lifestyle', 'Fashion'];
+    const categoriesList = ['All', 'Electronics', 'Fashion'];
     const bgColors = ['#EAE0D5', '#F3E5D8', '#F8DEC8', '#F1F5F9', '#E2E8F0', '#E7E5E4', '#D6D3D1', '#F5E6D3'];
 
     useEffect(() => {

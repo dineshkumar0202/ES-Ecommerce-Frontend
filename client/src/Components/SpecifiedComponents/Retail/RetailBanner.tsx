@@ -1,6 +1,17 @@
 import { Box, Typography, Button, Stack, Link } from '@mui/material';
 
-const RetailBanner = () => {
+interface RetailBannerProps {
+    onShopNowClick?: () => void;
+}
+
+const RetailBanner = ({ onShopNowClick }: RetailBannerProps) => {
+    const handleClick = (e: React.MouseEvent) => {
+        e.preventDefault();
+        if (onShopNowClick) {
+            onShopNowClick();
+        }
+    };
+
     return (
         <Box sx={{ width: '100%', mb: 6 }}>
             <Box sx={{
@@ -82,6 +93,7 @@ const RetailBanner = () => {
 
                         <Button
                             variant="contained"
+                            onClick={handleClick}
                             sx={{
                                 width: 'fit-content',
                                 bgcolor: 'white',
@@ -96,7 +108,7 @@ const RetailBanner = () => {
                                 mt: 2
                             }}
                         >
-                            Shop Now
+                            show now
                         </Button>
                     </Stack>
                 </Box>
@@ -149,6 +161,7 @@ const RetailBanner = () => {
                             </Typography>
                             <Link
                                 href="#"
+                                onClick={handleClick}
                                 sx={{
                                     color: 'white',
                                     fontWeight: 700,
@@ -158,10 +171,11 @@ const RetailBanner = () => {
                                     borderBottom: '2px solid white',
                                     width: 'fit-content',
                                     mt: 1,
+                                    cursor: 'pointer',
                                     '&:hover': { opacity: 0.8 }
                                 }}
                             >
-                                Explore
+                                View Products
                             </Link>
                         </Stack>
                     </Box>
@@ -207,6 +221,7 @@ const RetailBanner = () => {
                             </Typography>
                             <Link
                                 href="#"
+                                onClick={handleClick}
                                 sx={{
                                     color: 'white',
                                     fontWeight: 700,
@@ -216,10 +231,11 @@ const RetailBanner = () => {
                                     borderBottom: '2px solid white',
                                     width: 'fit-content',
                                     mt: 1,
+                                    cursor: 'pointer',
                                     '&:hover': { opacity: 0.8 }
                                 }}
                             >
-                                Shop Trending
+                                view products
                             </Link>
                         </Stack>
                     </Box>
