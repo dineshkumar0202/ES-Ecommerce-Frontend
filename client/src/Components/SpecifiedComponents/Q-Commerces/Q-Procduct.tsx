@@ -125,25 +125,33 @@ const QProduct = ({ title, viewAllLink, badge, category }: QProductProps) => {
                     <Box
                         key={product._id}
                         sx={{
-                            minWidth: '200px',
+                            minWidth: { xs: '160px', md: '220px' },
                             bgcolor: 'white',
                             borderRadius: 4,
                             overflow: 'hidden',
                             cursor: 'pointer',
-                            transition: 'transform 0.2s, box-shadow 0.2s',
-                            border: '1px solid #f3f4f6',
+                            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                            border: '1px solid #f1f5f9',
                             '&:hover': {
                                 transform: 'translateY(-4px)',
-                                boxShadow: '0 10px 25px rgba(0,0,0,0.08)'
+                                boxShadow: '0 12px 24px -10px rgba(0,0,0,0.1)'
                             }
                         }}
                         onClick={() => navigate(`/quick/product/${product._id}`)}
                     >
-                        <Box sx={{ position: 'relative', bgcolor: '#f8f9fa', height: '200px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <Box sx={{
+                            position: 'relative',
+                            bgcolor: '#f8fafc',
+                            height: { xs: '140px', md: '180px' },
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            p: 2
+                        }}>
                             <img
                                 src={product.images?.[0] || product.image}
                                 alt={product.name}
-                                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                style={{ width: '100%', height: '100%', objectFit: 'contain' }}
                             />
                             {product.badge && (
                                 <Chip
@@ -178,11 +186,20 @@ const QProduct = ({ title, viewAllLink, badge, category }: QProductProps) => {
                                 />
                             )}
                         </Box>
-                        <Box sx={{ p: 2 }}>
-                            <Typography sx={{ fontSize: '0.9rem', fontWeight: 700, mb: 0.5, color: '#1f2937' }}>
+                        <Box sx={{ p: 1.5 }}>
+                            <Typography sx={{
+                                fontSize: { xs: '0.8rem', md: '0.9rem' },
+                                fontWeight: 700,
+                                mb: 0.5,
+                                color: '#1f2937',
+                                display: '-webkit-box',
+                                WebkitLineClamp: 1,
+                                WebkitBoxOrient: 'vertical',
+                                overflow: 'hidden'
+                            }}>
                                 {product.name}
                             </Typography>
-                            <Typography sx={{ fontSize: '0.75rem', color: '#6b7280', mb: 1.5 }}>
+                            <Typography sx={{ fontSize: '0.7rem', color: '#6b7280', mb: 1 }}>
                                 {product.unit}
                             </Typography>
                             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
