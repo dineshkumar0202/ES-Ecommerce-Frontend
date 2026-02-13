@@ -137,7 +137,7 @@ const Profile = () => {
                     const { data } = await WholesaleService.getMyProducts().catch(() => ({ data: [] }));
                     setWholesaleProducts(Array.isArray(data) ? data : []);
                 } else if (selectedChannel === 'resale') {
-                    const { data } = await ResaleService.getAll().catch(() => ({ data: [] }));
+                    const { data } = await ResaleService.getMyProducts().catch(() => ({ data: [] }));
                     setResaleItems(Array.isArray(data) ? data : []);
                 } else if (selectedChannel === 'quick') {
                     const { data } = await QProductService.getAll().catch(() => ({ data: [] }));
@@ -594,22 +594,40 @@ const Profile = () => {
                                             )}
                                         </Box>
                                     ) : selectedChannel === 'freelance' ? (
-                                        <Box>
-                                            <Typography variant="subtitle1" sx={{ fontWeight: 800, color: '#64748b', mb: 2 }}>Freelance posts & activity</Typography>
+                                        <Box sx={{ py: 2 }}>
+                                            <Typography variant="h5" sx={{ fontWeight: 800, color: '#64748b', mb: 4, ml: 1 }}>Freelance posts & activity</Typography>
                                             {freelancePosts.length > 0 ? (
-                                                <Stack spacing={2}>
-                                                    {freelancePosts.slice(0, 10).map((p: any) => (
-                                                        <Box key={p._id} sx={{ p: 3, bgcolor: '#f8fafc', borderRadius: 3, border: '1px solid #f1f5f9' }}>
-                                                            <Typography variant="subtitle2" sx={{ fontWeight: 800 }}>{p.title || p.headline}</Typography>
-                                                            <Typography variant="body2" sx={{ color: '#64748b', mt: 0.5 }}>{p.description?.slice(0, 120)}...</Typography>
+                                                <Stack spacing={4}>
+                                                    {freelancePosts.map((p: any) => (
+                                                        <Box
+                                                            key={p._id}
+                                                            sx={{
+                                                                p: 5,
+                                                                bgcolor: '#f8fafc',
+                                                                borderRadius: 8,
+                                                                border: '1px solid #f1f5f9',
+                                                                transition: 'all 0.2s ease',
+                                                                '&:hover': {
+                                                                    bgcolor: 'white',
+                                                                    boxShadow: '0 10px 30px rgba(0,0,0,0.03)',
+                                                                    transform: 'translateY(-2px)'
+                                                                }
+                                                            }}
+                                                        >
+                                                            <Typography variant="h6" sx={{ fontWeight: 900, color: '#0f172a', mb: 1 }}>
+                                                                {p.title || p.headline}
+                                                            </Typography>
+                                                            <Typography variant="body2" sx={{ color: '#94a3b8', fontWeight: 600, lineHeight: 1.6 }}>
+                                                                {p.description}
+                                                            </Typography>
                                                         </Box>
                                                     ))}
                                                 </Stack>
                                             ) : (
-                                                <Box sx={{ textAlign: 'center', py: 6 }}>
-                                                    <WorkOutlineIcon sx={{ fontSize: 48, color: '#e2e8f0', mb: 2 }} />
-                                                    <Typography sx={{ color: '#94a3b8', fontWeight: 700 }}>No freelance posts yet</Typography>
-                                                    <Button onClick={() => navigate('/freelance')} sx={{ mt: 2, fontWeight: 800 }}>Browse Freelance</Button>
+                                                <Box sx={{ textAlign: 'center', py: 10, bgcolor: '#f8fafc', borderRadius: 8 }}>
+                                                    <WorkOutlineIcon sx={{ fontSize: 60, color: '#e2e8f0', mb: 2 }} />
+                                                    <Typography sx={{ color: '#94a3b8', fontWeight: 800, fontSize: '1.2rem' }}>No active posts</Typography>
+                                                    <Button variant="contained" onClick={() => navigate('/freelance')} sx={{ mt: 3, bgcolor: 'black', color: 'white', borderRadius: 3, px: 4, py: 1.5, fontWeight: 900 }}>Create First Post</Button>
                                                 </Box>
                                             )}
                                         </Box>

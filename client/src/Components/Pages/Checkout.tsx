@@ -18,6 +18,7 @@ const Checkout = () => {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [cart, setCart] = useState<any>(null);
     const [paymentMethod, setPaymentMethod] = useState(location.state?.preferredPaymentMethod || 'COD');
+    const [razorpayKey, setRazorpayKey] = useState('');
     const [stripePromise, setStripePromise] = useState<any>(null);
     const [clientSecret, setClientSecret] = useState('');
     const [intentError, setIntentError] = useState<string | null>(null);
@@ -39,6 +40,7 @@ const Checkout = () => {
     const initStripe = async () => {
         try {
             const { data } = await PaymentService.getConfig();
+            if (data.razorpayKey) setRazorpayKey(data.razorpayKey);
             if (data.publishableKey && !data.isMock) {
                 setStripePromise(loadStripe(data.publishableKey));
             } else {
@@ -174,7 +176,7 @@ const Checkout = () => {
             }
 
             const options = {
-                key: "rzp_test_YourKeyHere",
+                key: razorpayKey || "rzp_test_YourKeyHere",
                 amount: order.amount,
                 currency: order.currency,
                 name: "AtoZ Marketplace",

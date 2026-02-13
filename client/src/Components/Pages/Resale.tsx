@@ -32,7 +32,7 @@ const Resale = () => {
         <Box sx={{ minHeight: '100vh', bgcolor: '#ffffff' }}>
             <Navbar />
 
-            <ResaleBanner />
+            <ResaleBanner onSellClick={() => setOpenUpload(true)} />
 
             <ResaleProduct
                 key={refreshToken}

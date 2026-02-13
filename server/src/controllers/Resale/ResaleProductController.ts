@@ -11,6 +11,16 @@ class ResaleProductController {
         }
     }
 
+    async getMyProducts(req: Request, res: Response) {
+        try {
+            const userId = (req as any).user?._id;
+            const products = await ResaleProductService.getResaleProductsBySeller(userId);
+            res.json(products);
+        } catch (error: any) {
+            res.status(500).json({ message: error.message });
+        }
+    }
+
     async getProductById(req: Request, res: Response) {
         try {
             const product = await ResaleProductService.getResaleProductById(req.params.id as string);

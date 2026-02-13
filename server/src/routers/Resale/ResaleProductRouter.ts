@@ -5,6 +5,7 @@ import { protect } from '../../middleware/authMiddleware';
 const router = express.Router();
 
 router.get('/', ResaleProductController.getProducts);
+router.get('/my-products', protect, ResaleProductController.getMyProducts);
 router.get('/:id', ResaleProductController.getProductById);
 router.post('/', protect, ResaleProductController.createProduct);
 router.put('/:id', protect, ResaleProductController.updateProduct);

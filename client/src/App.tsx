@@ -4,6 +4,7 @@ import Wholesale from './Components/Pages/Wholesale';
 import QCommerce from './Components/Pages/Q_Commrece';
 import Resale from './Components/Pages/Resale';
 import Freelance from './Components/Pages/Freelance';
+import VirtualTryOn from './Components/Pages/VirtualTryOn';
 import Login from './Components/WrapperComponents/Login';
 import Register from './Components/WrapperComponents/Register';
 import Profile from './Components/Pages/Profile';
@@ -46,6 +47,7 @@ function App() {
                 <Route path="/quick" element={<QCommerce />} />
                 <Route path="/resale" element={<Resale />} />
                 <Route path="/freelance" element={<Freelance />} />
+                <Route path="/freelance/try-on" element={<VirtualTryOn />} />
 
                 {/* Auth & User Management */}
                 <Route path="/login" element={<Login />} />

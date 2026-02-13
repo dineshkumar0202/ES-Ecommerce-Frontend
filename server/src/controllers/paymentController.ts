@@ -64,9 +64,11 @@ class PaymentController {
 
     async getStripeConfig(req: Request, res: Response) {
         const pk = process.env.STRIPE_PUBLISHABLE_KEY || '';
+        const rzpKey = process.env.RAZORPAY_KEY_ID || '';
         const isMock = !pk.startsWith('pk_');
         res.status(200).json({
             publishableKey: pk,
+            razorpayKey: rzpKey,
             isMock
         });
     }

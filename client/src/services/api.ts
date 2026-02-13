@@ -50,6 +50,7 @@ export const QProductService = {
 
 export const ResaleService = {
     getAll: () => api.get('/resale'),
+    getMyProducts: () => api.get('/resale/my-products'),
     getById: (id: string) => api.get(`/resale/${id}`),
     create: (data: any) => api.post('/resale', data),
     update: (id: string, data: any) => api.put(`/resale/${id}`, data),
@@ -85,7 +86,9 @@ export const FreelanceService = {
     updateStatus: (id: string, status: string) => api.put(`/posts/${id}/status`, { status }),
     delete: (id: string) => api.delete(`/posts/${id}`),
     submitInterest: (postId: string, data?: any) => api.post(`/posts/${postId}/interest`, data),
-    getMyInterests: () => api.get('/posts/my/interests')
+    generateImage: (prompt: string) => api.post('/posts/generate-image', { prompt }),
+    startTryOn: (model_image: string, garment_image: string) => api.post('/posts/try-on', { model_image, garment_image }),
+    getTryOnStatus: (jobId: string) => api.get(`/posts/try-on/status/${jobId}`)
 };
 
 export const OrderService = {

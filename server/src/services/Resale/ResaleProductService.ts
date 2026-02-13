@@ -21,8 +21,13 @@ const deleteResaleProduct = async (id: string): Promise<IResaleProduct | null> =
     return await ResaleProduct.findByIdAndDelete(id);
 };
 
+const getResaleProductsBySeller = async (sellerId: string): Promise<IResaleProduct[]> => {
+    return await ResaleProduct.find({ seller: sellerId }).populate('seller', 'username email');
+};
+
 export default {
     getAllResaleProducts,
+    getResaleProductsBySeller,
     createResaleProduct,
     getResaleProductById,
     updateResaleProduct,

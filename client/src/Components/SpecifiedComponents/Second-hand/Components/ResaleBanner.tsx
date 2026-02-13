@@ -1,6 +1,10 @@
-import { Box, Container, Typography, Button } from '@mui/material';
+import { Box, Container, Typography, Button, Stack } from '@mui/material';
 
-const ResaleBanner = () => {
+interface ResaleBannerProps {
+    onSellClick?: () => void;
+}
+
+const ResaleBanner = ({ onSellClick }: ResaleBannerProps) => {
     return (
         <Container maxWidth="xl" sx={{ mt: 4, mb: 6 }}>
             <Box sx={{
@@ -50,7 +54,7 @@ const ResaleBanner = () => {
                         Discover verified pre-owned items from top sellers<br />
                         around the world. Sustainability meets luxury.
                     </Typography>
-                    <Box>
+                    <Stack direction="row" spacing={2}>
                         <Button
                             variant="contained"
                             sx={{
@@ -70,7 +74,27 @@ const ResaleBanner = () => {
                         >
                             Explore Now →
                         </Button>
-                    </Box>
+                        <Button
+                            variant="outlined"
+                            onClick={onSellClick}
+                            sx={{
+                                borderColor: '#1f2937',
+                                color: '#1f2937',
+                                px: 3.5,
+                                py: 1.2,
+                                fontWeight: 800,
+                                borderRadius: 2,
+                                fontSize: '0.85rem',
+                                borderWeight: 2,
+                                '&:hover': {
+                                    borderColor: 'black',
+                                    bgcolor: 'rgba(255,255,255,0.1)'
+                                }
+                            }}
+                        >
+                            Sell an Item
+                        </Button>
+                    </Stack>
                 </Box>
 
                 {/* Right Side - Image */}

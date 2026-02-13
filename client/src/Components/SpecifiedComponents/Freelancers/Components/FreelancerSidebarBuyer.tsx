@@ -3,7 +3,10 @@ import RocketLaunchIcon from '@mui/icons-material/RocketLaunch';
 import MicIcon from '@mui/icons-material/Mic';
 import ImageOutlinedIcon from '@mui/icons-material/ImageOutlined';
 import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh';
+import CheckroomIcon from '@mui/icons-material/Checkroom';
+import SendIcon from '@mui/icons-material/Send';
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 
 interface FreelancerSidebarBuyerProps {
@@ -11,6 +14,7 @@ interface FreelancerSidebarBuyerProps {
 }
 
 const FreelancerSidebarBuyer = ({ onPost }: FreelancerSidebarBuyerProps) => {
+    const navigate = useNavigate();
     const [prompt, setPrompt] = useState('');
     const [isGenerating, setIsGenerating] = useState(false);
     const [generatedImage, setGeneratedImage] = useState<string | null>(null);
@@ -77,6 +81,23 @@ const FreelancerSidebarBuyer = ({ onPost }: FreelancerSidebarBuyerProps) => {
         if (!generatedImage) return;
         setOpenPostDialog(true);
         setFormData({ ...formData, productName: prompt.substring(0, 30) });
+    };
+
+    const handleTryOn = () => {
+        if (!generatedImage) return;
+        const token = localStorage.getItem('token');
+        if (!token) {
+            alert('Please log in to use Virtual Try-On.');
+            navigate('/login');
+            return;
+        }
+        navigate('/freelance/try-on', {
+            state: {
+                garmentImage: generatedImage,
+                prompt: prompt,
+                formData: formData
+            }
+        });
     };
 
     const handleConfirmPost = () => {
@@ -291,28 +312,70 @@ const FreelancerSidebarBuyer = ({ onPost }: FreelancerSidebarBuyerProps) => {
                     {isGenerating ? 'Synthesizing...' : 'Generate Masterpiece'}
                 </Button>
 
-                {/* Main Post Action (Replacing Banner) */}
-                <Button
-                    fullWidth
-                    onClick={handleOpenPostDialog}
-                    disabled={!generatedImage}
-                    startIcon={<AutoFixHighIcon />}
-                    sx={{
-                        bgcolor: '#0f172a',
-                        color: 'white',
-                        borderRadius: 4,
-                        fontWeight: 900,
-                        textTransform: 'uppercase',
-                        py: 2.2,
-                        letterSpacing: 1,
-                        fontSize: '0.95rem',
-                        boxShadow: '0 10px 20px rgba(15, 23, 42, 0.2)',
-                        '&:hover': { bgcolor: '#1e293b' },
-                        '&:disabled': { bgcolor: '#f1f5f9', color: '#cbd5e1', border: '1px solid #e2e8f0' }
-                    }}
-                >
-                    Post Masterpiece
-                </Button>
+                {/* Post + Try On Buttons (show only when image is generated) */}
+                {generatedImage && (
+                    <Fade in={true}>
+                        <Stack spacing={1.5}>
+                            {/* Divider Label */}
+                            <Box sx={{ textAlign: 'center', py: 1 }}>
+                                <Typography variant="caption" sx={{
+                                    color: '#94a3b8', fontWeight: 800, letterSpacing: 1.5,
+                                    fontSize: '0.6rem', textTransform: 'uppercase'
+                                }}>
+                                    Choose your action
+                                </Typography>
+                            </Box>
+
+                            {/* Two-button row */}
+                            <Stack direction="row" spacing={1.5}>
+                                {/* POST Button */}
+                                <Button
+                                    fullWidth
+                                    onClick={handleOpenPostDialog}
+                                    startIcon={<SendIcon />}
+                                    sx={{
+                                        bgcolor: '#0f172a',
+                                        color: 'white',
+                                        borderRadius: 4,
+                                        fontWeight: 900,
+                                        textTransform: 'uppercase',
+                                        py: 2,
+                                        letterSpacing: 0.5,
+                                        fontSize: '0.85rem',
+                                        boxShadow: '0 8px 16px rgba(15, 23, 42, 0.15)',
+                                        '&:hover': { bgcolor: '#1e293b', boxShadow: '0 12px 24px rgba(15, 23, 42, 0.25)' },
+                                    }}
+                                >
+                                    Post
+                                </Button>
+
+                                {/* TRY ON Button */}
+                                <Button
+                                    fullWidth
+                                    onClick={handleTryOn}
+                                    startIcon={<CheckroomIcon />}
+                                    sx={{
+                                        background: 'linear-gradient(135deg, #8b5cf6, #6d28d9)',
+                                        color: 'white',
+                                        borderRadius: 4,
+                                        fontWeight: 900,
+                                        textTransform: 'uppercase',
+                                        py: 2,
+                                        letterSpacing: 0.5,
+                                        fontSize: '0.85rem',
+                                        boxShadow: '0 8px 16px rgba(139, 92, 246, 0.25)',
+                                        '&:hover': {
+                                            background: 'linear-gradient(135deg, #7c3aed, #5b21b6)',
+                                            boxShadow: '0 12px 24px rgba(139, 92, 246, 0.35)'
+                                        },
+                                    }}
+                                >
+                                    Try On
+                                </Button>
+                            </Stack>
+                        </Stack>
+                    </Fade>
+                )}
             </Paper>
 
             {/* Post Dialog */}

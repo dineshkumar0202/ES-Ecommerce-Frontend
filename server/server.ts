@@ -21,6 +21,9 @@ import googleAuthRoutes from "./src/routers/auth/GoogleAuthRouter";
 import session from "express-session";
 import passport from "./src/config/passport";
 import User from "./src/models/users/UserModel";
+import Buyer from "./src/models/users/BuyerModel";
+import Seller from "./src/models/users/SellerModel";
+import Admin from "./src/models/users/AdminModel";
 import Product from "./src/models/retail/ProductModel";
 import QProduct from "./src/models/q-commerce/QProductModel";
 
@@ -121,6 +124,9 @@ const startServer = async () => {
 
         // Sync indexes to ensure 'sparse' option is applied to indexes (Non-blocking)
         User.syncIndexes().catch(err => console.error("User Index Sync failed:", err));
+        Buyer.syncIndexes().catch(err => console.error("Buyer Index Sync failed:", err));
+        Seller.syncIndexes().catch(err => console.error("Seller Index Sync failed:", err));
+        Admin.syncIndexes().catch(err => console.error("Admin Index Sync failed:", err));
         Product.syncIndexes().catch(err => console.error("Product Index Sync failed:", err));
         QProduct.syncIndexes().catch(err => console.error("QProduct Index Sync failed:", err));
 
