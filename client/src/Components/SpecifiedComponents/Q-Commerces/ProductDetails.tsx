@@ -65,6 +65,27 @@ const QProductDetails = () => {
         }
     };
 
+    const handleBuyNow = async () => {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            toast.error('Please login to buy');
+            navigate('/login');
+            return;
+        }
+
+        try {
+            await CartService.addToCart({
+                productId: product._id,
+                quantity,
+                type: 'QCommerce'
+            });
+            navigate('/checkout', { state: { preferredPaymentMethod: 'Razorpay' } });
+        } catch (error) {
+            console.error(error);
+            toast.error('Failed to proceed to checkout');
+        }
+    };
+
     const handleToggleWishlist = async () => {
         try {
             if (isFavorite) {
@@ -229,22 +250,43 @@ const QProductDetails = () => {
                                         </Stack>
                                     </Box>
 
-                                    <Button
-                                        variant="contained"
-                                        fullWidth
-                                        onClick={handleAddToCart}
-                                        sx={{
-                                            bgcolor: '#B4D5DC',
-                                            color: 'black',
-                                            py: 2,
-                                            borderRadius: 3,
-                                            fontWeight: 900,
-                                            fontSize: '1rem',
-                                            '&:hover': { bgcolor: '#9bc4c4' }
-                                        }}
-                                    >
-                                        ADD TO CART
-                                    </Button>
+                                    <Stack direction="row" spacing={2}>
+                                        <Button
+                                            variant="contained"
+                                            fullWidth
+                                            onClick={handleAddToCart}
+                                            sx={{
+                                                bgcolor: '#B4D5DC',
+                                                color: 'black',
+                                                py: 2,
+                                                borderRadius: 3,
+                                                fontWeight: 900,
+                                                fontSize: '1rem',
+                                                flex: 1,
+                                                '&:hover': { bgcolor: '#9bc4c4' }
+                                            }}
+                                        >
+                                            ADD TO CART
+                                        </Button>
+                                        <Button
+                                            variant="outlined"
+                                            fullWidth
+                                            onClick={handleBuyNow}
+                                            sx={{
+                                                borderColor: '#0f172a',
+                                                color: '#0f172a',
+                                                py: 2,
+                                                borderRadius: 3,
+                                                fontWeight: 900,
+                                                fontSize: '1rem',
+                                                borderWidth: 2,
+                                                flex: 1,
+                                                '&:hover': { borderWidth: 2, bgcolor: '#f1f5f9' }
+                                            }}
+                                        >
+                                            BUY NOW
+                                        </Button>
+                                    </Stack>
                                 </Stack>
                             </Paper>
 

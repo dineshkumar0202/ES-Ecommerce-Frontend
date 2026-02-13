@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react';
-import { Box, Container, Stack, Typography, InputBase, Avatar, Menu, MenuItem, Badge } from '@mui/material';
+import { Box, Container, Stack, Typography, InputBase, IconButton, Menu, MenuItem, Badge } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import ShoppingCartOutlinedIcon from '@mui/icons-material/ShoppingCartOutlined';
-
 import PersonOutlineIcon from '@mui/icons-material/PersonOutline';
 import FavoriteBorderOutlinedIcon from '@mui/icons-material/FavoriteBorderOutlined';
 import { useNavigate, useLocation } from 'react-router-dom';
