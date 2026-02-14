@@ -13,6 +13,16 @@ class PostController {
         }
     }
 
+    async getMyPosts(req: Request, res: Response) {
+        try {
+            const userId = (req as any).user?._id;
+            const posts = await PostService.getPostsByUser(userId);
+            res.status(200).json(posts);
+        } catch (error: any) {
+            res.status(500).json({ message: error.message });
+        }
+    }
+
     async submitInterest(req: Request, res: Response) {
         try {
             const postId = req.params.id;

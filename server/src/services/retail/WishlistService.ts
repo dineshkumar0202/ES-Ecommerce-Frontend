@@ -65,7 +65,8 @@ class WishlistService {
         if (added) {
             await wishlist.save();
         } else {
-            throw new Error("Product already in wishlist");
+            // If already exists, we just return the current state without error (Idempotent)
+            // console.log("Product already in wishlist, skipping add.");
         }
 
         return this.getWishlist(userId);

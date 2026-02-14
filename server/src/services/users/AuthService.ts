@@ -9,6 +9,58 @@ import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
 
 class AuthService {
+    private normalizeMobile(mobile?: string): string | undefined {
+        if (!mobile) return undefined;
+        const digits = String(mobile).replace(/\D/g, '');
+        if (!digits) return undefined;
+        return digits.slice(-10);
+    }
+
+    private async findExistingByMobileOrEmail(mobile?: string, email?: string) {
+        const checks: Promise<any>[] = [];
+        const normalizedMobile = this.normalizeMobile(mobile);
+        const normalizedEmail = email?.trim().toLowerCase();
+
+        if (normalizedMobile) {
+            checks.push(User.findOne({ mobile: normalizedMobile }).select('_id'));
+            checks.push(Buyer.findOne({ mobile: normalizedMobile }).select('_id'));
+            checks.push(Seller.findOne({ mobile: normalizedMobile }).select('_id'));
+        }
+
+        if (normalizedEmail) {
+            checks.push(User.findOne({ email: normalizedEmail }).select('_id'));
+            checks.push(Buyer.findOne({ email: normalizedEmail }).select('_id'));
+            checks.push(Seller.findOne({ email: normalizedEmail }).select('_id'));
+            checks.push(Admin.findOne({ email: normalizedEmail }).select('_id'));
+        }
+
+        if (!checks.length) return null;
+        const results = await Promise.all(checks);
+        return results.find(Boolean) || null;
+    }
+
+    private async findUserAcrossCollections(loginData: any) {
+        const normalizedMobile = this.normalizeMobile(loginData.mobile);
+        const normalizedEmail = loginData.email ? String(loginData.email).trim().toLowerCase() : undefined;
+        const query = normalizedEmail ? { email: normalizedEmail } : normalizedMobile ? { mobile: normalizedMobile } : null;
+        if (!query) return null;
+
+        let user: any = await User.findOne(query);
+        if (!user) user = await Buyer.findOne(query);
+        if (!user) user = await Seller.findOne(query);
+        if (!user && normalizedEmail) user = await Admin.findOne(query);
+        return user;
+    }
+
+    private async generateUniqueSellerId(): Promise<string> {
+        for (let i = 0; i < 10; i++) {
+            const candidate = `SLR${Math.floor(1000 + Math.random() * 9000)}`;
+            const exists = await Seller.findOne({ uniqueId: candidate }).select('_id');
+            if (!exists) return candidate;
+        }
+        throw new Error('Unable to generate seller unique ID. Please try again.');
+    }
+
     // --- OTP Management ---
     async generateAndSendOtp(identifier: string) {
         // identifier can be mobile or email
@@ -77,16 +129,13 @@ class AuthService {
 
     // --- Buyer ---
     async registerBuyer(userData: any) {
-        const { username, mobile, password, email } = userData;
+        const { username, password } = userData;
+        const mobile = this.normalizeMobile(userData.mobile);
+        const email = userData.email ? String(userData.email).trim().toLowerCase() : undefined;
+        if (!mobile) throw new Error('Valid mobile number is required');
 
-        const orConditions: any[] = [{ mobile }];
-        if (email) orConditions.push({ email });
-
-        const existingBuyer = await Buyer.findOne({ $or: orConditions });
-
-        if (existingBuyer) {
-            throw new Error('Buyer with this mobile or email already exists');
-        }
+        const existing = await this.findExistingByMobileOrEmail(mobile, email);
+        if (existing) throw new Error('User with this mobile or email already exists');
 
         const buyer = await Buyer.create({
             username,
@@ -117,27 +166,16 @@ class AuthService {
     }
 
     async loginBuyer(loginData: any) {
-        const { mobile, email, password } = loginData;
+        const { password } = loginData;
+        const email = loginData.email ? String(loginData.email).trim().toLowerCase() : undefined;
+        const mobile = this.normalizeMobile(loginData.mobile);
 
         let buyer = null;
 
         if (email) {
             buyer = await Buyer.findOne({ email });
         } else if (mobile) {
-            // Try multiple mobile number formats
-            const cleanMobile = mobile.replace(/\D/g, ''); // Remove all non-digits
-
-            // Build possible mobile number formats
-            const possibleMobiles = [
-                mobile, // Exact as entered
-                cleanMobile, // Just digits
-                `+91${cleanMobile}`, // With +91 prefix
-                `+91${cleanMobile.slice(-10)}`, // +91 with last 10 digits
-                cleanMobile.slice(-10), // Last 10 digits only
-            ];
-
-            // Try to find buyer with any of these formats
-            buyer = await Buyer.findOne({ mobile: { $in: possibleMobiles } });
+            buyer = await Buyer.findOne({ mobile });
         } else {
             throw new Error('Please provide email or mobile number');
         }
@@ -160,20 +198,15 @@ class AuthService {
 
     // --- Seller ---
     async registerSeller(userData: any) {
-        // console.log("Registering Seller:", userData);
-        const { username, mobile, password, email, businessDetails, bankDetails } = userData;
+        const { username, password, businessDetails, bankDetails } = userData;
+        const mobile = this.normalizeMobile(userData.mobile);
+        const email = userData.email ? String(userData.email).trim().toLowerCase() : undefined;
+        if (!mobile) throw new Error('Valid mobile number is required');
 
-        const orConditions: any[] = [{ mobile }];
-        if (email) orConditions.push({ email });
-        // console.log("Seller Check Conditions:", orConditions);
+        const existing = await this.findExistingByMobileOrEmail(mobile, email);
+        if (existing) throw new Error('User with this mobile or email already exists');
 
-        const existingSeller = await Seller.findOne({ $or: orConditions });
-
-        if (existingSeller) {
-            throw new Error('Seller with this mobile or email already exists');
-        }
-
-        const uniqueId = `SLR${Math.floor(1000 + Math.random() * 9000)}`;
+        const uniqueId = await this.generateUniqueSellerId();
 
         const seller = await Seller.create({
             username,
@@ -208,46 +241,23 @@ class AuthService {
     }
 
     async loginSeller(loginData: any) {
-        // console.log("Login Seller Attempt:", loginData);
         const { mobile, email, uniqueId, password } = loginData;
 
         let seller = null;
 
         if (uniqueId) {
-            seller = await Seller.findOne({ uniqueId });
+            seller = await Seller.findOne({ uniqueId: String(uniqueId).trim().toUpperCase() });
         } else if (email) {
-            // console.log("Seller Login Query by email:", email);
-            seller = await Seller.findOne({ email });
+            seller = await Seller.findOne({ email: String(email).trim().toLowerCase() });
         } else if (mobile) {
-            // Try multiple mobile number formats
-            const cleanMobile = mobile.replace(/\D/g, ''); // Remove all non-digits
-            // console.log("Seller Login - Clean mobile:", cleanMobile);
-
-            // Build possible mobile number formats
-            const possibleMobiles = [
-                mobile, // Exact as entered
-                cleanMobile, // Just digits
-                `+91${cleanMobile}`, // With +91 prefix
-                `+91${cleanMobile.slice(-10)}`, // +91 with last 10 digits
-                cleanMobile.slice(-10), // Last 10 digits only
-            ];
-
-            // console.log("Seller Login - Trying mobiles:", possibleMobiles);
-
-            // Try to find seller with any of these formats
-            seller = await Seller.findOne({ mobile: { $in: possibleMobiles } });
-
-            // console.log("Seller Not Found via any mobile format");
+            const normalizedMobile = this.normalizeMobile(mobile);
+            if (!normalizedMobile) throw new Error('Please provide valid mobile number');
+            seller = await Seller.findOne({ mobile: normalizedMobile });
         } else {
             throw new Error('Please provide Unique ID, email or mobile number');
         }
 
-        if (!seller) {
-            // console.log("Seller Not Found");
-            throw new Error('Seller not found');
-        }
-
-        // console.log("Seller Found:", seller.username, "Mobile:", seller.mobile);
+        if (!seller) throw new Error('Seller not found');
 
         const isMatch = await seller.matchPassword(password);
         if (!isMatch) throw new Error('Password incorrect');
@@ -266,15 +276,12 @@ class AuthService {
 
     // --- Admin ---
     async loginAdmin(loginData: any) {
-        // console.log("Login Admin Attempt:", loginData.email);
-        const { email, password } = loginData;
+        const password = loginData.password;
+        const email = loginData.email ? String(loginData.email).trim().toLowerCase() : undefined;
         if (!email || !password) throw new Error('Email and password required for admin login');
 
         const admin = await Admin.findOne({ email });
-        if (!admin) {
-            // console.log("Admin not found for email:", email);
-            throw new Error('Admin not found');
-        }
+        if (!admin) throw new Error('Admin not found');
 
         const isMatch = await admin.matchPassword(password);
         if (!isMatch) {
@@ -298,26 +305,10 @@ class AuthService {
     }
 
     async loginUser(loginData: any) {
-        // Legacy login: try to find in User (old) or try to identify role?
-        // For now, let's keep the old User model logic as fallback or primary if referenced
-        // But the user requested NEW structure.
-        // I'll keep the original implementation for `loginUser` using `User` model to avoid breaking existing clients immediately,
-        // unless I update the client.
-        // But wait, the user wants me to implement distinct login/registers.
+        const { password } = loginData;
+        if (!password) throw new Error('Password required');
 
-        // I'll leave the old loginUser pointing using the old User model for safety, 
-        // but I'll add the new methods above.
-        // Actually, I'll update loginUser to search across models or I'll just rely on the new specific methods.
-        // Let's implement a 'smart' login that checks all if no role specified?
-        // No, explicit is better. I will just keep the old one for the old endpoint.
-
-        const { mobile, email, password } = loginData;
-        let query = {};
-        if (email) query = { email };
-        else if (mobile) query = { mobile };
-        else throw new Error('Please provide email or mobile number');
-
-        const user = await User.findOne(query);
+        const user = await this.findUserAcrossCollections(loginData);
         if (!user) throw new Error('User not found');
 
         const isMatch = await user.matchPassword(password);

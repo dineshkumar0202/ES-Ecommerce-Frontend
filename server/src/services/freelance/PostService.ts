@@ -7,6 +7,10 @@ class PostService {
         return await Post.find().populate('user', 'username email profile.name').sort({ createdAt: -1 });
     }
 
+    async getPostsByUser(userId: string) {
+        return await Post.find({ user: userId }).populate('user', 'username email profile.name').sort({ createdAt: -1 });
+    }
+
     async createPost(postData: any) { // Changed to any or Partial<IPost> for flexibility
         const newPost = new Post(postData);
         return await newPost.save();

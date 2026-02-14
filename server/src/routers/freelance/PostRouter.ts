@@ -8,6 +8,7 @@ const router = express.Router();
 
 // Static routes MUST come before /:id to avoid conflicts
 router.get("/", PostController.getPosts);
+router.get("/my-posts", protect, PostController.getMyPosts);
 router.post("/", protect, PostController.createPost);
 router.post("/generate-image", protect, PostController.generateImage);
 
