@@ -7,6 +7,7 @@ import LocationOnIcon from '@mui/icons-material/LocationOn';
 import CameraAltOutlinedIcon from '@mui/icons-material/CameraAltOutlined';
 import { ProductService, WishlistService, CartService } from '../../../services/api';
 import { toast } from 'react-toastify';
+import ValentineBanner from './ValentineBanner';
 
 const Products = () => {
     const navigate = useNavigate();
@@ -31,7 +32,8 @@ const Products = () => {
     const fetchProducts = async () => {
         setLoading(true);
         try {
-            const params: any = { limit: 8 };
+            // Removed limit to allow fetching more products for the banner layout
+            const params: any = {};
             if (selectedTab !== 'All') {
                 params.category = selectedTab;
             }
@@ -80,6 +82,152 @@ const Products = () => {
         return badges[index % badges.length];
     };
 
+    const renderProductCard = (product: any, index: number) => (
+        <Card
+            key={product._id}
+            elevation={0}
+            onClick={() => navigate(`/product/${product._id}`)}
+            sx={{
+                cursor: 'pointer',
+                borderRadius: 4,
+                border: '1px solid #f3f4f6',
+                overflow: 'visible',
+                transition: 'all 0.3s ease',
+                '&:hover': {
+                    transform: 'translateY(-8px)',
+                    boxShadow: '0 12px 24px -10px rgba(0,0,0,0.1)'
+                }
+            }}
+        >
+            {/* Image Container */}
+            <Box
+                className="product-card-bg"
+                sx={{
+                    height: 320,
+                    bgcolor: bgColors[index % bgColors.length],
+                    borderRadius: 4,
+                    position: 'relative',
+                    overflow: 'hidden',
+                    mb: 2,
+                    '&:hover .action-buttons': { opacity: 1, transform: 'translateY(0)' }
+                }}
+            >
+                {/* Badge */}
+                <Chip
+                    label={getRandomBadge(index)}
+                    size="small"
+                    sx={{
+                        position: 'absolute',
+                        top: 12,
+                        left: 12,
+                        bgcolor: 'rgba(255,255,255,0.9)',
+                        borderRadius: 1,
+                        fontSize: '0.65rem',
+                        fontWeight: 800,
+                        height: 20,
+                        zIndex: 2,
+                        backdropFilter: 'blur(4px)'
+                    }}
+                />
+
+                <CardMedia
+                    component="img"
+                    image={product.images?.[0] || product.thumbnail || 'https://via.placeholder.com/300'}
+                    alt={product.title}
+                    sx={{
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'cover',
+                        objectPosition: 'top center',
+                        transition: 'transform 0.5s ease',
+                        '&:hover': { transform: 'scale(1.05)' }
+                    }}
+                />
+
+                {/* Old Style Overlay Buttons */}
+                <Box
+                    className="action-buttons"
+                    sx={{
+                        position: 'absolute',
+                        bottom: 15,
+                        right: 15,
+                        display: 'flex',
+                        gap: 1,
+                        opacity: 0,
+                        transform: 'translateY(10px)',
+                        transition: 'all 0.3s ease',
+                        zIndex: 2
+                    }}
+                >
+                    <Tooltip title="Visual Search" arrow>
+                        <IconButton
+                            sx={{
+                                bgcolor: 'white', color: 'black', width: 40, height: 40,
+                                boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                                '&:hover': { bgcolor: 'black', color: 'white' }
+                            }}
+                        >
+                            <CameraAltOutlinedIcon fontSize="small" />
+                        </IconButton>
+                    </Tooltip>
+                    <Tooltip title="Add to Cart" arrow>
+                        <IconButton
+                            onClick={(e) => handleAddToCart(e, product._id)}
+                            sx={{
+                                bgcolor: 'white', color: 'black', width: 40, height: 40,
+                                boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                                '&:hover': { bgcolor: 'black', color: 'white' }
+                            }}
+                        >
+                            <ShoppingCartOutlinedIcon fontSize="small" />
+                        </IconButton>
+                    </Tooltip>
+                    <Tooltip title="Wishlist" arrow>
+                        <IconButton
+                            onClick={(e) => handleAddToWishlist(e, product._id)}
+                            sx={{
+                                bgcolor: 'white', color: 'black', width: 40, height: 40,
+                                boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                                '&:hover': { bgcolor: '#ef4444', color: 'white' }
+                            }}
+                        >
+                            <FavoriteBorderIcon fontSize="small" />
+                        </IconButton>
+                    </Tooltip>
+                </Box>
+            </Box>
+
+            {/* Content */}
+            <CardContent sx={{ p: 1 }}>
+                <Typography
+                    variant="subtitle1"
+                    sx={{
+                        fontWeight: 800,
+                        mb: 0.5,
+                        color: '#1e293b',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap'
+                    }}
+                >
+                    {product.title}
+                </Typography>
+
+                {/* Location Line */}
+                <Stack direction="row" alignItems="center" spacing={0.5} sx={{ mb: 1 }}>
+                    <LocationOnIcon sx={{ fontSize: 14, color: '#f43f5e' }} />
+                    <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 600 }}>
+                        {product.location || 'Global Shipping'}
+                    </Typography>
+                </Stack>
+
+                <Typography variant="h6" sx={{ fontWeight: 900, color: '#0f172a' }}>
+                    ₹{(Number(product?.price ?? product?.pricePerUnit ?? 0) || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                </Typography>
+            </CardContent>
+        </Card>
+    );
+
     return (
         <Box>
             {/* Featured Products Tabbed Section Header */}
@@ -122,157 +270,32 @@ const Products = () => {
                     <CircularProgress sx={{ color: 'black' }} />
                 </Box>
             ) : products.length > 0 ? (
-                <Box sx={{
-                    display: 'grid',
-                    gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
-                    gap: 3,
-                }}>
-                    {products.map((product, index) => (
-                        <Card
-                            key={product._id}
-                            elevation={0}
-                            onClick={() => navigate(`/product/${product._id}`)}
-                            sx={{
-                                cursor: 'pointer',
-                                borderRadius: 4,
-                                border: '1px solid #f3f4f6',
-                                overflow: 'visible',
-                                transition: 'all 0.3s ease',
-                                '&:hover': {
-                                    transform: 'translateY(-8px)',
-                                    boxShadow: '0 12px 24px -10px rgba(0,0,0,0.1)'
-                                }
-                            }}
-                        >
-                            {/* Image Container */}
-                            <Box
-                                className="product-card-bg"
-                                sx={{
-                                    height: 320, // Slightly reduced height from 340 for better ratio with new width
-                                    bgcolor: bgColors[index % bgColors.length],
-                                    borderRadius: 4,
-                                    position: 'relative',
-                                    overflow: 'hidden',
-                                    mb: 2,
-                                    '&:hover .action-buttons': { opacity: 1, transform: 'translateY(0)' }
-                                }}
-                            >
-                                {/* Badge */}
-                                <Chip
-                                    label={getRandomBadge(index)}
-                                    size="small"
-                                    sx={{
-                                        position: 'absolute',
-                                        top: 12,
-                                        left: 12,
-                                        bgcolor: 'rgba(255,255,255,0.9)',
-                                        borderRadius: 1,
-                                        fontSize: '0.65rem',
-                                        fontWeight: 800,
-                                        height: 20,
-                                        zIndex: 2,
-                                        backdropFilter: 'blur(4px)'
-                                    }}
-                                />
+                <>
+                    {/* First 8 Items */}
+                    <Box sx={{
+                        display: 'grid',
+                        gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+                        gap: 3,
+                        mb: 8
+                    }}>
+                        {products.slice(0, 8).map((product, index) => renderProductCard(product, index))}
+                    </Box>
 
-                                <CardMedia
-                                    component="img"
-                                    image={product.images?.[0] || product.thumbnail || 'https://via.placeholder.com/300'}
-                                    alt={product.title}
-                                    sx={{
-                                        width: '100%',
-                                        height: '100%',
-                                        objectFit: 'cover',
-                                        objectPosition: 'top center',
-                                        transition: 'transform 0.5s ease',
-                                        '&:hover': { transform: 'scale(1.05)' }
-                                    }}
-                                />
+                    {/* Banner */}
+                    <ValentineBanner />
 
-                                {/* Old Style Overlay Buttons */}
-                                <Box
-                                    className="action-buttons"
-                                    sx={{
-                                        position: 'absolute',
-                                        bottom: 15,
-                                        right: 15,
-                                        display: 'flex',
-                                        gap: 1,
-                                        opacity: 0,
-                                        transform: 'translateY(10px)',
-                                        transition: 'all 0.3s ease',
-                                        zIndex: 2
-                                    }}
-                                >
-                                    <Tooltip title="Visual Search" arrow>
-                                        <IconButton
-                                            sx={{
-                                                bgcolor: 'white', color: 'black', width: 40, height: 40,
-                                                boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-                                                '&:hover': { bgcolor: 'black', color: 'white' }
-                                            }}
-                                        >
-                                            <CameraAltOutlinedIcon fontSize="small" />
-                                        </IconButton>
-                                    </Tooltip>
-                                    <Tooltip title="Add to Cart" arrow>
-                                        <IconButton
-                                            onClick={(e) => handleAddToCart(e, product._id)}
-                                            sx={{
-                                                bgcolor: 'white', color: 'black', width: 40, height: 40,
-                                                boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-                                                '&:hover': { bgcolor: 'black', color: 'white' }
-                                            }}
-                                        >
-                                            <ShoppingCartOutlinedIcon fontSize="small" />
-                                        </IconButton>
-                                    </Tooltip>
-                                    <Tooltip title="Wishlist" arrow>
-                                        <IconButton
-                                            onClick={(e) => handleAddToWishlist(e, product._id)}
-                                            sx={{
-                                                bgcolor: 'white', color: 'black', width: 40, height: 40,
-                                                boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-                                                '&:hover': { bgcolor: '#ef4444', color: 'white' }
-                                            }}
-                                        >
-                                            <FavoriteBorderIcon fontSize="small" />
-                                        </IconButton>
-                                    </Tooltip>
-                                </Box>
-                            </Box>
-
-                            {/* Content */}
-                            <CardContent sx={{ p: 1 }}>
-                                <Typography
-                                    variant="subtitle1"
-                                    sx={{
-                                        fontWeight: 800,
-                                        mb: 0.5,
-                                        color: '#1e293b',
-                                        overflow: 'hidden',
-                                        textOverflow: 'ellipsis',
-                                        whiteSpace: 'nowrap'
-                                    }}
-                                >
-                                    {product.title}
-                                </Typography>
-
-                                {/* Location Line */}
-                                <Stack direction="row" alignItems="center" spacing={0.5} sx={{ mb: 1 }}>
-                                    <LocationOnIcon sx={{ fontSize: 14, color: '#f43f5e' }} />
-                                    <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 600 }}>
-                                        {product.location || 'Global Shipping'}
-                                    </Typography>
-                                </Stack>
-
-                                <Typography variant="h6" sx={{ fontWeight: 900, color: '#0f172a' }}>
-                                    ₹{(Number(product?.price ?? product?.pricePerUnit ?? 0) || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                </Typography>
-                            </CardContent>
-                        </Card>
-                    ))}
-                </Box>
+                    {/* Remaining Items */}
+                    {products.length > 8 && (
+                        <Box sx={{
+                            display: 'grid',
+                            gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+                            gap: 3,
+                            mt: 8
+                        }}>
+                            {products.slice(8).map((product, index) => renderProductCard(product, index + 8))}
+                        </Box>
+                    )}
+                </>
             ) : (
                 <Box sx={{ textAlign: 'center', py: 10 }}>
                     <Typography variant="h6" sx={{ color: '#64748b', fontWeight: 700 }}>
