@@ -101,72 +101,25 @@ const VirtualTryOn = () => {
         setTryOnResult(null);
 
         try {
+            // Call backend which proxies to the Demo API
             const { data } = await FreelanceService.startTryOn(personImage, garmentImage);
-
-            if (data.isMock) {
-                // Mock mode - simulate result
-                setTimeout(() => {
-                    setTryOnResult(garmentImage);
-                    setIsProcessing(false);
-                    toast.success('Try-on completed! (Mock Mode)');
-                }, 2000);
-                return;
-            }
 
             if (data.status === 'completed' && data.output?.length > 0) {
                 setTryOnResult(data.output[0]);
-                setIsProcessing(false);
                 toast.success('Virtual try-on completed!');
-            } else if (data.id) {
-                // Start polling
-                pollForResult(data.id);
             } else {
-                throw new Error('Unexpected response from try-on API');
+                throw new Error('Unexpected response from try-on service');
             }
         } catch (error: any) {
             console.error('Try-on failed:', error);
-            toast.error(error.response?.data?.message || 'Virtual try-on failed.');
+            const msg = error.response?.data?.message || error.message || 'Virtual try-on failed.';
+            toast.error(msg);
+        } finally {
             setIsProcessing(false);
         }
     };
 
-    // Poll for try-on result
-    const pollForResult = async (id: string) => {
-        let attempts = 0;
-        const maxAttempts = 60; // 5 minutes max (5s interval)
 
-        const poll = async () => {
-            if (attempts >= maxAttempts) {
-                setIsProcessing(false);
-                toast.error('Try-on timed out. Please try again.');
-                return;
-            }
-
-            try {
-                const { data } = await FreelanceService.getTryOnStatus(id);
-
-                if (data.status === 'completed' && data.output?.length > 0) {
-                    setTryOnResult(data.output[0]);
-                    setIsProcessing(false);
-                    toast.success('Virtual try-on completed!');
-                    return;
-                } else if (data.status === 'failed') {
-                    setIsProcessing(false);
-                    toast.error('Try-on processing failed.');
-                    return;
-                }
-
-                // Still processing, poll again
-                attempts++;
-                setTimeout(poll, 5000);
-            } catch (error) {
-                attempts++;
-                setTimeout(poll, 5000);
-            }
-        };
-
-        setTimeout(poll, 5000);
-    };
 
     // Post the original generated image (outfit)
     const handlePostOriginal = () => {

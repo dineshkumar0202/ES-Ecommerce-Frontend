@@ -16,42 +16,25 @@ class TryOnController {
             return;
         }
 
-        // Use API4AI_API_KEY, fallback to FASHN_API_KEY if not migrated yet
-        const apiKey = process.env.API4AI_API_KEY || process.env.FASHN_API_KEY || '';
-
-        if (!apiKey || apiKey === 'YOUR_FASHN_API_KEY_HERE') {
-            // Mock mode when API key is not configured
-            console.log('[TryOn] API key not configured. Using mock mode.');
-            res.status(200).json({
-                id: 'mock_tryon_' + Date.now(),
-                status: 'completed',
-                output: [garment_image], // Return garment as mock result
-                isMock: true,
-            });
-            return;
-        }
-
         try {
-            // API4.AI Virtual Try-On
-            // Endpoint: https://api4ai.cloud/virtual-try-on/v1/results
+            // API4.AI Demo Endpoint (Free, No Key)
+            // URL: https://demo.api4ai.cloud/virtual-try-on/v1/results
             // Method: POST
-            // Auth: X-API-KEY header
-            // Payload: JSON with 'image' (person) and 'image2' (garment) OR 'url' and 'url-apparel'
-            // Based on common patterns and search results, 'url' and 'url-apparel' are likely for URL-based requests.
+            // Content-Type: multipart/form-data
 
-            console.log('[TryOn] Starting API4AI request with key ending in...', apiKey.slice(-4));
+            const formData = new FormData();
+            formData.append('url', model_image);
+            formData.append('url-apparel', garment_image);
+
+            console.log('[TryOn] Starting API4AI Demo request...');
 
             const response = await axios.post(
-                'https://api4ai.cloud/virtual-try-on/v1/results',
-                {
-                    url: model_image,
-                    "url-apparel": garment_image
-                },
+                'https://demo.api4ai.cloud/virtual-try-on/v1/results',
+                formData,
                 {
                     headers: {
-                        'X-API-KEY': apiKey,
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json'
+                        'Content-Type': 'multipart/form-data',
+                        // Axios handles boundary automatically when FormData is used
                     }
                 }
             );
@@ -59,49 +42,42 @@ class TryOnController {
             const result = response.data;
             let outputUrl: string | null = null;
 
-            // Log response structure for debugging
-            // console.log('[TryOn] API4AI Response:', JSON.stringify(result).substring(0, 500));
+            // Console log to see the structure if needed
+            // console.log('[TryOn] Demo Response:', JSON.stringify(result));
 
-            // Parse API4AI response structure
-            // Usually: { results: [ { status: { code: 'ok', ... }, entities: [ { image: 'base64...', url: '...' } ] } ] }
+            // Parse API4AI Demo response structure
             if (result.results && result.results.length > 0) {
                 const firstResult = result.results[0];
                 const entity = firstResult.entities && firstResult.entities[0];
 
                 if (entity) {
-                    if (entity.url) {
-                        outputUrl = entity.url;
-                    } else if (entity.image) {
-                        // If base64, ensure prefix
+                    if (entity.image) {
+                        // Base64 image
                         outputUrl = entity.image.startsWith('data:') ? entity.image : `data:image/jpeg;base64,${entity.image}`;
+                    } else if (entity.url) {
+                        outputUrl = entity.url;
                     }
                 } else if (firstResult.url) {
-                    // Fallback property
                     outputUrl = firstResult.url;
                 }
             }
 
             if (outputUrl) {
-                // Return synchronous result
                 res.status(200).json({
-                    id: 'direct_result_' + Date.now(),
+                    id: 'demo_result_' + Date.now(),
                     status: 'completed',
                     output: [outputUrl]
                 });
             } else {
-                console.error('[TryOn] Could not parse output from API4AI:', JSON.stringify(result));
-                throw new Error('No output image found in API response.');
+                console.error('[TryOn] Could not parse output from API4AI Demo:', JSON.stringify(result));
+                res.status(500).json({ message: 'No output image found in demo response.' });
             }
 
         } catch (error: any) {
-            console.error('[TryOn] API Error:', error.response?.data || error.message);
-
-            // Map status codes
-            const status = error.response?.status === 401 || error.response?.status === 403 ? 502 : (error.response?.status || 500);
-
-            res.status(status).json({
-                message: 'Virtual try-on failed.',
-                details: error.response?.data || error.message,
+            console.error('[TryOn] Demo API Error:', error.message);
+            res.status(500).json({
+                message: 'Virtual try-on failed (Demo).',
+                error: error.message
             });
         }
     }
