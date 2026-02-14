@@ -2,14 +2,10 @@ import { useState, useEffect } from 'react';
 import { Box, Container, Typography, TextField, Button, Paper, Stack, Divider, CircularProgress, IconButton, Radio, RadioGroup, FormControlLabel, FormControl } from '@mui/material';
 import { useNavigate, useLocation } from 'react-router-dom';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import { loadStripe } from '@stripe/stripe-js';
-import { Elements } from '@stripe/react-stripe-js';
 import Navbar from '../WrapperComponents/Navbar';
 import Footer from '../WrapperComponents/Footer';
 import { CartService, OrderService, PaymentService } from '../../services/api';
-import CheckoutForm from '../SpecifiedComponents/Profile/CheckoutForm';
 import { toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
 
 const Checkout = () => {
     const navigate = useNavigate();
@@ -19,10 +15,6 @@ const Checkout = () => {
     const [cart, setCart] = useState<any>(null);
     const [paymentMethod, setPaymentMethod] = useState(location.state?.preferredPaymentMethod || 'COD');
     const [razorpayKey, setRazorpayKey] = useState('');
-    const [stripePromise, setStripePromise] = useState<any>(null);
-    const [clientSecret, setClientSecret] = useState('');
-    const [intentError, setIntentError] = useState<string | null>(null);
-    const [isMock, setIsMock] = useState(false);
 
     // Form state
     const [shippingAddress, setShippingAddress] = useState({
@@ -34,22 +26,15 @@ const Checkout = () => {
 
     useEffect(() => {
         fetchCart();
-        initStripe();
+        initPaymentConfig();
     }, []);
 
-    const initStripe = async () => {
+    const initPaymentConfig = async () => {
         try {
             const { data } = await PaymentService.getConfig();
             if (data.razorpayKey) setRazorpayKey(data.razorpayKey);
-            if (data.publishableKey && !data.isMock) {
-                setStripePromise(loadStripe(data.publishableKey));
-            } else {
-                // If it's mock or no key, we don't load Stripe
-                setIsMock(true);
-            }
         } catch (error) {
-            console.error("Stripe config failed", error);
-            setIntentError("Failed to load payment configuration.");
+            console.error("Payment config failed", error);
         }
     };
     const fetchCart = async () => {
@@ -69,31 +54,11 @@ const Checkout = () => {
         }
     };
 
-    useEffect(() => {
-        if (paymentMethod === 'Stripe' && cart) {
-            createIntent();
-        }
-    }, [paymentMethod, cart]);
-    const createIntent = async () => {
-        setIntentError(null);
-        setIsMock(false);
-        try {
-            const { data } = await PaymentService.createPaymentIntent(cart.totalPrice * 1.18);
-            if (data.isMock) {
-                setIsMock(true);
-            }
-            setClientSecret(data.clientSecret);
-        } catch (error: any) {
-            console.error("Failed to create intent", error);
-            setIntentError(error.response?.data?.message || "Failed to initialize payment.");
-        }
-    };
-
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setShippingAddress({ ...shippingAddress, [e.target.name]: e.target.value });
     };
 
-    const handlePlaceOrder = async (stripePaymentId?: string) => {
+    const handlePlaceOrder = async (paymentId?: string) => {
         if (!shippingAddress.address || !shippingAddress.city || !shippingAddress.postalCode) {
             toast.warning('Please fill in all shipping details');
             return;
@@ -114,13 +79,13 @@ const Checkout = () => {
                 }).filter(Boolean),
                 shippingAddress,
                 paymentMethod: paymentMethod,
-                paymentResult: stripePaymentId ? { id: stripePaymentId, status: 'succeeded' } : undefined,
+                paymentResult: paymentId ? { id: paymentId, status: 'succeeded' } : undefined,
                 itemsPrice: cart.totalPrice,
                 shippingPrice: 0,
                 taxPrice: cart.totalPrice * 0.18,
                 totalPrice: cart.totalPrice * 1.18,
-                isPaid: !!stripePaymentId,
-                paidAt: stripePaymentId ? new Date() : undefined
+                isPaid: !!paymentId,
+                paidAt: paymentId ? new Date() : undefined
             };
 
             const { data } = await OrderService.create(orderData);
@@ -140,11 +105,9 @@ const Checkout = () => {
                 <CircularProgress color="inherit" />
             </Box>
         );
-
-
     }
 
-    const loadRazorpay = () => {
+    const loadRazorpaySDK = () => {
         return new Promise((resolve) => {
             const script = document.createElement('script');
             script.src = 'https://checkout.razorpay.com/v1/checkout.js';
@@ -160,9 +123,11 @@ const Checkout = () => {
             return;
         }
 
-        const res = await loadRazorpay();
+        setIsSubmitting(true);
+        const res = await loadRazorpaySDK();
         if (!res) {
             toast.error('Razorpay SDK failed to load. Are you online?');
+            setIsSubmitting(false);
             return;
         }
 
@@ -176,7 +141,7 @@ const Checkout = () => {
             }
 
             const options = {
-                key: razorpayKey || "rzp_test_YourKeyHere",
+                key: razorpayKey || "rzp_test_placeholder",
                 amount: order.amount,
                 currency: order.currency,
                 name: "AtoZ Marketplace",
@@ -186,12 +151,12 @@ const Checkout = () => {
                     handlePlaceOrder(response.razorpay_payment_id);
                 },
                 prefill: {
-                    name: "User Name",
+                    name: localStorage.getItem('userName') || "Guest User",
                     email: "user@example.com",
                     contact: "9999999999"
                 },
                 theme: {
-                    color: "#3399cc"
+                    color: "#0f172a"
                 }
             };
             const rzp1 = new (window as any).Razorpay(options);
@@ -199,11 +164,10 @@ const Checkout = () => {
         } catch (error) {
             console.error("Razorpay Error:", error);
             toast.error("Payment initiation failed");
+        } finally {
+            setIsSubmitting(false);
         }
     };
-
-    const appearance = { theme: 'stripe' as const };
-    const options = { clientSecret, appearance };
 
     return (
         <Box sx={{ minHeight: '100vh', bgcolor: '#f8fafc' }}>
@@ -250,61 +214,20 @@ const Checkout = () => {
                                     <Paper variant="outlined" sx={{ p: 2, mb: 2, borderRadius: 3, border: paymentMethod === 'Razorpay' ? '2px solid black' : '1px solid #e2e8f0' }}>
                                         <FormControlLabel value="Razorpay" control={<Radio color="default" />} label={
                                             <Box>
-                                                <Typography sx={{ fontWeight: 700 }}>Razorpay (UPI / Cards)</Typography>
-                                                <Typography variant="caption" sx={{ color: '#64748b' }}>Secure payment via Razorpay.</Typography>
+                                                <Typography sx={{ fontWeight: 700 }}>Razorpay (UPI / Cards / NetBanking)</Typography>
+                                                <Typography variant="caption" sx={{ color: '#64748b' }}>Instant and secure payment via Razorpay.</Typography>
                                             </Box>
                                         } sx={{ width: '100%', m: 0 }} />
                                         {paymentMethod === 'Razorpay' && (
                                             <Button
                                                 variant="contained"
                                                 fullWidth
+                                                disabled={isSubmitting}
                                                 onClick={handleRazorpayPayment}
-                                                sx={{ mt: 2, bgcolor: '#3399cc', color: 'white', fontWeight: 700 }}
+                                                sx={{ mt: 2, bgcolor: '#0f172a', color: 'white', fontWeight: 800, py: 1.5, borderRadius: 3, '&:hover': { bgcolor: '#1e293b' } }}
                                             >
-                                                Pay with Razorpay
+                                                {isSubmitting ? 'Initializing...' : 'Pay with Razorpay'}
                                             </Button>
-                                        )}
-                                    </Paper>
-
-                                    <Paper variant="outlined" sx={{ p: 2, borderRadius: 3, border: paymentMethod === 'Stripe' ? '2px solid black' : '1px solid #e2e8f0' }}>
-                                        <FormControlLabel value="Stripe" control={<Radio color="default" />} label={
-                                            <Box>
-                                                <Typography sx={{ fontWeight: 700 }}>Stripe (International)</Typography>
-                                                <Typography variant="caption" sx={{ color: '#64748b' }}>Credit/Debit Cards.</Typography>
-                                            </Box>
-                                        } sx={{ width: '100%', m: 0 }} />
-
-                                        {paymentMethod === 'Stripe' && (
-                                            <Box sx={{ mt: 2 }}>
-                                                {isMock ? (
-                                                    <Box sx={{ p: 2, bgcolor: '#f0fdf4', borderRadius: 2, border: '1px solid #bbf7d0', textAlign: 'center' }}>
-                                                        <Typography variant="body2" color="success.main" sx={{ mb: 2, fontWeight: 700 }}>
-                                                            Development Mode: Stripe Mock Active
-                                                        </Typography>
-                                                        <Button
-                                                            variant="contained"
-                                                            color="success"
-                                                            onClick={() => handlePlaceOrder(clientSecret)}
-                                                            fullWidth
-                                                            sx={{ fontWeight: 800 }}
-                                                        >
-                                                            Simulate Successful Payment
-                                                        </Button>
-                                                    </Box>
-                                                ) : clientSecret && stripePromise && !isMock ? (
-                                                    <Box sx={{ p: 2, bgcolor: '#f8fafc', borderRadius: 2 }}>
-                                                        <Elements options={options} stripe={stripePromise}>
-                                                            <CheckoutForm amount={cart.totalPrice * 1.18} onSuccess={handlePlaceOrder} />
-                                                        </Elements>
-                                                    </Box>
-                                                ) : (
-                                                    <Box sx={{ p: 2, bgcolor: '#fff1f2', borderRadius: 2, border: '1px solid #fecdd3' }}>
-                                                        <Typography color="error" variant="body2">
-                                                            {intentError || "Loading secure payment..."}
-                                                        </Typography>
-                                                    </Box>
-                                                )}
-                                            </Box>
                                         )}
                                     </Paper>
                                 </RadioGroup>

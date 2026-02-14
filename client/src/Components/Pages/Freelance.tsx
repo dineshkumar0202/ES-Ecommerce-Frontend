@@ -6,6 +6,7 @@ import FreelancerSidebar from '../SpecifiedComponents/Freelancers/Components/Fre
 import FreelancerSidebarBuyer from '../SpecifiedComponents/Freelancers/Components/FreelancerSidebarBuyer';
 import FreelanceBanner from '../SpecifiedComponents/Freelancers/Components/FreelanceBanner';
 import { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { FreelanceService, AuthService } from '../../services/api';
 
 // Define interface locally to avoid 'export not found' issues
@@ -80,10 +81,50 @@ const Freelance = () => {
         }
     };
 
+    const location = useLocation();
+
     useEffect(() => {
         fetchPosts();
         fetchUserStatus();
     }, []);
+
+    // Handle Auto-Post from Virtual Try-On result
+    useEffect(() => {
+        const handleAutoPost = async () => {
+            if (location.state?.autoPost && location.state?.postImage) {
+                const { postImage, postPrompt, formData } = location.state;
+
+                const newPost = {
+                    title: postPrompt || formData?.productName || "Virtual Look",
+                    description: formData?.description || "A stylish new outfit look created with Virtual Try-On Studio.",
+                    requirements: formData?.requirements || "",
+                    contact: formData?.contact || "",
+                    email: formData?.email || "",
+                    location: formData?.location || "Online",
+                    price: Number(formData?.price) || 0,
+                    currency: "₹",
+                    unit: "/hr",
+                    image: postImage,
+                    nameDisplay: formData?.name || "Anonymous",
+                    status: "PENDING",
+                    tagColor: "#10b981",
+                    tagTextColor: "white",
+                    views: "0 views",
+                    time: "Just now"
+                };
+
+                try {
+                    await handlePost(newPost);
+                    // Reset location state to prevent double posting on refresh
+                    window.history.replaceState({}, document.title);
+                } catch (error) {
+                    console.error("Auto-post failed:", error);
+                }
+            }
+        };
+
+        handleAutoPost();
+    }, [location.state, isFreelancerRegistered]); // Depend on registration status if needed
 
     const handleInterestClick = async (postId: string | number) => {
         const token = localStorage.getItem('token');

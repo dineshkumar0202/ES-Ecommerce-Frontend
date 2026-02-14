@@ -1,19 +1,16 @@
 import { useState, useEffect } from 'react';
 import {
     Box, Typography, Button, Avatar, Paper, Chip, IconButton,
-    Stack, Container, Grid, Dialog, DialogTitle, DialogContent, DialogActions, TextField
+    Stack, Container, Grid, Dialog, DialogTitle, DialogContent, DialogActions, TextField,
+    CircularProgress
 } from '@mui/material';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 
 // Icons
 import LogoutIcon from '@mui/icons-material/Logout';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import DarkModeIcon from '@mui/icons-material/DarkMode';
-import GridViewIcon from '@mui/icons-material/GridView';
 import ShoppingCartOutlinedIcon from '@mui/icons-material/ShoppingCartOutlined';
 import FavoriteBorderOutlinedIcon from '@mui/icons-material/FavoriteBorderOutlined';
-import LocalMallOutlinedIcon from '@mui/icons-material/LocalMallOutlined';
-import DiamondIcon from '@mui/icons-material/Diamond';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 
 import { CartService, WishlistService, OrderService, AuthService, UserService, WholesaleService, ResaleService, FreelanceService } from '../../services/api';
@@ -23,8 +20,6 @@ import WarehouseIcon from '@mui/icons-material/Warehouse';
 import FlashOnIcon from '@mui/icons-material/FlashOn';
 import AutorenewIcon from '@mui/icons-material/Autorenew';
 import WorkOutlineIcon from '@mui/icons-material/WorkOutline';
-import EmailOutlinedIcon from '@mui/icons-material/EmailOutlined';
-import PhoneOutlinedIcon from '@mui/icons-material/PhoneOutlined';
 
 const Profile = () => {
     const navigate = useNavigate();
@@ -39,8 +34,6 @@ const Profile = () => {
         uniqueId: ''
     });
 
-    const [cartCount, setCartCount] = useState(0);
-    const [wishlistCount, setWishlistCount] = useState(0);
     const [cartItems, setCartItems] = useState<any[]>([]);
     const [wishlistItems, setWishlistItems] = useState<any[]>([]);
     const [orders, setOrders] = useState<any[]>([]);
@@ -174,9 +167,7 @@ const Profile = () => {
                 }));
             }
 
-            setCartCount(cartRes.data?.cartItems?.length || 0);
             setCartItems(cartRes.data?.cartItems || []);
-            setWishlistCount(wishlistRes.data?.products?.length || 0);
             setWishlistItems(wishlistRes.data?.products || []);
 
             if (ordersRes.data && ordersRes.data.length > 0) {
@@ -193,7 +184,6 @@ const Profile = () => {
         try {
             await WishlistService.removeFromWishlist(productId);
             setWishlistItems(prev => prev.filter(item => item._id !== productId));
-            setWishlistCount(prev => prev - 1);
             toast.success("Removed from wishlist");
         } catch (error) {
             console.error("Error removing from wishlist:", error);
@@ -217,7 +207,6 @@ const Profile = () => {
                 quantity: 1,
                 type: mappedType
             });
-            setCartCount(prev => prev + 1);
             toast.success("Added to cart!");
         } catch (error) {
             console.error("Error adding to cart:", error);
@@ -243,11 +232,6 @@ const Profile = () => {
         }
     };
 
-    const [stats, setStats] = useState({
-        totalSpent: 0,
-        pendingCount: 0,
-        rewardPoints: 0
-    });
 
     useEffect(() => {
         if (orders.length >= 0) {
@@ -406,134 +390,107 @@ const Profile = () => {
 
                     {currentView === 'overview' && (
                         <Box>
-                            {/* Recent Order Section */}
-                            <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 3 }}>
-                                <Stack direction="row" spacing={1} alignItems="center">
-                                    <Box sx={{ width: 4, height: 24, bgcolor: '#B4D5DC', borderRadius: 2 }} />
-                                    <Typography variant="h6" sx={{ fontWeight: 800 }}>RECENT ORDER</Typography>
-                                </Stack>
-                                <Button onClick={() => setCurrentView('orders')} sx={{ textTransform: 'none', fontWeight: 700, color: '#0f172a' }}>View Full History</Button>
-                            </Stack>
+                            {/* Channel Specific Activity Selection */}
+                            {selectedChannel && (
+                                <Box sx={{ mt: 6 }}>
+                                    <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 3 }}>
+                                        <Box sx={{ width: 4, height: 24, bgcolor: '#B4D5DC', borderRadius: 2 }} />
+                                        <Typography variant="h6" sx={{ fontWeight: 800 }}>MY {selectedChannel.toUpperCase()} ACTIVITY</Typography>
+                                    </Stack>
 
-                            {orders.length > 0 ? (
-                                <Paper elevation={0} sx={{ p: 4, borderRadius: 6, border: '1px solid #f1f5f9', mb: 5 }}>
-                                    <Grid container spacing={4} alignItems="center">
-                                        <Grid size={{ xs: 12, md: 3 }}>
-                                            <Box sx={{ width: 120, height: 120, bgcolor: '#f8fafc', borderRadius: 4, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                                {orders[0].orderItems?.[0]?.image ? (
-                                                    <img src={orders[0].orderItems[0].image} alt="" style={{ width: '80%', height: '80%', objectFit: 'contain' }} />
-                                                ) : (
-                                                    <LocalMallOutlinedIcon />
-                                                )}
-                                            </Box>
-                                        </Grid>
-                                        <Grid size={{ xs: 12, md: 9 }}>
-                                            <Stack direction={{ xs: 'column', md: 'row' }} justifyContent="space-between" alignItems="flex-start" sx={{ mb: 4 }}>
-                                                <Box>
-                                                    <Typography variant="caption" sx={{ fontWeight: 700, color: '#94a3b8', letterSpacing: 1 }}>{orders[0].status?.toUpperCase() || 'PROCESSING'}</Typography>
-                                                    <Typography variant="h5" sx={{ fontWeight: 800, mt: 0.5 }}>{orders[0].orderItems?.[0]?.title || 'Order Item'}</Typography>
-                                                    <Typography variant="body2" sx={{ color: '#64748b', mt: 0.5 }}>Order ID: #{orders[0]._id.substring(0, 10).toUpperCase()}</Typography>
-                                                    <Typography variant="h5" sx={{ fontWeight: 900, mt: 1 }}>₹{(orders[0].totalPrice || 0).toLocaleString()}</Typography>
-                                                </Box>
-
-                                                {/* Tracker */}
-                                                <Box sx={{ flex: 1, maxWidth: 400, ml: { md: 8 }, mt: { xs: 3, md: 0 }, width: '100%' }}>
-                                                    <Box sx={{ position: 'relative', height: 2, bgcolor: '#e2e8f0', mt: 2, mb: 4 }}>
-                                                        <Box sx={{ position: 'absolute', height: '100%', bgcolor: '#B4D5DC', width: `${(getStatusIndex(orders[0].status) / 3) * 100}%` }} />
-                                                        <Box sx={{ display: 'flex', justifyContent: 'space-between', position: 'relative', top: -14 }}>
-                                                            {['Ordered', 'Shipped', 'Out', 'Delivered'].map((step, i) => {
-                                                                const active = i <= getStatusIndex(orders[0].status);
-                                                                return (
-                                                                    <Box key={step} sx={{ textAlign: 'center' }}>
-                                                                        <Box sx={{
-                                                                            width: 30, height: 30,
-                                                                            bgcolor: active ? '#B4D5DC' : '#f1f5f9',
-                                                                            borderRadius: '50%',
-                                                                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                                                            mx: 'auto', mb: 1,
-                                                                            border: '4px solid white',
-                                                                            boxShadow: '0 2px 10px rgba(0,0,0,0.05)'
-                                                                        }}>
-                                                                            {active && <CheckCircleIcon sx={{ fontSize: 16, color: '#0f172a' }} />}
-                                                                        </Box>
-                                                                        <Typography variant="caption" sx={{ fontWeight: 700, color: active ? '#0f172a' : '#cbd5e1' }}>{step}</Typography>
-                                                                    </Box>
-                                                                )
-                                                            })}
+                                    {channelLoading ? (
+                                        <Box sx={{ display: 'flex', justifyContent: 'center', py: 5 }}>
+                                            <CircularProgress sx={{ color: '#B4D5DC' }} />
+                                        </Box>
+                                    ) : (
+                                        <Paper elevation={0} sx={{ p: 4, borderRadius: 6, border: '1px solid #f1f5f9', bgcolor: '#f8fafc' }}>
+                                            {selectedChannel === 'freelance' && (
+                                                <Grid container spacing={3}>
+                                                    {freelancePosts.map((post: any) => (
+                                                        <Grid size={{ xs: 12, sm: 6, md: 4 }} key={post._id}>
+                                                            <Paper elevation={0} sx={{ p: 2, borderRadius: 4, bgcolor: 'white', border: '1px solid #e2e8f0', height: '100%', position: 'relative', overflow: 'hidden' }}>
+                                                                <Box sx={{ position: 'absolute', top: 12, right: 12, zIndex: 1 }}>
+                                                                    <Chip
+                                                                        label={post.status}
+                                                                        size="small"
+                                                                        sx={{
+                                                                            bgcolor: post.status === 'APPROVED' ? '#bef264' : '#f1f5f9',
+                                                                            color: post.status === 'APPROVED' ? '#1a2e05' : '#64748b',
+                                                                            fontWeight: 800,
+                                                                            fontSize: '0.65rem'
+                                                                        }}
+                                                                    />
+                                                                </Box>
+                                                                <Box sx={{ height: 160, borderRadius: 3, overflow: 'hidden', mb: 2 }}>
+                                                                    <img src={post.image} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                                                </Box>
+                                                                <Typography variant="subtitle1" sx={{ fontWeight: 800, mb: 1, color: '#0f172a' }}>{post.title}</Typography>
+                                                                <Typography variant="caption" sx={{ color: '#64748b', display: 'block', mb: 2, height: 40, overflow: 'hidden' }}>{post.description}</Typography>
+                                                                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                                                    <Typography variant="h6" sx={{ fontWeight: 900 }}>₹{post.price}</Typography>
+                                                                    <Button size="small" sx={{ fontWeight: 800, color: '#0f172a' }}>Edit Post</Button>
+                                                                </Box>
+                                                            </Paper>
+                                                        </Grid>
+                                                    ))}
+                                                    {freelancePosts.length === 0 && (
+                                                        <Box sx={{ textAlign: 'center', w: '100%', py: 4, flex: 1 }}>
+                                                            <Typography sx={{ color: '#94a3b8', fontWeight: 600 }}>No freelance posts found.</Typography>
                                                         </Box>
-                                                    </Box>
-                                                </Box>
-                                            </Stack>
+                                                    )}
+                                                </Grid>
+                                            )}
 
-                                            <Box sx={{ pt: 3, borderTop: '1px solid #f1f5f9', display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 4 }}>
-                                                <Box>
-                                                    <Typography variant="caption" sx={{ fontWeight: 800, color: '#94a3b8', letterSpacing: 0.5 }}>SHIPPING ADDRESS</Typography>
-                                                    <Typography variant="body2" sx={{ fontWeight: 600, mt: 0.5 }}>
-                                                        {orders[0].shippingAddress ? (
-                                                            <>
-                                                                {orders[0].shippingAddress.address}<br />
-                                                                {orders[0].shippingAddress.city}, {orders[0].shippingAddress.postalCode}<br />
-                                                                {orders[0].shippingAddress.country}
-                                                            </>
-                                                        ) : 'Address not available'}
-                                                    </Typography>
-                                                </Box>
-                                                <Box>
-                                                    <Typography variant="caption" sx={{ fontWeight: 800, color: '#94a3b8', letterSpacing: 0.5 }}>PAYMENT METHOD</Typography>
-                                                    <Typography variant="body2" sx={{ fontWeight: 600, mt: 0.5 }}>{orders[0].paymentMethod || 'Unknown'}</Typography>
-                                                </Box>
-                                                <Box sx={{ flex: 1 }} />
-                                                <Button variant="outlined" sx={{ borderRadius: 5, textTransform: 'none', fontWeight: 700, color: '#0f172a', borderColor: '#e2e8f0' }}>Track Live</Button>
-                                            </Box>
-                                        </Grid>
-                                    </Grid>
-                                </Paper>
-                            ) : (
-                                <Paper elevation={0} sx={{ p: 4, mb: 5, textAlign: 'center', borderRadius: 6, border: '1px dashed #cbd5e1' }}>
-                                    <Typography sx={{ color: '#94a3b8', fontWeight: 600 }}>No recent orders found.</Typography>
-                                    <Button onClick={() => navigate('/retail')} sx={{ mt: 2, fontWeight: 700 }}>Start Shopping</Button>
-                                </Paper>
+                                            {selectedChannel === 'wholesale' && (
+                                                <Grid container spacing={3}>
+                                                    {wholesaleProducts.map((product: any) => (
+                                                        <Grid size={{ xs: 12, sm: 6, md: 4 }} key={product._id}>
+                                                            <Paper elevation={0} sx={{ p: 2, borderRadius: 4, bgcolor: 'white', border: '1px solid #e2e8f0', height: '100%' }}>
+                                                                <Box sx={{ height: 160, borderRadius: 3, overflow: 'hidden', mb: 2 }}>
+                                                                    <img src={product.images?.[0]} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                                                </Box>
+                                                                <Typography variant="subtitle1" sx={{ fontWeight: 800, mb: 0.5 }}>{product.title}</Typography>
+                                                                <Typography variant="h6" sx={{ fontWeight: 900, mb: 2 }}>₹{product.pricePerUnit} / Unit</Typography>
+                                                                <Stack spacing={1}>
+                                                                    <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 600 }}>Stock: {product.stock} units</Typography>
+                                                                    <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 600 }}>Min Order: {product.minOrderQuantity}</Typography>
+                                                                </Stack>
+                                                            </Paper>
+                                                        </Grid>
+                                                    ))}
+                                                    {wholesaleProducts.length === 0 && (
+                                                        <Box sx={{ textAlign: 'center', w: '100%', py: 4, flex: 1 }}>
+                                                            <Typography sx={{ color: '#94a3b8', fontWeight: 600 }}>No wholesale products found.</Typography>
+                                                        </Box>
+                                                    )}
+                                                </Grid>
+                                            )}
+
+                                            {selectedChannel === 'resale' && (
+                                                <Grid container spacing={3}>
+                                                    {resaleItems.map((item: any) => (
+                                                        <Grid size={{ xs: 12, sm: 6, md: 4 }} key={item._id}>
+                                                            <Paper elevation={0} sx={{ p: 2, borderRadius: 4, bgcolor: 'white', border: '1px solid #e2e8f0', height: '100%' }}>
+                                                                <Box sx={{ height: 160, borderRadius: 3, overflow: 'hidden', mb: 2 }}>
+                                                                    <img src={item.images?.[0]} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                                                </Box>
+                                                                <Typography variant="subtitle1" sx={{ fontWeight: 800, mb: 0.5 }}>{item.title}</Typography>
+                                                                <Typography variant="h6" sx={{ fontWeight: 900 }}>₹{item.price}</Typography>
+                                                                <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 800 }}>CONDITION: {item.condition}</Typography>
+                                                            </Paper>
+                                                        </Grid>
+                                                    ))}
+                                                    {resaleItems.length === 0 && (
+                                                        <Box sx={{ textAlign: 'center', w: '100%', py: 4, flex: 1 }}>
+                                                            <Typography sx={{ color: '#94a3b8', fontWeight: 600 }}>No resale listings found.</Typography>
+                                                        </Box>
+                                                    )}
+                                                </Grid>
+                                            )}
+                                        </Paper>
+                                    )}
+                                </Box>
                             )}
-
-                            {/* Stats Cards */}
-                            <Grid container spacing={3}>
-                                <Grid size={{ xs: 12, md: 4 }}>
-                                    <Paper elevation={0} sx={{ p: 3, borderRadius: 6, border: '1px solid #f1f5f9' }}>
-                                        <Stack direction="row" justifyContent="space-between" sx={{ mb: 3 }}>
-                                            <Box sx={{ p: 1.5, bgcolor: '#e0f2f1', borderRadius: '50%' }}>
-                                                <LocalMallOutlinedIcon sx={{ color: '#0f172a' }} />
-                                            </Box>
-                                            {/* Removed hardcoded trend */}
-                                        </Stack>
-                                        <Typography variant="caption" sx={{ fontWeight: 800, color: '#94a3b8', letterSpacing: 0.5 }}>TOTAL SPENT</Typography>
-                                        <Typography variant="h4" sx={{ fontWeight: 800, mt: 0.5 }}>₹{stats.totalSpent.toLocaleString()}</Typography>
-                                    </Paper>
-                                </Grid>
-                                <Grid size={{ xs: 12, md: 4 }}>
-                                    <Paper elevation={0} sx={{ p: 3, borderRadius: 6, border: '1px solid #f1f5f9' }}>
-                                        <Stack direction="row" justifyContent="space-between" sx={{ mb: 3 }}>
-                                            <Box sx={{ p: 1.5, bgcolor: '#e0f2f1', borderRadius: '50%' }}>
-                                                <ShoppingCartOutlinedIcon sx={{ color: '#0f172a' }} />
-                                            </Box>
-                                            <Typography variant="caption" sx={{ fontWeight: 700, color: '#64748b' }}>{stats.pendingCount} Pending</Typography>
-                                        </Stack>
-                                        <Typography variant="caption" sx={{ fontWeight: 800, color: '#94a3b8', letterSpacing: 0.5 }}>ORDERS COUNT</Typography>
-                                        <Typography variant="h4" sx={{ fontWeight: 800, mt: 0.5 }}>{orders.length}</Typography>
-                                    </Paper>
-                                </Grid>
-                                <Grid size={{ xs: 12, md: 4 }}>
-                                    <Paper elevation={0} sx={{ p: 3, borderRadius: 6, border: '1px solid #f1f5f9' }}>
-                                        <Stack direction="row" justifyContent="space-between" sx={{ mb: 3 }}>
-                                            <Box sx={{ p: 1.5, bgcolor: '#e0f2f1', borderRadius: '50%' }}>
-                                                <DiamondIcon sx={{ color: '#0f172a' }} />
-                                            </Box>
-                                            <Typography variant="caption" sx={{ fontWeight: 700, color: '#64748b' }}>Active</Typography>
-                                        </Stack>
-                                        <Typography variant="caption" sx={{ fontWeight: 800, color: '#94a3b8', letterSpacing: 0.5 }}>REWARD POINTS</Typography>
-                                        <Typography variant="h4" sx={{ fontWeight: 800, mt: 0.5 }}>{stats.rewardPoints.toLocaleString()}</Typography>
-                                    </Paper>
-                                </Grid>
-                            </Grid>
                         </Box>
                     )}
 

@@ -13,9 +13,9 @@ router.get("/my-interests", protect, PostController.getMyInterests);
 router.post("/", protect, PostController.createPost);
 router.post("/generate-image", protect, PostController.generateImage);
 
-// Virtual Try-On routes
-router.post("/try-on", protect, TryOnController.startTryOn);
-router.get("/try-on/status/:id", protect, TryOnController.getTryOnStatus);
+// Virtual Try-On routes (Moved to server.ts for debugging)
+// router.post("/try-on", protect, TryOnController.startTryOn);
+// router.get("/try-on/status/:id", protect, TryOnController.getTryOnStatus);
 
 // Dynamic :id routes AFTER static routes
 router.get("/:id", PostController.getPostById);

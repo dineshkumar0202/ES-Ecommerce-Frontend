@@ -112,6 +112,11 @@ app.get("/", (req: Request, res: Response) => {
     res.send("API is running...");
 });
 
+// Explicit try-on route for debugging 404
+import TryOnController from "./src/controllers/freelance/TryOnController";
+import { protect } from "./src/middleware/authMiddleware";
+app.post("/api/posts/try-on", protect, TryOnController.startTryOn);
+
 // Database Connection and Server Startup
 const startServer = async () => {
     try {

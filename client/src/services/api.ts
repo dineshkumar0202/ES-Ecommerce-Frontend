@@ -166,7 +166,6 @@ export const UploadService = {
 
 export const PaymentService = {
     getConfig: () => api.get('/payments/config'),
-    createPaymentIntent: (amount: number) => api.post('/payments/create-payment-intent', { amount }),
     createRazorpayOrder: (amount: number) => api.post('/payments/create-razorpay-order', { amount })
 };
 

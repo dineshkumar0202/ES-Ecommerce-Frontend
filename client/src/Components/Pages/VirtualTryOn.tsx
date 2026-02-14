@@ -101,7 +101,7 @@ const VirtualTryOn = () => {
         setTryOnResult(null);
 
         try {
-            // Call backend which proxies to the Demo API
+            // Call backend which handles the RapidAPI request with the key from .env
             const { data } = await FreelanceService.startTryOn(personImage, garmentImage);
 
             if (data.status === 'completed' && data.output?.length > 0) {
