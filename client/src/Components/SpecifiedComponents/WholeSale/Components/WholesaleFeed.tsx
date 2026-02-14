@@ -103,7 +103,7 @@ const ProductCard = ({ item }: { item: any }) => {
     const [isWishlisted, setIsWishlisted] = useState(false);
     const navigate = useNavigate();
 
-    const imagesList = item.images || [item.image || "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=800&q=80"];
+    const imagesList = (item.images && item.images.length > 0) ? item.images : [item.image || "https://placehold.co/400"];
 
     useEffect(() => {
         if (imagesList.length <= 1 || isHovered) return;
@@ -219,7 +219,7 @@ const ProductCard = ({ item }: { item: any }) => {
                                 textTransform: 'uppercase'
                             }}
                         >
-                            {item.companyName || "XYZ INDUSTRIES"}
+                            {item.companyName || "Unknown Company"}
                         </Typography>
                     </Box>
                     {item.inStock !== false && (
@@ -253,7 +253,7 @@ const ProductCard = ({ item }: { item: any }) => {
                         overflow: 'hidden'
                     }}
                 >
-                    {item.title || "Modern Minimalist Photo Frame"}
+                    {item.title || "Untitled Product"}
                 </Typography>
 
                 <Typography
@@ -269,7 +269,7 @@ const ProductCard = ({ item }: { item: any }) => {
                         overflow: 'hidden'
                     }}
                 >
-                    {item.description || "Hand-crafted wooden finish with premium glass protector. Available in multiple finishes."}
+                    {item.description || "No description available."}
                 </Typography>
 
                 {/* Price and Details Grid */}
@@ -290,7 +290,7 @@ const ProductCard = ({ item }: { item: any }) => {
                             PACK SIZE
                         </Typography>
                         <Typography variant="subtitle1" sx={{ fontWeight: 800, color: '#1a202c', fontSize: '0.9rem' }}>
-                            {item.packSize || 12} Units
+                            {item.packSize || 1} Units
                         </Typography>
                     </Box>
                 </Box>
@@ -300,7 +300,7 @@ const ProductCard = ({ item }: { item: any }) => {
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                         <LocationOnIcon sx={{ color: '#cbd5e1', fontSize: 14 }} />
                         <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 500 }}>
-                            {item.location || "Erode, Tamil Nadu"}
+                            {item.location || "Location not available"}
                         </Typography>
                     </Box>
                 </Box>
@@ -310,6 +310,7 @@ const ProductCard = ({ item }: { item: any }) => {
                     <Button
                         variant="contained"
                         size="small"
+                        disabled={!item.phoneNumber}
                         sx={{
                             flex: 1,
                             height: '40px',
@@ -323,8 +324,10 @@ const ProductCard = ({ item }: { item: any }) => {
                             '&:hover': { bgcolor: '#9bbec9' }
                         }}
                         onClick={(e) => {
-                            e.stopPropagation();
-                            window.location.href = `tel:${item.phoneNumber || "+919876543210"}`;
+                            if (item.phoneNumber) {
+                                e.stopPropagation();
+                                window.location.href = `tel:${item.phoneNumber}`;
+                            }
                         }}
                     >
                         Call

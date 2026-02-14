@@ -23,7 +23,7 @@ import WarehouseIcon from '@mui/icons-material/Warehouse';
 import FlashOnIcon from '@mui/icons-material/FlashOn';
 import AutorenewIcon from '@mui/icons-material/Autorenew';
 import WorkOutlineIcon from '@mui/icons-material/WorkOutline';
-import ExitToAppIcon from '@mui/icons-material/ExitToApp'; 
+import ExitToAppIcon from '@mui/icons-material/ExitToApp';
 import SearchIcon from '@mui/icons-material/Search';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';

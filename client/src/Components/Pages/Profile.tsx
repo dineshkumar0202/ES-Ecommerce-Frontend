@@ -12,6 +12,7 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import ShoppingCartOutlinedIcon from '@mui/icons-material/ShoppingCartOutlined';
 import FavoriteBorderOutlinedIcon from '@mui/icons-material/FavoriteBorderOutlined';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import LocalMallOutlinedIcon from '@mui/icons-material/LocalMallOutlined';
 
 import { CartService, WishlistService, OrderService, AuthService, UserService, WholesaleService, ResaleService, FreelanceService } from '../../services/api';
 import { toast } from 'react-toastify';
@@ -21,10 +22,69 @@ import FlashOnIcon from '@mui/icons-material/FlashOn';
 import AutorenewIcon from '@mui/icons-material/Autorenew';
 import WorkOutlineIcon from '@mui/icons-material/WorkOutline';
 
+type ViewType = 'overview' | 'cart' | 'wishlist' | 'wallet' | 'orders' | 'analytics';
+type ChannelKey = 'retail' | 'wholesale' | 'quick' | 'resale' | 'freelance' | null;
+
+interface UserProfile {
+    name?: string;
+    email?: string;
+    phone?: string;
+    avatar?: string;
+    location?: string;
+}
+
+interface UserData {
+    name: string;
+    email: string;
+    phone: string;
+    role: string;
+    lastLogin: string;
+    avatar: string;
+    uniqueId: string;
+    profile?: UserProfile;
+}
+
+interface Product {
+    _id: string;
+    title: string;
+    price: number;
+    images?: string[];
+    image?: string;
+    type?: string;
+    condition?: string;
+    pricePerUnit?: number;
+    stock?: number;
+    minOrderQuantity?: number;
+    description?: string;
+    status?: string;
+}
+
+interface CartItem {
+    _id: string;
+    productId?: Product;
+    product?: Product;
+    quantity: number;
+}
+
+interface OrderItem {
+    image?: string;
+    title?: string;
+    quantity?: number;
+    price?: number;
+}
+
+interface Order {
+    _id: string;
+    totalPrice: number;
+    status: string;
+    createdAt: string;
+    orderItems: OrderItem[];
+}
+
 const Profile = () => {
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
-    const [userData, setUserData] = useState<any>({
+    const [userData, setUserData] = useState<UserData>({
         name: '',
         email: '',
         phone: '',
@@ -34,17 +94,21 @@ const Profile = () => {
         uniqueId: ''
     });
 
-    const [cartItems, setCartItems] = useState<any[]>([]);
-    const [wishlistItems, setWishlistItems] = useState<any[]>([]);
-    const [orders, setOrders] = useState<any[]>([]);
-    const [currentView, setCurrentView] = useState<'overview' | 'cart' | 'wishlist' | 'wallet' | 'orders'>('overview');
-    type ChannelKey = 'retail' | 'wholesale' | 'quick' | 'resale' | 'freelance' | null;
+    const [cartItems, setCartItems] = useState<CartItem[]>([]);
+    const [wishlistItems, setWishlistItems] = useState<Product[]>([]);
+    const [orders, setOrders] = useState<Order[]>([]);
+    const [currentView, setCurrentView] = useState<ViewType>('overview');
     const [selectedChannel, setSelectedChannel] = useState<ChannelKey>(null);
-    const [wholesaleProducts, setWholesaleProducts] = useState<any[]>([]);
-    const [resaleItems, setResaleItems] = useState<any[]>([]);
+    const [wholesaleProducts, setWholesaleProducts] = useState<Product[]>([]);
+    const [resaleItems, setResaleItems] = useState<Product[]>([]);
     // Removed unused qCommerceProducts state since we use orders now
-    const [freelancePosts, setFreelancePosts] = useState<any[]>([]);
+    const [freelancePosts, setFreelancePosts] = useState<Product[]>([]);
     const [channelLoading, setChannelLoading] = useState(false);
+    const [stats, setStats] = useState({
+        totalSpent: 0,
+        pendingCount: 0,
+        rewardPoints: 0
+    });
 
     // Edit Profile State (all editable except ID)
     const [isEditOpen, setIsEditOpen] = useState(false);
@@ -71,7 +135,7 @@ const Profile = () => {
                 phone: editPhone,
                 avatar: editAvatar
             };
-            setUserData((prev: any) => ({ ...prev, ...updated }));
+            setUserData((prev: UserData) => ({ ...prev, ...updated }));
             localStorage.setItem('userName', editName);
             localStorage.setItem('userProfileImage', editAvatar);
             if (userData.uniqueId) {
@@ -101,8 +165,8 @@ const Profile = () => {
 
     useEffect(() => {
         const view = searchParams.get('view');
-        if (view === 'cart' || view === 'wishlist' || view === 'wallet' || view === 'orders' || view === 'overview') {
-            setCurrentView(view as any);
+        if (view === 'cart' || view === 'wishlist' || view === 'wallet' || view === 'orders' || view === 'overview' || view === 'analytics') {
+            setCurrentView(view as ViewType);
         }
 
         const channel = searchParams.get('channel');
@@ -116,8 +180,8 @@ const Profile = () => {
     useEffect(() => {
         const savedName = localStorage.getItem('userName');
         const savedAvatar = localStorage.getItem('userProfileImage');
-        if (savedName) setUserData((prev: any) => ({ ...prev, name: savedName }));
-        if (savedAvatar) setUserData((prev: any) => ({ ...prev, avatar: savedAvatar }));
+        if (savedName) setUserData((prev: UserData) => ({ ...prev, name: savedName }));
+        if (savedAvatar) setUserData((prev: UserData) => ({ ...prev, avatar: savedAvatar }));
 
         fetchData();
     }, []);
@@ -155,7 +219,7 @@ const Profile = () => {
 
             if (userRes && userRes.data) {
                 const d = userRes.data;
-                setUserData((prev: any) => ({
+                setUserData((prev: UserData) => ({
                     ...prev,
                     name: d.username || d.profile?.name || prev.name,
                     email: d.email || d.profile?.email || prev.email,
@@ -172,7 +236,7 @@ const Profile = () => {
 
             if (ordersRes.data && ordersRes.data.length > 0) {
                 // specific logic to sort by date if backend doesn't sorting
-                const sortedOrders = ordersRes.data.sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+                const sortedOrders = ordersRes.data.sort((a: Order, b: Order) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
                 setOrders(sortedOrders);
             }
         } catch (error) {
@@ -191,16 +255,16 @@ const Profile = () => {
         }
     };
 
-    const handleAddToCart = async (product: any) => {
+    const handleAddToCart = async (product: Product) => {
         try {
             // Map frontend types to backend CartService expectations
-            const typeMapping: any = {
+            const typeMapping: Record<string, string> = {
                 'retail': 'Retail',
                 'wholesale': 'Wholesale',
                 'q-commerce': 'Quick',
                 'resale': 'Resale'
             };
-            const mappedType = typeMapping[product.type] || 'Retail';
+            const mappedType = typeMapping[product.type || ''] || 'Retail';
 
             await CartService.addToCart({
                 productId: product._id,
@@ -279,7 +343,7 @@ const Profile = () => {
                         <Button
                             key={item.channel}
                             onClick={() => {
-                                setSelectedChannel(item.channel as any);
+                                setSelectedChannel(item.channel as ChannelKey);
                                 navigate(`?view=overview&channel=${item.channel}`);
                             }}
                             startIcon={item.icon}
@@ -371,7 +435,7 @@ const Profile = () => {
                         ].map((tab) => (
                             <Button
                                 key={tab.value}
-                                onClick={() => setCurrentView(tab.value as any)}
+                                onClick={() => setCurrentView(tab.value as ViewType)}
                                 sx={{
                                     borderRadius: 5,
                                     px: 4,
@@ -390,9 +454,51 @@ const Profile = () => {
 
                     {currentView === 'overview' && (
                         <Box>
-                            {/* Channel Specific Activity Selection */}
-                            {selectedChannel && (
+                            {!selectedChannel ? (
+                                <Box sx={{ mt: 2 }}>
+                                    <Typography variant="h5" sx={{ fontWeight: 800, mb: 4 }}>Welcome back, {userData.name}!</Typography>
+                                    <Grid container spacing={3}>
+                                        <Grid size={{ xs: 12, md: 4 }}>
+                                            <Paper elevation={0} sx={{ p: 4, borderRadius: 6, border: '1px solid #f1f5f9', bgcolor: '#f8fafc' }}>
+                                                <Typography variant="subtitle2" sx={{ color: '#64748b', fontWeight: 700, mb: 1 }}>TOTAL SPENT</Typography>
+                                                <Typography variant="h4" sx={{ fontWeight: 900 }}>₹{stats.totalSpent.toLocaleString()}</Typography>
+                                            </Paper>
+                                        </Grid>
+                                        <Grid size={{ xs: 12, md: 4 }}>
+                                            <Paper elevation={0} sx={{ p: 4, borderRadius: 6, border: '1px solid #f1f5f9', bgcolor: '#f8fafc' }}>
+                                                <Typography variant="subtitle2" sx={{ color: '#64748b', fontWeight: 700, mb: 1 }}>PENDING ORDERS</Typography>
+                                                <Typography variant="h4" sx={{ fontWeight: 900 }}>{stats.pendingCount}</Typography>
+                                            </Paper>
+                                        </Grid>
+                                        <Grid size={{ xs: 12, md: 4 }}>
+                                            <Paper elevation={0} sx={{ p: 4, borderRadius: 6, border: '1px solid #f1f5f9', bgcolor: '#f8fafc' }}>
+                                                <Typography variant="subtitle2" sx={{ color: '#64748b', fontWeight: 700, mb: 1 }}>REWARD POINTS</Typography>
+                                                <Typography variant="h4" sx={{ fontWeight: 900 }}>{stats.rewardPoints}</Typography>
+                                            </Paper>
+                                        </Grid>
+                                    </Grid>
+
+                                    <Box sx={{ mt: 6 }}>
+                                        <Typography variant="h6" sx={{ fontWeight: 800, mb: 3 }}>Quick Links</Typography>
+                                        <Grid container spacing={2}>
+                                            <Grid size={{ xs: 6, sm: 3 }}>
+                                                <Button fullWidth onClick={() => setCurrentView('orders')} sx={{ py: 3, borderRadius: 4, bgcolor: '#f1f5f9', color: '#0f172a', fontWeight: 700, textTransform: 'none' }}>My Orders</Button>
+                                            </Grid>
+                                            <Grid size={{ xs: 6, sm: 3 }}>
+                                                <Button fullWidth onClick={() => setCurrentView('cart')} sx={{ py: 3, borderRadius: 4, bgcolor: '#f1f5f9', color: '#0f172a', fontWeight: 700, textTransform: 'none' }}>My Cart</Button>
+                                            </Grid>
+                                            <Grid size={{ xs: 6, sm: 3 }}>
+                                                <Button fullWidth onClick={() => setCurrentView('wishlist')} sx={{ py: 3, borderRadius: 4, bgcolor: '#f1f5f9', color: '#0f172a', fontWeight: 700, textTransform: 'none' }}>Wishlist</Button>
+                                            </Grid>
+                                            <Grid size={{ xs: 6, sm: 3 }}>
+                                                <Button fullWidth onClick={() => navigate('/retail')} sx={{ py: 3, borderRadius: 4, bgcolor: '#f1f5f9', color: '#0f172a', fontWeight: 700, textTransform: 'none' }}>Marketplace</Button>
+                                            </Grid>
+                                        </Grid>
+                                    </Box>
+                                </Box>
+                            ) : (
                                 <Box sx={{ mt: 6 }}>
+                                    {/* Channel Specific Activity Selection */}
                                     <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 3 }}>
                                         <Box sx={{ width: 4, height: 24, bgcolor: '#B4D5DC', borderRadius: 2 }} />
                                         <Typography variant="h6" sx={{ fontWeight: 800 }}>MY {selectedChannel.toUpperCase()} ACTIVITY</Typography>
@@ -406,7 +512,7 @@ const Profile = () => {
                                         <Paper elevation={0} sx={{ p: 4, borderRadius: 6, border: '1px solid #f1f5f9', bgcolor: '#f8fafc' }}>
                                             {selectedChannel === 'freelance' && (
                                                 <Grid container spacing={3}>
-                                                    {freelancePosts.map((post: any) => (
+                                                    {freelancePosts.map((post: Product) => (
                                                         <Grid size={{ xs: 12, sm: 6, md: 4 }} key={post._id}>
                                                             <Paper elevation={0} sx={{ p: 2, borderRadius: 4, bgcolor: 'white', border: '1px solid #e2e8f0', height: '100%', position: 'relative', overflow: 'hidden' }}>
                                                                 <Box sx={{ position: 'absolute', top: 12, right: 12, zIndex: 1 }}>
@@ -434,7 +540,7 @@ const Profile = () => {
                                                         </Grid>
                                                     ))}
                                                     {freelancePosts.length === 0 && (
-                                                        <Box sx={{ textAlign: 'center', w: '100%', py: 4, flex: 1 }}>
+                                                        <Box sx={{ textAlign: 'center', width: '100%', py: 4, flex: 1 }}>
                                                             <Typography sx={{ color: '#94a3b8', fontWeight: 600 }}>No freelance posts found.</Typography>
                                                         </Box>
                                                     )}
@@ -443,7 +549,7 @@ const Profile = () => {
 
                                             {selectedChannel === 'wholesale' && (
                                                 <Grid container spacing={3}>
-                                                    {wholesaleProducts.map((product: any) => (
+                                                    {wholesaleProducts.map((product: Product) => (
                                                         <Grid size={{ xs: 12, sm: 6, md: 4 }} key={product._id}>
                                                             <Paper elevation={0} sx={{ p: 2, borderRadius: 4, bgcolor: 'white', border: '1px solid #e2e8f0', height: '100%' }}>
                                                                 <Box sx={{ height: 160, borderRadius: 3, overflow: 'hidden', mb: 2 }}>
@@ -459,7 +565,7 @@ const Profile = () => {
                                                         </Grid>
                                                     ))}
                                                     {wholesaleProducts.length === 0 && (
-                                                        <Box sx={{ textAlign: 'center', w: '100%', py: 4, flex: 1 }}>
+                                                        <Box sx={{ textAlign: 'center', width: '100%', py: 4, flex: 1 }}>
                                                             <Typography sx={{ color: '#94a3b8', fontWeight: 600 }}>No wholesale products found.</Typography>
                                                         </Box>
                                                     )}
@@ -468,7 +574,7 @@ const Profile = () => {
 
                                             {selectedChannel === 'resale' && (
                                                 <Grid container spacing={3}>
-                                                    {resaleItems.map((item: any) => (
+                                                    {resaleItems.map((item: Product) => (
                                                         <Grid size={{ xs: 12, sm: 6, md: 4 }} key={item._id}>
                                                             <Paper elevation={0} sx={{ p: 2, borderRadius: 4, bgcolor: 'white', border: '1px solid #e2e8f0', height: '100%' }}>
                                                                 <Box sx={{ height: 160, borderRadius: 3, overflow: 'hidden', mb: 2 }}>
@@ -481,7 +587,7 @@ const Profile = () => {
                                                         </Grid>
                                                     ))}
                                                     {resaleItems.length === 0 && (
-                                                        <Box sx={{ textAlign: 'center', w: '100%', py: 4, flex: 1 }}>
+                                                        <Box sx={{ textAlign: 'center', width: '100%', py: 4, flex: 1 }}>
                                                             <Typography sx={{ color: '#94a3b8', fontWeight: 600 }}>No resale listings found.</Typography>
                                                         </Box>
                                                     )}
@@ -501,7 +607,7 @@ const Profile = () => {
                             <Typography variant="h4" sx={{ fontWeight: 900, mb: 4 }}>Your Shopping Cart ({cartItems.length})</Typography>
                             {cartItems.length > 0 ? (
                                 <Stack spacing={3}>
-                                    {cartItems.map((item: any) => (
+                                    {cartItems.map((item: CartItem) => (
                                         <Paper key={item._id} elevation={0} sx={{ p: 3, borderRadius: 6, bgcolor: '#f8fafc', border: '1px solid #f1f5f9' }}>
                                             <Stack direction="row" spacing={3} alignItems="center">
                                                 <Box sx={{ width: 100, height: 100, borderRadius: 4, overflow: 'hidden', bgcolor: 'white' }}>
@@ -534,7 +640,7 @@ const Profile = () => {
                             <Typography variant="h4" sx={{ fontWeight: 900, mb: 4 }}>Saved for Later ({wishlistItems.length})</Typography>
                             {wishlistItems.length > 0 ? (
                                 <Grid container spacing={4}>
-                                    {wishlistItems.map((product: any) => (
+                                    {wishlistItems.map((product: Product) => (
                                         <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }} key={product._id}>
                                             <Paper elevation={0} sx={{ p: 2, borderRadius: 6, bgcolor: '#f8fafc', border: '1px solid #f1f5f9', height: '100%' }}>
                                                 <Box sx={{ pt: '100%', position: 'relative', borderRadius: 4, overflow: 'hidden', mb: 2 }}>
@@ -589,7 +695,7 @@ const Profile = () => {
 
                             {orders.length > 0 ? (
                                 <Stack spacing={4}>
-                                    {orders.map((order: any) => (
+                                    {orders.map((order: Order) => (
                                         <Box key={order._id} sx={{ p: 0, overflow: 'hidden' }}>
                                             <Stack direction="row" spacing={3} alignItems="flex-start">
                                                 <Box sx={{ width: 140, height: 140, bgcolor: '#f8fafc', borderRadius: 6, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', flexShrink: 0 }}>
@@ -604,7 +710,7 @@ const Profile = () => {
                                                     <Stack direction="row" justifyContent="space-between" alignItems="flex-start">
                                                         <Box>
                                                             <Typography variant="h5" sx={{ fontWeight: 800, color: '#0f172a', mb: 0.5 }}>
-                                                                {order.orderItems?.[0]?.title || 'Order #' + order._id.substring(0, 8).toUpperCase()}
+                                                                {order.orderItems?.[0]?.title || 'Order #' + order._id?.substring(0, 8).toUpperCase()}
                                                             </Typography>
                                                             <Typography variant="body2" sx={{ color: '#94a3b8', fontWeight: 600 }}>
                                                                 {order.orderItems?.length > 1 ? `+${order.orderItems.length - 1} more items` : `Qty ${order.orderItems?.[0]?.quantity || '1'}`} • Placed on {new Date(order.createdAt).toLocaleDateString()}
@@ -659,6 +765,41 @@ const Profile = () => {
                                     <Button sx={{ mt: 3, color: 'black', fontWeight: 900 }} onClick={() => navigate('/retail')}>Start Shopping</Button>
                                 </Box>
                             )}
+                        </Paper>
+                    )}
+
+                    {currentView === 'analytics' && (
+                        <Paper elevation={0} sx={{ p: 5, borderRadius: 10, border: '1px solid #f1f5f9', bgcolor: 'white' }}>
+                            <Typography variant="h4" sx={{ fontWeight: 900, mb: 4 }}>Account Analytics</Typography>
+                            <Grid container spacing={3}>
+                                <Grid size={{ xs: 12, md: 4 }}>
+                                    <Paper elevation={0} sx={{ p: 4, borderRadius: 6, bgcolor: '#f8fafc', border: '1px solid #f1f5f9', textAlign: 'center' }}>
+                                        <Typography variant="subtitle2" sx={{ color: '#64748b', fontWeight: 700, mb: 1 }}>TOTAL SPENT</Typography>
+                                        <Typography variant="h4" sx={{ fontWeight: 900 }}>₹{stats.totalSpent.toLocaleString()}</Typography>
+                                    </Paper>
+                                </Grid>
+                                <Grid size={{ xs: 12, md: 4 }}>
+                                    <Paper elevation={0} sx={{ p: 4, borderRadius: 6, bgcolor: '#f8fafc', border: '1px solid #f1f5f9', textAlign: 'center' }}>
+                                        <Typography variant="subtitle2" sx={{ color: '#64748b', fontWeight: 700, mb: 1 }}>PENDING ORDERS</Typography>
+                                        <Typography variant="h4" sx={{ fontWeight: 900 }}>{stats.pendingCount}</Typography>
+                                    </Paper>
+                                </Grid>
+                                <Grid size={{ xs: 12, md: 4 }}>
+                                    <Paper elevation={0} sx={{ p: 4, borderRadius: 6, bgcolor: '#f8fafc', border: '1px solid #f1f5f9', textAlign: 'center' }}>
+                                        <Typography variant="subtitle2" sx={{ color: '#64748b', fontWeight: 700, mb: 1 }}>REWARD POINTS</Typography>
+                                        <Typography variant="h4" sx={{ fontWeight: 900 }}>{stats.rewardPoints}</Typography>
+                                    </Paper>
+                                </Grid>
+                            </Grid>
+                        </Paper>
+                    )}
+
+                    {currentView === 'wallet' && (
+                        <Paper elevation={0} sx={{ p: 5, borderRadius: 10, border: '1px solid #f1f5f9', bgcolor: 'white' }}>
+                            <Typography variant="h4" sx={{ fontWeight: 900, mb: 4 }}>My Wallet</Typography>
+                            <Box sx={{ textAlign: 'center', py: 10 }}>
+                                <Typography variant="h5" sx={{ fontWeight: 800, color: '#94a3b8' }}>Wallet feature coming soon</Typography>
+                            </Box>
                         </Paper>
                     )}
                 </Container>
