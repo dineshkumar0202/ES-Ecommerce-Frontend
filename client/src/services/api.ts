@@ -81,6 +81,7 @@ export const ProductService = { // Retail
 export const FreelanceService = {
     getAll: () => api.get('/posts'),
     getMyPosts: () => api.get('/posts/my-posts'),
+    getMyInterests: () => api.get('/posts/my-interests'),
     getById: (id: string) => api.get(`/posts/${id}`),
     create: (data: any) => api.post('/posts', data),
     update: (id: string, data: any) => api.put(`/posts/${id}`, data),

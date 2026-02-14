@@ -13,7 +13,7 @@ import {
 } from '@mui/material';
 import { Save as SaveIcon, ArrowBack as ArrowBackIcon, CameraAlt as CameraIcon } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
-import { AuthService } from '../../services/api';
+import { AuthService, UserService, UploadService } from '../../services/api';
 
 const EditSellerProfile = () => {
     const navigate = useNavigate();
@@ -38,6 +38,8 @@ const EditSellerProfile = () => {
     const [coverPreview, setCoverPreview] = useState<string>('');
     const [logoFile, setLogoFile] = useState<File | null>(null);
     const [coverFile, setCoverFile] = useState<File | null>(null);
+    const [gstFile, setGstFile] = useState<File | null>(null);
+    const [panFile, setPanFile] = useState<File | null>(null);
 
     useEffect(() => {
         fetchSellerData();
@@ -92,16 +94,62 @@ const EditSellerProfile = () => {
     const handleSubmit = async () => {
         setSaving(true);
         try {
-            console.log("Updating profile with:", formData, logoFile, coverFile);
+            let logoUrl = logoPreview;
+            let coverUrl = coverPreview;
+            let gstUrl = '';
+            let panUrl = '';
 
-            // Simulate API delay
-            await new Promise(resolve => setTimeout(resolve, 1000));
+            // Handle file uploads if any
+            if (logoFile) {
+                const { data } = await UploadService.uploadImage(logoFile);
+                logoUrl = data.url;
+            }
+            if (coverFile) {
+                // Assuming cover uses same upload service
+                const { data } = await UploadService.uploadImage(coverFile);
+                coverUrl = data.url;
+            }
+            if (gstFile) {
+                const { data } = await UploadService.uploadImage(gstFile);
+                gstUrl = data.url;
+            }
+            if (panFile) {
+                const { data } = await UploadService.uploadImage(panFile);
+                panUrl = data.url;
+            }
+
+            const updatePayload = {
+                username: formData.businessName, // Update username as well
+                businessName: formData.businessName,
+                profile: {
+                    name: formData.businessName,
+                    avatar: logoUrl,
+                    cover: coverUrl, // Fixed: used the variable
+                },
+                businessDetails: {
+                    businessName: formData.businessName,
+                    gst: formData.gstin,
+                    idProof: gstUrl || undefined
+                },
+                freelancer: {
+                    panNumber: formData.pan,
+                    panFile: panUrl || undefined,
+                    isRegistered: true
+                },
+                bankDetails: {
+                    accountNumber: formData.accountNumber,
+                    ifsc: formData.ifscCode,
+                    bankName: formData.bankName
+                }
+            };
+
+            await UserService.updateUserProfile(updatePayload);
 
             alert("Profile updated successfully!");
             navigate('/seller/profile');
-        } catch (error) {
+        } catch (error: any) {
             console.error("Update failed:", error);
-            alert("Failed to update profile.");
+            alert("Failed to update profile: " + (error.response?.data?.message || error.message));
         } finally {
             setSaving(false);
         }
@@ -250,26 +298,36 @@ const EditSellerProfile = () => {
                             </Box>
                         </Box>
 
-                        <Typography variant="h6" sx={{ fontWeight: 800, mb: 3 }}>Compliance & Bank Details</Typography>
+                        <Typography variant="h6" sx={{ fontWeight: 800, mb: 3 }}>Uploaded Documents</Typography>
                         <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 3, mb: 4 }}>
                             <Box>
-                                <TextField
+                                <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 700 }}>GST Certificate</Typography>
+                                <Button
+                                    variant="outlined"
+                                    component="label"
                                     fullWidth
-                                    label="GSTIN"
-                                    name="gstin"
-                                    value={formData.gstin}
-                                    onChange={handleChange}
-                                />
+                                    sx={{ justifyContent: 'flex-start', py: 1.5, borderColor: '#e2e8f0', color: '#64748b' }}
+                                >
+                                    {gstFile ? gstFile.name : 'Choose GST PDF'}
+                                    <input type="file" hidden accept="application/pdf" onChange={(e) => e.target.files && setGstFile(e.target.files[0])} />
+                                </Button>
                             </Box>
                             <Box>
-                                <TextField
+                                <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 700 }}>PAN Card Document</Typography>
+                                <Button
+                                    variant="outlined"
+                                    component="label"
                                     fullWidth
-                                    label="PAN Number"
-                                    name="pan"
-                                    value={formData.pan}
-                                    onChange={handleChange}
-                                />
+                                    sx={{ justifyContent: 'flex-start', py: 1.5, borderColor: '#e2e8f0', color: '#64748b' }}
+                                >
+                                    {panFile ? panFile.name : 'Choose PAN PDF'}
+                                    <input type="file" hidden accept="application/pdf" onChange={(e) => e.target.files && setPanFile(e.target.files[0])} />
+                                </Button>
                             </Box>
+                        </Box>
+
+                        <Typography variant="h6" sx={{ fontWeight: 800, mb: 3 }}>Bank Details</Typography>
+                        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 3, mb: 4 }}>
                             <Box>
                                 <TextField
                                     fullWidth
@@ -285,6 +343,15 @@ const EditSellerProfile = () => {
                                     label="Account Number"
                                     name="accountNumber"
                                     value={formData.accountNumber}
+                                    onChange={handleChange}
+                                />
+                            </Box>
+                            <Box>
+                                <TextField
+                                    fullWidth
+                                    label="IFSC Code"
+                                    name="ifscCode"
+                                    value={formData.ifscCode}
                                     onChange={handleChange}
                                 />
                             </Box>

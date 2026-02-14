@@ -1,4 +1,4 @@
-import { Box, Typography, Paper, Stack, Button, IconButton, TextField, Dialog, DialogTitle, DialogContent, DialogActions, MenuItem, InputAdornment, Alert, Avatar, Chip, Fade, CircularProgress, Collapse, Link } from '@mui/material';
+import { Box, Typography, Paper, Stack, Button, IconButton, TextField, Dialog, DialogTitle, DialogContent, DialogActions, MenuItem, InputAdornment, Avatar, Chip, Fade, CircularProgress, Collapse, Link } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ImageOutlinedIcon from '@mui/icons-material/ImageOutlined';
 import PersonOutlineIcon from '@mui/icons-material/PersonOutline';
@@ -15,53 +15,14 @@ import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh';
 import RocketLaunchIcon from '@mui/icons-material/RocketLaunch';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { UserService, AuthService, UploadService } from '../../../../services/api';
 
 
-const SKILL_TESTS: any = {
-    "Technology & IT": {
-        task: "Create a responsive login form with validation using HTML/CSS/JS or a framework.",
-        questions: [
-            "What is the difference between specificty in CSS?",
-            "Explain the concept of 'Hoisting' in JavaScript.",
-            "What is the difference between SQL and NoSQL databases?",
-            "Explain the purpose of React hooks.",
-            "What is CI/CD?"
-        ]
-    },
-    "Creative & Design": {
-        task: "Design a modern landing page hero section for an organic food brand.",
-        questions: [
-            "What is the difference between RGB and CMYK?",
-            "Explain the rule of thirds.",
-            "What is kerning?",
-            "Differentiate between vector and raster graphics.",
-            "What is UI vs UX?"
-        ]
-    },
-    "Marketing & Business": {
-        task: "Create a 1-month social media strategy for a new coffee shop.",
-        questions: [
-            "What is SEO?",
-            "Explain the 4 Ps of marketing.",
-            "What is ROI?",
-            "Difference between B2B and B2C.",
-            "What are long-tail keywords?"
-        ]
-    },
-    "default": {
-        task: "Complete a general aptitude assessment task.",
-        questions: [
-            "Describe your work process.",
-            "How do you handle tight deadlines?",
-            "Give an example of a difficult problem you solved.",
-            "What are your strengths?",
-            "Where do you see yourself in 5 years?"
-        ]
-    }
-};
+
 
 const FreelancerSidebar = () => {
+    const navigate = useNavigate();
     // Register State
     const [openRegisterDialog, setOpenRegisterDialog] = useState(false);
     const [isRegistered, setIsRegistered] = useState(false);
@@ -82,6 +43,7 @@ const FreelancerSidebar = () => {
                         ...prev,
                         name: user.profile?.name || user.username || '',
                         email: user.email || '',
+                        phone: user.phone || user.profile?.phone || '',
                         category: user.freelancer.category || '',
                         portfolio: user.freelancer.portfolio || '',
                         panNumber: user.freelancer.panNumber || '',
@@ -147,11 +109,7 @@ const FreelancerSidebar = () => {
         }
     };
 
-    const handleAnswerChange = (index: number, value: string) => {
-        const newAnswers = [...registerData.answers];
-        newAnswers[index] = value;
-        setRegisterData({ ...registerData, answers: newAnswers });
-    };
+
 
     const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         if (event.target.files && event.target.files[0]) {
@@ -165,13 +123,9 @@ const FreelancerSidebar = () => {
         }
     };
 
-    const handleTaskFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        if (event.target.files && event.target.files[0]) {
-            setRegisterData({ ...registerData, taskFile: event.target.files[0] });
-        }
-    };
 
-    const currentTests = SKILL_TESTS[registerData.category] || SKILL_TESTS["default"];
+
+
 
     // AI Generation State
     const [prompt, setPrompt] = useState('');
@@ -338,6 +292,8 @@ const FreelancerSidebar = () => {
                                     <Box sx={{ p: 2, bgcolor: '#f8fafc', borderRadius: 3, mb: 2, border: '1px solid #e2e8f0' }}>
                                         <Typography variant="caption" sx={{ fontWeight: 700, color: '#475569', display: 'block', mb: 1 }}>IDENTITY INFO</Typography>
                                         <Stack spacing={1} sx={{ mb: 2 }}>
+                                            <Typography variant="caption" sx={{ display: 'block' }}><strong>Email:</strong> {registerData.email || 'N/A'}</Typography>
+                                            <Typography variant="caption" sx={{ display: 'block' }}><strong>Phone:</strong> {registerData.phone || 'N/A'}</Typography>
                                             <Typography variant="caption" sx={{ display: 'block' }}><strong>PAN:</strong> {registerData.panNumber || 'N/A'}</Typography>
                                             <Typography variant="caption" sx={{ display: 'block' }}><strong>ID:</strong> {registerData.freelancerId || 'N/A'}</Typography>
                                         </Stack>
@@ -345,27 +301,16 @@ const FreelancerSidebar = () => {
                                         <Typography variant="caption" sx={{ fontWeight: 700, color: '#475569', display: 'block', mb: 1 }}>PORTFOLIO & LINKS</Typography>
                                         <Stack spacing={0.5} sx={{ mb: 2 }}>
                                             {registerData.portfolio && <Link href={registerData.portfolio} target="_blank" sx={{ fontSize: '0.75rem', display: 'block' }}>My Portfolio</Link>}
-                                            {registerData.taskLink && <Link href={registerData.taskLink} target="_blank" sx={{ fontSize: '0.75rem', display: 'block' }}>Task Submission</Link>}
                                         </Stack>
 
-                                        {registerData.answers.some(a => a) && (
-                                            <>
-                                                <Typography variant="caption" sx={{ fontWeight: 700, color: '#475569', display: 'block', mb: 1 }}>SKILL ASSESSMENT</Typography>
-                                                <Stack spacing={1}>
-                                                    {registerData.answers.map((ans, i) => ans && (
-                                                        <Typography key={i} variant="caption" sx={{ display: 'block', lineHeight: 1.4 }}>
-                                                            <strong>Q{i + 1}:</strong> {ans}
-                                                        </Typography>
-                                                    ))}
-                                                </Stack>
-                                            </>
-                                        )}
+
                                     </Box>
                                 </Collapse>
 
                                 <Button
                                     fullWidth
                                     variant="outlined"
+                                    onClick={() => navigate('/seller/edit-profile')}
                                     sx={{
                                         borderRadius: 2,
                                         textTransform: 'none',
@@ -379,6 +324,7 @@ const FreelancerSidebar = () => {
                                 </Button>
                                 <Button
                                     fullWidth
+                                    onClick={() => navigate('/seller/profile')}
                                     sx={{
                                         bgcolor: '#0f172a',
                                         color: 'white',
@@ -829,82 +775,7 @@ const FreelancerSidebar = () => {
                                     </Box>
                                 </Box>
 
-                                {/* Skill Assessment Section - Show only if No Freelancer ID AND No File */}
-                                {!registerData.freelancerId && !registerData.freelancerIdFile && (
-                                    <Box sx={{ mt: 2 }}>
-                                        <Box sx={{ my: 2, borderBottom: '1px solid #e2e8f0' }} />
-                                        <Typography variant="h6" sx={{ fontWeight: 700, mb: 1 }}>Skill Assessment</Typography>
-                                        <Alert severity="info" sx={{ mb: 2, borderRadius: 2 }}>
-                                            <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>Task: {currentTests.task}</Typography>
-                                        </Alert>
 
-                                        <Stack spacing={2}>
-                                            {currentTests.questions.map((q: string, index: number) => (
-                                                <Box key={index}>
-                                                    <Typography variant="subtitle2" sx={{ mb: 0.5, fontWeight: 600 }}>{index + 1}. {q}</Typography>
-                                                    <TextField
-                                                        fullWidth
-                                                        size="small"
-                                                        placeholder="Your answer..."
-                                                        variant="outlined"
-                                                        value={registerData.answers[index]}
-                                                        onChange={(e) => handleAnswerChange(index, e.target.value)}
-                                                        InputProps={{ sx: { bgcolor: '#f8fafc', borderRadius: 1 } }}
-                                                    />
-                                                </Box>
-                                            ))}
-
-                                            <Box>
-                                                <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 700 }}>Task Live Link</Typography>
-                                                <TextField
-                                                    fullWidth
-                                                    placeholder="https://..."
-                                                    variant="outlined"
-                                                    value={registerData.taskLink}
-                                                    onChange={(e) => setRegisterData({ ...registerData, taskLink: e.target.value })}
-                                                    InputProps={{ sx: { bgcolor: '#f8fafc', borderRadius: 2 } }}
-                                                />
-                                            </Box>
-
-                                            <Box>
-                                                <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 700 }}>Upload Task Screenshot</Typography>
-                                                <Box
-                                                    component="label"
-                                                    sx={{
-                                                        border: '2px dashed #e2e8f0',
-                                                        borderRadius: 2,
-                                                        p: 3,
-                                                        display: 'flex',
-                                                        flexDirection: 'column',
-                                                        alignItems: 'center',
-                                                        cursor: 'pointer',
-                                                        bgcolor: registerData.taskFile ? '#f0fdf4' : '#f8fafc',
-                                                        transition: 'all 0.2s',
-                                                        '&:hover': { bgcolor: '#f1f5f9', borderColor: '#cbd5e1' }
-                                                    }}
-                                                >
-                                                    <input
-                                                        type="file"
-                                                        hidden
-                                                        accept="image/*,application/pdf"
-                                                        onChange={handleTaskFileChange}
-                                                    />
-                                                    {registerData.taskFile ? (
-                                                        <Stack direction="row" alignItems="center" spacing={1}>
-                                                            <CheckCircleIcon sx={{ color: '#22c55e' }} />
-                                                            <Typography variant="body2">{registerData.taskFile.name}</Typography>
-                                                        </Stack>
-                                                    ) : (
-                                                        <Stack direction="row" alignItems="center" spacing={1}>
-                                                            <CloudUploadIcon sx={{ color: '#94a3b8' }} />
-                                                            <Typography variant="body2" sx={{ color: '#64748b' }}>Upload Screenshot</Typography>
-                                                        </Stack>
-                                                    )}
-                                                </Box>
-                                            </Box>
-                                        </Stack>
-                                    </Box>
-                                )}
                             </>
                         )}
                     </Stack>
@@ -934,24 +805,7 @@ const FreelancerSidebar = () => {
                                     }
                                 }
                                 // Check Task or Freelancer ID
-                                if (registerData.freelancerId || registerData.freelancerIdFile) {
-                                    // Freelancer ID path
-                                    if (freelancerIdError || (registerData.freelancerId && !validateFreelancerId(registerData.freelancerId)) || !registerData.freelancerIdFile || !registerData.freelancerId) {
-                                        if (!registerData.freelancerId) alert("Please enter Freelancer ID Number");
-                                        else if (freelancerIdError || !validateFreelancerId(registerData.freelancerId)) alert("Invalid Freelancer ID");
-                                        else alert("Please upload Freelancer ID document");
-                                        return;
-                                    }
-                                } else {
-                                    // Skill Assessment path
-                                    const allAnswersFilled = registerData.answers.every(a => a.trim() !== '');
-                                    if (!allAnswersFilled || !registerData.taskLink || !registerData.taskFile) {
-                                        if (!allAnswersFilled) alert("Please answer all skill assessment questions.");
-                                        else if (!registerData.taskLink) alert("Please provide the task link.");
-                                        else alert("Please upload the task screenshot.");
-                                        return;
-                                    }
-                                }
+                                // Validation finished for Step 2
 
                                 try {
                                     let panUrl = '';
@@ -966,12 +820,6 @@ const FreelancerSidebar = () => {
                                         idUrl = res.data?.url || res.data?.secure_url || '';
                                         if (!idUrl) throw new Error(res.data?.message || 'ID document upload failed');
                                     }
-                                    let taskUrl = '';
-                                    if (registerData.taskFile) {
-                                        const res = await UploadService.uploadImage(registerData.taskFile);
-                                        taskUrl = res.data?.url || res.data?.secure_url || '';
-                                        if (!taskUrl) throw new Error(res.data?.message || 'Task file upload failed');
-                                    }
 
                                     await UserService.registerFreelancer({
                                         panNumber: registerData.panNumber,
@@ -979,10 +827,7 @@ const FreelancerSidebar = () => {
                                         freelancerId: registerData.freelancerId,
                                         freelancerIdFile: idUrl,
                                         category: registerData.category,
-                                        portfolio: registerData.portfolio,
-                                        taskLink: registerData.taskLink,
-                                        taskFile: taskUrl,
-                                        answers: registerData.answers
+                                        portfolio: registerData.portfolio
                                     });
 
                                     alert("Registration Successful! Your verification is pending.");

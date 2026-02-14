@@ -83,6 +83,20 @@ const SellerProfile = () => {
         }
     };
 
+    const handleDownload = (url: string, fileName: string) => {
+        if (!url) {
+            alert(`Document "${fileName}" has not been uploaded yet. Please click "EDIT" to upload your documents.`);
+            return;
+        }
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', fileName);
+        link.setAttribute('target', '_blank');
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
+
     // --- Component Renders ---
 
     const renderBusinessProfile = () => (
@@ -94,7 +108,7 @@ const SellerProfile = () => {
                     <Box sx={{ height: 200, bgcolor: '#d1d5db', position: 'relative' }}>
                         <Box
                             component="img"
-                            src="https://images.unsplash.com/photo-1542332213-31f87348057f?auto=format&fit=crop&q=80&w=1500"
+                            src={sellerProfile?.profile?.cover || "https://images.unsplash.com/photo-1542332213-31f87348057f?auto=format&fit=crop&q=80&w=1500"}
                             sx={{ width: '100%', height: '100%', objectFit: 'cover' }}
                         />
                         <Button
@@ -209,8 +223,8 @@ const SellerProfile = () => {
                         <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase', display: 'block', mb: 2 }}>Uploaded Documents</Typography>
                         <Stack direction="row" spacing={2}>
                             {[
-                                { name: 'GST_Certificate.pdf', size: '2.4 MB', date: 'Aug 24' },
-                                { name: 'PAN_Card_Corp.pdf', size: '1.1 MB', date: 'Aug 24' }
+                                { name: 'GST_Certificate.pdf', size: '2.4 MB', date: 'Aug 24', url: sellerProfile?.businessDetails?.idProof || sellerProfile?.freelancer?.freelancerIdFile },
+                                { name: 'PAN_Card_Corp.pdf', size: '1.1 MB', date: 'Aug 24', url: sellerProfile?.freelancer?.panFile }
                             ].map((doc, i) => (
                                 <Paper key={i} elevation={0} sx={{ p: 2, borderRadius: 3, border: '1px solid #f1f5f9', bgcolor: '#f8fafc', flexGrow: 1, display: 'flex', alignItems: 'center', gap: 2 }}>
                                     <Box sx={{ p: 1, bgcolor: '#fee2e2', color: '#ef4444', borderRadius: 1.5 }}>
@@ -220,7 +234,13 @@ const SellerProfile = () => {
                                         <Typography variant="body2" sx={{ fontWeight: 700 }}>{doc.name}</Typography>
                                         <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 600 }}>{doc.size} • Uploaded on {doc.date}</Typography>
                                     </Box>
-                                    <IconButton size="small"><DownloadIcon sx={{ fontSize: 18 }} /></IconButton>
+                                    <IconButton
+                                        size="small"
+                                        onClick={() => handleDownload(doc.url, doc.name)}
+                                        sx={{ color: doc.url ? '#1e293b' : '#cbd5e1' }}
+                                    >
+                                        <DownloadIcon sx={{ fontSize: 18 }} />
+                                    </IconButton>
                                 </Paper>
                             ))}
                         </Stack>
@@ -334,7 +354,15 @@ const SellerProfile = () => {
                                 <Chip label="APPROVED" size="small" sx={{ bgcolor: '#dcfce7', color: '#166534', fontWeight: 900, fontSize: '10px' }} />
                             </Stack>
                             <Button fullWidth startIcon={<LaunchIcon sx={{ fontSize: 16 }} />} sx={{ bgcolor: '#f8fafc', color: '#1e293b', fontWeight: 800, textTransform: 'none', border: '1px solid #f1f5f9', borderRadius: 3, py: 1 }}>View Public Profile</Button>
-                            <Button fullWidth startIcon={<DownloadIcon sx={{ fontSize: 16 }} />} sx={{ bgcolor: '#f8fafc', color: '#1e293b', fontWeight: 800, textTransform: 'none', border: '1px solid #f1f5f9', borderRadius: 3, py: 1 }}>Download Certificate</Button>
+                            <Button
+                                fullWidth
+                                startIcon={<DownloadIcon sx={{ fontSize: 16 }} />}
+                                sx={{ bgcolor: '#f8fafc', color: '#1e293b', fontWeight: 800, textTransform: 'none', border: '1px solid #f1f5f9', borderRadius: 3, py: 1 }}
+                                onClick={() => handleDownload(sellerProfile?.businessDetails?.idProof || sellerProfile?.freelancer?.freelancerIdFile, 'GST_Certificate.pdf')}
+                                disabled={!sellerProfile?.businessDetails?.idProof && !sellerProfile?.freelancer?.freelancerIdFile}
+                            >
+                                Download Certificate
+                            </Button>
                         </Stack>
                     </Paper>
 
