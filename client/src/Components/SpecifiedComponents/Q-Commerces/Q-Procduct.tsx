@@ -22,14 +22,20 @@ interface QProductProps {
     viewAllLink?: string;
     badge?: string;
     category?: string;
+    items?: Product[];
 }
 
-const QProduct = ({ title, viewAllLink, badge, category }: QProductProps) => {
+const QProduct = ({ title, viewAllLink, badge, category, items }: QProductProps) => {
     const navigate = useNavigate();
-    const [products, setProducts] = useState<Product[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
+    const [products, setProducts] = useState<Product[]>(items || []);
+    const [isLoading, setIsLoading] = useState(!items);
 
     useEffect(() => {
+        if (items) {
+            setProducts(items);
+            setIsLoading(false);
+            return;
+        }
         const fetchProducts = async () => {
             try {
                 setIsLoading(true);

@@ -552,7 +552,7 @@ const QCommerceManagement = () => {
                                     variant="outlined"
                                     InputProps={{ sx: { borderRadius: 3 } }}
                                 >
-                                    {['Grocery', 'Snacks', 'Beverages', 'Dairy', 'Personal Care', 'Home'].map(cat => (
+                                    {['Fresh Fruits', 'Dairy Eggs', 'Snacks', 'Personal', 'Beverages', 'Household'].map(cat => (
                                         <MenuItem key={cat} value={cat}>{cat}</MenuItem>
                                     ))}
                                 </TextField>
