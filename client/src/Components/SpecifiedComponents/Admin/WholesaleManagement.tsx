@@ -17,7 +17,6 @@ import {
     DialogActions,
     TextField,
     MenuItem,
-    InputAdornment,
     Grid
 } from '@mui/material';
 import { toast } from 'react-toastify';
@@ -29,8 +28,8 @@ import AutorenewIcon from '@mui/icons-material/Autorenew';
 import WorkOutlineIcon from '@mui/icons-material/WorkOutline';
 import ExitToAppIcon from '@mui/icons-material/ExitToApp';
 import DeleteIcon from '@mui/icons-material/Delete';
+import EditIcon from '@mui/icons-material/Edit';
 import AddIcon from '@mui/icons-material/Add';
-import SearchIcon from '@mui/icons-material/Search';
 import { useNavigate } from 'react-router-dom';
 import { WholesaleService, UploadService } from '../../../services/api';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
@@ -42,13 +41,11 @@ const WholesaleManagement = () => {
 
     // Add Product State
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [editingProduct, setEditingProduct] = useState<any>(null);
     const [newProduct, setNewProduct] = useState({
         title: '', pricePerUnit: '', minOrderQuantity: '', packSize: '', category: '', brand: '', stock: '', description: '', images: ''
     });
     const [isUploading, setIsUploading] = useState(false);
-
-    // Mock search state
-    const [searchQuery, setSearchQuery] = useState('');
 
     useEffect(() => {
         fetchProducts();
@@ -63,6 +60,34 @@ const WholesaleManagement = () => {
         } finally {
             setIsLoading(false);
         }
+    };
+
+    const handleDeleteProduct = async (id: string) => {
+        if (window.confirm("Delete this wholesale product?")) {
+            try {
+                await WholesaleService.delete(id);
+                setProducts(products.filter(p => p._id !== id));
+                toast.success("Wholesale product deleted successfully");
+            } catch (error) {
+                toast.error("Failed to delete wholesale product");
+            }
+        }
+    };
+
+    const handleEditProduct = (product: any) => {
+        setEditingProduct(product);
+        setNewProduct({
+            title: product.title || '',
+            pricePerUnit: product.pricePerUnit?.toString() || '',
+            minOrderQuantity: product.minOrderQuantity?.toString() || '',
+            packSize: product.packSize || '',
+            category: product.category || '',
+            brand: product.brand || '',
+            stock: product.stock?.toString() || '',
+            description: product.description || '',
+            images: Array.isArray(product.images) ? product.images.join(', ') : ''
+        });
+        setIsModalOpen(true);
     };
 
     const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -114,13 +139,22 @@ const WholesaleManagement = () => {
                 stock: Number(newProduct.stock),
                 images: newProduct.images.split(',').map(img => img.trim()).filter(img => img !== '')
             };
-            const { data } = await WholesaleService.create(productData);
-            setProducts([data, ...products]);
+
+            if (editingProduct) {
+                const { data } = await WholesaleService.update(editingProduct._id, productData);
+                setProducts(products.map(p => p._id === editingProduct._id ? data : p));
+                toast.success("Wholesale product updated successfully!");
+            } else {
+                const { data } = await WholesaleService.create(productData);
+                setProducts([data, ...products]);
+                toast.success("Wholesale product created successfully!");
+            }
+
             setIsModalOpen(false);
+            setEditingProduct(null);
             setNewProduct({ title: '', pricePerUnit: '', minOrderQuantity: '', packSize: '', category: '', brand: '', stock: '', description: '', images: '' });
-            toast.success("Wholesale product created successfully!");
         } catch (error) {
-            toast.error("Failed to create wholesale product");
+            toast.error(editingProduct ? "Failed to update wholesale product" : "Failed to create wholesale product");
         }
     };
 
@@ -251,9 +285,17 @@ const WholesaleManagement = () => {
                                                     <Typography variant="h6" sx={{ fontWeight: 900, color: '#1e293b', lineHeight: 1.2, mb: 0.5 }}>{product.title}</Typography>
                                                     <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 700 }}>SKU: {product.sku}</Typography>
                                                 </Box>
-                                                <Box sx={{ bgcolor: '#CFE8EC', px: 1.2, py: 0.5, borderRadius: 1.5 }}>
-                                                    <Typography sx={{ fontSize: '0.65rem', fontWeight: 900, color: '#1e293b' }}>{product.category}</Typography>
-                                                </Box>
+                                                <Stack direction="row" spacing={0.5} alignItems="center">
+                                                    <Box sx={{ bgcolor: '#CFE8EC', px: 1.2, py: 0.5, borderRadius: 1.5, mr: 1 }}>
+                                                        <Typography sx={{ fontSize: '0.65rem', fontWeight: 900, color: '#1e293b' }}>{product.category}</Typography>
+                                                    </Box>
+                                                    <IconButton size="small" onClick={() => handleEditProduct(product)} sx={{ color: '#94a3b8' }}>
+                                                        <EditIcon sx={{ fontSize: 18 }} />
+                                                    </IconButton>
+                                                    <IconButton size="small" onClick={() => handleDeleteProduct(product._id)} sx={{ color: '#ef4444' }}>
+                                                        <DeleteIcon sx={{ fontSize: 18 }} />
+                                                    </IconButton>
+                                                </Stack>
                                             </Stack>
 
                                             <Stack direction="row" spacing={5} sx={{ mt: 4 }}>
@@ -285,8 +327,8 @@ const WholesaleManagement = () => {
                 )}
 
                 {/* Add Product Modal */}
-                <Dialog open={isModalOpen} onClose={() => setIsModalOpen(false)} maxWidth="sm" fullWidth PaperProps={{ sx: { borderRadius: 4 } }}>
-                    <DialogTitle sx={{ fontWeight: 800, px: 3, pt: 3 }}>Add New Bulk Segment Product</DialogTitle>
+                <Dialog open={isModalOpen} onClose={() => { setIsModalOpen(false); setEditingProduct(null); }} maxWidth="sm" fullWidth PaperProps={{ sx: { borderRadius: 4 } }}>
+                    <DialogTitle sx={{ fontWeight: 800, px: 3, pt: 3 }}>{editingProduct ? 'Edit Bulk Segment Product' : 'Add New Bulk Segment Product'}</DialogTitle>
                     <DialogContent sx={{ px: 3 }}>
                         <Stack spacing={2.5} sx={{ py: 2 }}>
                             <TextField fullWidth label="Wholesale Title" variant="outlined" value={newProduct.title} onChange={(e) => setNewProduct({ ...newProduct, title: e.target.value })} sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }} />
@@ -343,8 +385,8 @@ const WholesaleManagement = () => {
                         </Stack>
                     </DialogContent>
                     <DialogActions sx={{ p: 3, pt: 1 }}>
-                        <Button onClick={() => setIsModalOpen(false)} sx={{ color: '#64748b', fontWeight: 600 }}>Cancel</Button>
-                        <Button variant="contained" onClick={handleAddProduct} sx={{ bgcolor: 'black', color: 'white', borderRadius: 3, px: 4, fontWeight: 700, '&:hover': { bgcolor: '#1e293b' } }}>Confirm Bulk Entry</Button>
+                        <Button onClick={() => { setIsModalOpen(false); setEditingProduct(null); }} sx={{ color: '#64748b', fontWeight: 600 }}>Cancel</Button>
+                        <Button variant="contained" onClick={handleAddProduct} sx={{ bgcolor: 'black', color: 'white', borderRadius: 3, px: 4, fontWeight: 700, '&:hover': { bgcolor: '#1e293b' } }}>{editingProduct ? 'Update Bulk Entry' : 'Confirm Bulk Entry'}</Button>
                     </DialogActions>
                 </Dialog>
             </Box>
