@@ -99,9 +99,7 @@ const WholesaleProductDetails = () => {
         toast.success('Opening WhatsApp to get your quote');
     };
 
-    const handleBuyNow = () => {
-        window.location.href = telHref;
-    };
+
 
     if (isLoading) {
         return (
@@ -136,7 +134,7 @@ const WholesaleProductDetails = () => {
 
             <Container maxWidth="xl" sx={{ mt: 3, mb: 8 }}>
                 {/* Header: Breadcrumbs and Status */}
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+                <Box sx={{ mb: 3 }}>
                     <Breadcrumbs
                         separator={<NavigateNextIcon fontSize="small" />}
                         sx={{ '& .MuiTypography-root': { fontSize: '0.85rem', color: '#64748b' } }}
@@ -145,23 +143,6 @@ const WholesaleProductDetails = () => {
                         <Link href="/wholesale" underline="hover" color="inherit">{product.category || 'Wholesale'}</Link>
                         <Typography color="text.primary" sx={{ fontWeight: 600 }}>{product.title}</Typography>
                     </Breadcrumbs>
-
-                    <Stack direction="row" spacing={2} alignItems="center">
-                        <Chip
-                            label="IN STOCK"
-                            size="small"
-                            sx={{
-                                bgcolor: '#dcfce7',
-                                color: '#166534',
-                                fontWeight: 800,
-                                borderRadius: 1.5,
-                                fontSize: '0.7rem'
-                            }}
-                        />
-                        <Typography sx={{ fontSize: '0.75rem', color: '#94a3b8', fontWeight: 600 }}>
-                            ID: {product._id?.slice(-8).toUpperCase() || 'XYZ-88022'}
-                        </Typography>
-                    </Stack>
                 </Box>
 
                 <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 6 }}>
@@ -169,68 +150,70 @@ const WholesaleProductDetails = () => {
                     <Box sx={{ flex: 1, minWidth: 0 }}>
                         <Box sx={{ position: 'sticky', top: 100 }}>
                             <Box sx={{
-                                borderRadius: 6,
-                                bgcolor: '#fdf2f2', // Matching the pale peach/pinkish bg in image
+                                borderRadius: 4,
+                                bgcolor: '#ffffff',
+                                border: '1px solid #e2e8f0',
                                 display: 'flex',
                                 justifyContent: 'center',
                                 alignItems: 'center',
-                                height: '600px',
+                                height: '500px',
                                 position: 'relative',
                                 mb: 3,
-                                overflow: 'hidden'
+                                overflow: 'hidden',
+                                boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)'
                             }}>
                                 <img
                                     src={images[selectedImage]}
                                     alt={product.title}
-                                    style={{ width: '80%', height: '80%', objectFit: 'contain' }}
+                                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                                 />
                                 <IconButton
                                     onClick={handleToggleWishlist}
                                     sx={{
                                         position: 'absolute',
-                                        top: 24,
-                                        right: 24,
+                                        top: 16,
+                                        right: 16,
                                         bgcolor: 'white',
-                                        p: 1.5,
-                                        boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
+                                        p: 1,
+                                        boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
                                         '&:hover': { bgcolor: '#f8fafc' }
                                     }}
                                 >
-                                    {isFavorite ? <FavoriteIcon sx={{ color: '#ef4444' }} /> : <FavoriteBorderIcon />}
+                                    {isFavorite ? <FavoriteIcon sx={{ color: '#ef4444', fontSize: 20 }} /> : <FavoriteBorderIcon sx={{ fontSize: 20 }} />}
                                 </IconButton>
                             </Box>
 
                             {/* Thumbnails */}
-                            <Stack direction="row" spacing={2} sx={{ overflowX: 'auto', pb: 1 }}>
+                            <Stack direction="row" spacing={2} sx={{ overflowX: 'auto', pb: 1, mb: 4 }}>
                                 {images.map((img: string, index: number) => (
                                     <Box
                                         key={index}
                                         onClick={() => setSelectedImage(index)}
                                         sx={{
-                                            width: 120,
-                                            height: 120,
-                                            borderRadius: 4,
-                                            border: `2px solid ${selectedImage === index ? '#b2d8d8' : 'transparent'}`,
-                                            bgcolor: '#f1f5f9',
+                                            width: 80,
+                                            height: 80,
+                                            borderRadius: 2,
+                                            border: `2px solid ${selectedImage === index ? '#0f172a' : '#e2e8f0'}`,
                                             cursor: 'pointer',
-                                            p: 1,
+                                            overflow: 'hidden',
                                             flexShrink: 0,
-                                            display: 'flex',
-                                            justifyContent: 'center',
-                                            alignItems: 'center',
+                                            opacity: selectedImage === index ? 1 : 0.7,
                                             transition: 'all 0.2s',
-                                            '&:hover': { bgcolor: '#e2e8f0' }
+                                            '&:hover': { opacity: 1, borderColor: '#94a3b8' }
                                         }}
                                     >
-                                        <img src={img} alt="thumb" style={{ width: '80%', height: '80%', objectFit: 'contain' }} />
+                                        <img src={img} alt="thumb" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                                     </Box>
                                 ))}
                             </Stack>
 
-                            <Box sx={{ mt: 6 }}>
-                                <Typography variant="h6" sx={{ fontWeight: 800, mb: 2, color: '#1e293b' }}>Product Description</Typography>
-                                <Typography sx={{ color: '#475569', lineHeight: 1.8, fontSize: '1.05rem' }}>
+                            <Box>
+                                <Typography variant="h6" sx={{ fontWeight: 900, mb: 2, color: '#0f172a', textTransform: 'uppercase', fontSize: '1rem', letterSpacing: 0.5 }}>Product Description</Typography>
+                                <Typography sx={{ color: '#64748b', lineHeight: 1.7, fontSize: '0.95rem' }}>
                                     {product.description}
+                                </Typography>
+                                <Typography sx={{ mt: 2, color: '#64748b', fontStyle: 'italic', fontSize: '0.9rem' }}>
+                                    Good Product and call and WhatsApp...!
                                 </Typography>
                             </Box>
                         </Box>
@@ -239,57 +222,80 @@ const WholesaleProductDetails = () => {
                     {/* Right Side: Details and Forms */}
                     <Box sx={{ flex: 1, minWidth: 0 }}>
                         <Box>
-                            <Typography variant="h2" sx={{ fontWeight: 900, mb: 1, color: '#0f172a', fontSize: '3.5rem' }}>
-                                {product.title}
-                            </Typography>
-                            <Typography variant="h6" sx={{ color: '#94a3b8', fontWeight: 600, mb: 4 }}>
+                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
+                                <Typography variant="h4" sx={{ fontWeight: 800, color: '#0f172a', fontSize: { xs: '2rem', md: '2.5rem' }, lineHeight: 1.2, width: '70%' }}>
+                                    {product.title}
+                                </Typography>
+                                <Box sx={{ textAlign: 'right' }}>
+                                    <Chip
+                                        label="IN STOCK"
+                                        size="small"
+                                        sx={{
+                                            bgcolor: '#dcfce7',
+                                            color: '#166534',
+                                            fontWeight: 800,
+                                            borderRadius: 1,
+                                            fontSize: '0.65rem',
+                                            height: 24,
+                                            mb: 0.5
+                                        }}
+                                    />
+                                    <Typography variant="caption" display="block" sx={{ color: '#cbd5e1', fontWeight: 600, fontSize: '0.65rem' }}>
+                                        ID: {product._id?.slice(-8).toUpperCase() || 'XYZ-88022'}
+                                    </Typography>
+                                </Box>
+                            </Box>
+
+                            <Typography variant="body1" sx={{ color: '#64748b', fontWeight: 500, mb: 4 }}>
                                 Bulk Wholesale Supply
                             </Typography>
 
                             {/* Order Info Cards */}
-                            <Stack direction="row" spacing={2} sx={{ mb: 4 }}>
-                                <Paper elevation={0} sx={{ flex: 1, p: 3, bgcolor: '#f8fafc', borderRadius: 4, textAlign: 'center' }}>
-                                    <Typography variant="caption" sx={{ fontWeight: 800, color: '#94a3b8', fontSize: '0.65rem' }}>MIN. ORDER</Typography>
-                                    <Typography variant="h5" sx={{ fontWeight: 900, mt: 0.5 }}>{product.packSize || 12} Units</Typography>
+                            <Stack direction="row" spacing={2} sx={{ mb: 5 }}>
+                                <Paper elevation={0} sx={{ flex: 1, py: 3, px: 2, bgcolor: '#f8fafc', borderRadius: 3, textAlign: 'center' }}>
+                                    <Typography variant="caption" sx={{ fontWeight: 800, color: '#94a3b8', fontSize: '0.65rem', letterSpacing: 0.5, textTransform: 'uppercase' }}>MIN. ORDER</Typography>
+                                    <Typography variant="h6" sx={{ fontWeight: 800, mt: 0.5, color: '#1e293b' }}>{product.packSize || 12} Units</Typography>
                                 </Paper>
-                                <Paper elevation={0} sx={{ flex: 1, p: 3, bgcolor: '#f8fafc', borderRadius: 4, textAlign: 'center' }}>
-                                    <Typography variant="caption" sx={{ fontWeight: 800, color: '#94a3b8', fontSize: '0.65rem' }}>STANDARD PACK</Typography>
-                                    <Typography variant="h5" sx={{ fontWeight: 900, mt: 0.5 }}>Carton Box</Typography>
+                                <Paper elevation={0} sx={{ flex: 1, py: 3, px: 2, bgcolor: '#f8fafc', borderRadius: 3, textAlign: 'center' }}>
+                                    <Typography variant="caption" sx={{ fontWeight: 800, color: '#94a3b8', fontSize: '0.65rem', letterSpacing: 0.5, textTransform: 'uppercase' }}>STANDARD PACK</Typography>
+                                    <Typography variant="h6" sx={{ fontWeight: 800, mt: 0.5, color: '#1e293b' }}>Carton Box</Typography>
                                 </Paper>
                             </Stack>
 
                             {/* Quote Form */}
                             <Paper elevation={0} sx={{
-                                p: 4,
-                                borderRadius: 6,
-                                border: '1px solid #e2e8f0',
-                                boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.04)'
+                                p: 0,
+                                borderRadius: 0,
+                                bgcolor: 'transparent'
+                                // Removed border and shadow to match clean look of screenshot
                             }}>
-                                <Typography variant="h6" sx={{ fontWeight: 800, mb: 1 }}>Request for Bulk Quote</Typography>
-                                <Typography variant="body2" sx={{ color: '#64748b', mb: 4 }}>
+                                <Typography variant="h6" sx={{ fontWeight: 800, mb: 1, color: '#0f172a' }}>Request for Bulk Quote</Typography>
+                                <Typography variant="body2" sx={{ color: '#64748b', mb: 3, fontSize: '0.9rem' }}>
                                     Enter your details to receive our latest wholesale price list and lead times.
                                 </Typography>
 
-                                <Stack spacing={3}>
+                                <Stack spacing={2.5}>
                                     <Stack direction="row" spacing={2}>
                                         <Box sx={{ flex: 1 }}>
-                                            <Typography variant="caption" sx={{ fontWeight: 800, mb: 1, display: 'block', color: '#475569' }}>QUANTITY NEEDED</Typography>
+                                            <Typography variant="caption" sx={{ fontWeight: 700, mb: 0.5, display: 'block', color: '#94a3b8', fontSize: '0.65rem', letterSpacing: 0.5 }}>QUANTITY NEEDED</Typography>
                                             <TextField
                                                 fullWidth
                                                 placeholder="e.g. 100"
                                                 value={quoteData.quantity}
                                                 onChange={(e) => handleQuoteChange('quantity', e.target.value)}
-                                                sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3, bgcolor: '#f8fafc' } }}
+                                                InputProps={{ sx: { bgcolor: '#f8fafc', borderRadius: 2, fontSize: '0.9rem' } }}
+                                                size="small"
                                             />
                                         </Box>
                                         <Box sx={{ flex: 1 }}>
-                                            <Typography variant="caption" sx={{ fontWeight: 800, mb: 1, display: 'block', color: '#475569' }}>TIMELINE</Typography>
+                                            <Typography variant="caption" sx={{ fontWeight: 700, mb: 0.5, display: 'block', color: '#94a3b8', fontSize: '0.65rem', letterSpacing: 0.5 }}>TIMELINE</Typography>
                                             <TextField
                                                 select
                                                 fullWidth
                                                 value={quoteData.timeline}
                                                 onChange={(e) => handleQuoteChange('timeline', e.target.value)}
-                                                sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3, bgcolor: '#f8fafc' } }}
+                                                InputProps={{ sx: { bgcolor: '#f8fafc', borderRadius: 2, fontSize: '0.9rem' } }}
+                                                size="small"
                                             >
                                                 <MenuItem value="Immediate">Immediate</MenuItem>
                                                 <MenuItem value="15 Days">Within 15 Days</MenuItem>
@@ -299,7 +305,7 @@ const WholesaleProductDetails = () => {
                                     </Stack>
 
                                     <Box>
-                                        <Typography variant="caption" sx={{ fontWeight: 800, mb: 1, display: 'block', color: '#475569' }}>NOTES / REQUIREMENTS</Typography>
+                                        <Typography variant="caption" sx={{ fontWeight: 700, mb: 0.5, display: 'block', color: '#94a3b8', fontSize: '0.65rem', letterSpacing: 0.5 }}>NOTES / REQUIREMENTS</Typography>
                                         <TextField
                                             fullWidth
                                             multiline
@@ -307,7 +313,7 @@ const WholesaleProductDetails = () => {
                                             placeholder="Specific size requests or branding..."
                                             value={quoteData.notes}
                                             onChange={(e) => handleQuoteChange('notes', e.target.value)}
-                                            sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3, bgcolor: '#f8fafc' } }}
+                                            InputProps={{ sx: { bgcolor: '#f8fafc', borderRadius: 2, fontSize: '0.9rem' } }}
                                         />
                                     </Box>
 
@@ -316,14 +322,17 @@ const WholesaleProductDetails = () => {
                                         fullWidth
                                         onClick={handleGetCustomQuote}
                                         sx={{
-                                            bgcolor: '#b2d8d8',
-                                            color: '#1e293b',
-                                            py: 2,
-                                            borderRadius: 4,
-                                            fontWeight: 900,
-                                            fontSize: '1rem',
+                                            bgcolor: '#abcdd3', // Matched color from screenshot usually
+                                            color: '#164e63',
+                                            py: 1.5,
+                                            mt: 1,
+                                            borderRadius: 2,
+                                            fontWeight: 800,
+                                            fontSize: '0.85rem',
                                             boxShadow: 'none',
-                                            '&:hover': { bgcolor: '#9bc4c4', boxShadow: 'none' }
+                                            textTransform: 'uppercase',
+                                            letterSpacing: 0.5,
+                                            '&:hover': { bgcolor: '#9cc0c7', boxShadow: 'none' }
                                         }}
                                     >
                                         Get Custom Quote
@@ -335,53 +344,50 @@ const WholesaleProductDetails = () => {
                                         component="a"
                                         href={telHref}
                                         sx={{
-                                            mt: 2,
-                                            borderColor: '#0f172a',
-                                            color: '#0f172a',
-                                            py: 2,
-                                            borderRadius: 4,
-                                            fontWeight: 900,
-                                            fontSize: '1rem',
+                                            borderColor: '#1e293b',
+                                            color: '#1e293b',
+                                            py: 1.5,
+                                            borderRadius: 2,
+                                            fontWeight: 800,
+                                            fontSize: '0.85rem',
                                             textTransform: 'none',
-                                            '&:hover': { bgcolor: '#f1f5f9', borderColor: '#0f172a' }
+                                            '&:hover': { bgcolor: '#f8fafc', borderColor: '#0f172a' }
                                         }}
                                     >
                                         Buy Sample Now — Call seller
                                     </Button>
-
-
                                 </Stack>
                             </Paper>
 
                             {/* Vendor Information */}
-                            <Box sx={{ mt: 4, p: 4, bgcolor: '#f8fafc', borderRadius: 6 }}>
-                                <Typography variant="h6" sx={{ fontWeight: 800, mb: 4, color: '#1e293b' }}>VENDOR INFORMATION</Typography>
-                                <Stack spacing={4}>
-                                    <Stack direction="row" spacing={3} alignItems="center">
-                                        <Box sx={{ bgcolor: 'white', p: 1.5, borderRadius: 3, display: 'flex' }}>
-                                            <LocationOnOutlinedIcon sx={{ color: '#94a3b8' }} />
+                            <Box sx={{ mt: 5, p: 0 }}>
+                                <Typography variant="caption" sx={{ fontWeight: 800, mb: 3, display: 'block', color: '#64748b', letterSpacing: 1, textTransform: 'uppercase' }}>VENDOR INFORMATION</Typography>
+                                <Stack spacing={3}>
+                                    <Stack direction="row" spacing={2} alignItems="flex-start">
+                                        <Box sx={{ bgcolor: '#f1f5f9', p: 1, borderRadius: '50%', display: 'flex' }}>
+                                            <LocationOnOutlinedIcon sx={{ color: '#64748b', fontSize: 18 }} />
                                         </Box>
                                         <Box>
-                                            <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 800, display: 'block' }}>Location</Typography>
-                                            <Typography variant="subtitle2" sx={{ fontWeight: 800 }}>{product.location || 'Erode, Tamil Nadu, India'}</Typography>
+                                            <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 700, display: 'block', fontSize: '0.6rem', letterSpacing: 0.5, textTransform: 'uppercase' }}>Location</Typography>
+                                            <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#1e293b', fontSize: '0.85rem' }}>{product.location || 'Erode, Tamil Nadu, India'}</Typography>
                                         </Box>
                                     </Stack>
-                                    <Stack direction="row" spacing={3} alignItems="center">
-                                        <Box sx={{ bgcolor: 'white', p: 1.5, borderRadius: 3, display: 'flex' }}>
-                                            <EmailOutlinedIcon sx={{ color: '#94a3b8' }} />
+                                    <Stack direction="row" spacing={2} alignItems="flex-start">
+                                        <Box sx={{ bgcolor: '#f1f5f9', p: 1, borderRadius: '50%', display: 'flex' }}>
+                                            <EmailOutlinedIcon sx={{ color: '#64748b', fontSize: 18 }} />
                                         </Box>
                                         <Box>
-                                            <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 800, display: 'block' }}>Email Address</Typography>
-                                            <Typography variant="subtitle2" sx={{ fontWeight: 800 }}>{product.email || 'wholesale@decorhub.xyz'}</Typography>
+                                            <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 700, display: 'block', fontSize: '0.6rem', letterSpacing: 0.5, textTransform: 'uppercase' }}>Email Address</Typography>
+                                            <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#1e293b', fontSize: '0.85rem' }}>{product.email || 'wholesale@decorhub.xyz'}</Typography>
                                         </Box>
                                     </Stack>
-                                    <Stack direction="row" spacing={3} alignItems="center">
-                                        <Box sx={{ bgcolor: 'white', p: 1.5, borderRadius: 3, display: 'flex' }}>
-                                            <PhoneEnabledOutlinedIcon sx={{ color: '#94a3b8' }} />
+                                    <Stack direction="row" spacing={2} alignItems="flex-start">
+                                        <Box sx={{ bgcolor: '#f1f5f9', p: 1, borderRadius: '50%', display: 'flex' }}>
+                                            <PhoneEnabledOutlinedIcon sx={{ color: '#64748b', fontSize: 18 }} />
                                         </Box>
                                         <Box>
-                                            <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 800, display: 'block' }}>Direct Line</Typography>
-                                            <Typography variant="subtitle2" sx={{ fontWeight: 800 }}>{product.phoneNumber || '+91 80802 21133'}</Typography>
+                                            <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 700, display: 'block', fontSize: '0.6rem', letterSpacing: 0.5, textTransform: 'uppercase' }}>Direct Line</Typography>
+                                            <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#1e293b', fontSize: '0.85rem' }}>{product.phoneNumber || '+91 80802 21133'}</Typography>
                                         </Box>
                                     </Stack>
                                 </Stack>

@@ -1,18 +1,20 @@
 import React from 'react';
-import { Box, Paper, TextField, Button, Typography, MenuItem, Stack, Alert } from '@mui/material';
+import { Box, Paper, TextField, Button, Typography, MenuItem, Stack, Alert, InputAdornment } from '@mui/material';
 import CloudUploadOutlinedIcon from '@mui/icons-material/CloudUploadOutlined';
 import ArticleOutlinedIcon from '@mui/icons-material/ArticleOutlined';
 import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined';
 import SaveIcon from '@mui/icons-material/Save';
+import CalendarTodayOutlinedIcon from '@mui/icons-material/CalendarTodayOutlined';
 
 import { WholesaleService } from '../../../../services/api';
 
 const WholesaleUploadForm = ({ onPost }: { onPost?: () => void }) => {
-    // const navigate = useNavigate(); // Navigation handled by parent/onPost now
+    // const navigate = useNavigate();
 
     const [productName, setProductName] = React.useState('');
     const [category, setCategory] = React.useState('');
-    const [availableFrom, setAvailableFrom] = React.useState('');
+    const [startDate, setStartDate] = React.useState('');
+    const [endDate, setEndDate] = React.useState('');
     const [description, setDescription] = React.useState('');
     const [quantity, setQuantity] = React.useState('');
     const [companyName, setCompanyName] = React.useState('');
@@ -37,14 +39,11 @@ const WholesaleUploadForm = ({ onPost }: { onPost?: () => void }) => {
         }
     };
 
-    const [price, setPrice] = React.useState('');
     const [isSubmitting, setIsSubmitting] = React.useState(false);
 
-    // ... (rest of states remain same if not modified here, but ensure they are captured by context or previous lines)
-
     const handlePost = async () => {
-        if (!productName || !quantity || !price || !companyName || !location || !phoneNumber || !email || images.length === 0) {
-            alert('Please fill in all required fields (inc. Price) and upload at least one image.');
+        if (!productName || !quantity || !companyName || !location || !phoneNumber || !email || !startDate || !endDate || images.length === 0) {
+            alert('Please fill in all required fields and upload at least one image.');
             return;
         }
 
@@ -53,15 +52,17 @@ const WholesaleUploadForm = ({ onPost }: { onPost?: () => void }) => {
         const newProduct = {
             title: productName,
             description: description || "No description provided.",
-            sku: `SKU-${Date.now()}`, // Optional, backend might generate but good to have
+            sku: `SKU-${Date.now()}`,
             packSize: parseInt(quantity),
-            pricePerUnit: parseFloat(price),
+            pricePerUnit: 0,
             images: images,
-            image: images[0], // Fallback
+            image: images[0],
             companyName,
             location,
             phoneNumber,
             email,
+            startDate,
+            endDate,
             inStock: true
         };
 
@@ -80,7 +81,6 @@ const WholesaleUploadForm = ({ onPost }: { onPost?: () => void }) => {
 
     return (
         <Box sx={{ maxWidth: '1200px', mx: 'auto', p: 2 }}>
-            {/* Header */}
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
                 <Box>
                     <Typography variant="h5" sx={{ fontWeight: 800, color: '#0f172a' }}>
@@ -93,7 +93,6 @@ const WholesaleUploadForm = ({ onPost }: { onPost?: () => void }) => {
             </Box>
 
             <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 3 }}>
-                {/* Left Column - Imagery */}
                 <Box sx={{ width: { xs: '100%', md: '33.33%' } }}>
                     <Paper elevation={0} sx={{ p: 3, borderRadius: 3, border: '1px solid #e2e8f0', height: '100%', bgcolor: '#ffffff' }}>
                         <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
@@ -228,10 +227,8 @@ const WholesaleUploadForm = ({ onPost }: { onPost?: () => void }) => {
                     </Alert>
                 </Box>
 
-                {/* Right Column - Info & Pricing */}
                 <Box sx={{ width: { xs: '100%', md: '66.66%' } }}>
                     <Stack spacing={3}>
-                        {/* General Info Card */}
                         <Paper elevation={0} sx={{ p: 4, borderRadius: 3, border: '1px solid #e2e8f0' }}>
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 3 }}>
                                 <ArticleOutlinedIcon sx={{ color: '#2563eb' }} />
@@ -277,13 +274,37 @@ const WholesaleUploadForm = ({ onPost }: { onPost?: () => void }) => {
                                         </TextField>
                                     </Box>
                                     <Box sx={{ flex: 1 }}>
-                                        <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600, color: '#334155' }}>Available From</Typography>
+                                        <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600, color: '#334155' }}>Start Date</Typography>
                                         <TextField
                                             fullWidth
                                             type="date"
-                                            value={availableFrom}
-                                            onChange={(e) => setAvailableFrom(e.target.value)}
-                                            InputProps={{ sx: { borderRadius: 2 } }}
+                                            value={startDate}
+                                            onChange={(e) => setStartDate(e.target.value)}
+                                            InputProps={{
+                                                sx: { borderRadius: 2 },
+                                                startAdornment: (
+                                                    <InputAdornment position="start">
+                                                        <CalendarTodayOutlinedIcon sx={{ color: '#94a3b8', fontSize: 20 }} />
+                                                    </InputAdornment>
+                                                )
+                                            }}
+                                        />
+                                    </Box>
+                                    <Box sx={{ flex: 1 }}>
+                                        <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600, color: '#334155' }}>End Date</Typography>
+                                        <TextField
+                                            fullWidth
+                                            type="date"
+                                            value={endDate}
+                                            onChange={(e) => setEndDate(e.target.value)}
+                                            InputProps={{
+                                                sx: { borderRadius: 2 },
+                                                startAdornment: (
+                                                    <InputAdornment position="start">
+                                                        <CalendarTodayOutlinedIcon sx={{ color: '#94a3b8', fontSize: 20 }} />
+                                                    </InputAdornment>
+                                                )
+                                            }}
                                         />
                                     </Box>
                                 </Box>
@@ -302,7 +323,6 @@ const WholesaleUploadForm = ({ onPost }: { onPost?: () => void }) => {
                             </Box>
                         </Paper>
 
-                        {/* Inventory & Contact Details */}
                         <Paper elevation={0} sx={{ p: 4, borderRadius: 3, border: '1px solid #e2e8f0' }}>
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 3 }}>
                                 <Inventory2OutlinedIcon sx={{ color: '#2563eb' }} />
@@ -322,19 +342,6 @@ const WholesaleUploadForm = ({ onPost }: { onPost?: () => void }) => {
                                             }}
                                             value={quantity}
                                             onChange={(e) => setQuantity(e.target.value)}
-                                        />
-                                    </Box>
-                                    <Box sx={{ flex: 1 }}>
-                                        <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600, color: '#334155' }}>Price Per Unit</Typography>
-                                        <TextField
-                                            fullWidth
-                                            type="number"
-                                            InputProps={{
-                                                sx: { borderRadius: 2 },
-                                                startAdornment: <Typography variant="caption" sx={{ mr: 1, color: '#64748b', fontWeight: 600 }}>₹</Typography>
-                                            }}
-                                            value={price}
-                                            onChange={(e) => setPrice(e.target.value)}
                                         />
                                     </Box>
                                 </Box>
@@ -374,14 +381,11 @@ const WholesaleUploadForm = ({ onPost }: { onPost?: () => void }) => {
                                     />
                                 </Box>
                             </Box>
-
-
                         </Paper>
                     </Stack>
                 </Box>
             </Box>
 
-            {/* Footer Actions */}
             <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2, mt: 4 }}>
                 <Button
                     variant="outlined"
@@ -395,7 +399,7 @@ const WholesaleUploadForm = ({ onPost }: { onPost?: () => void }) => {
                         fontWeight: 600,
                         '&:hover': { bgcolor: 'white', borderColor: '#cbd5e1' }
                     }}
-                    onClick={onPost} // Also close on cancel if desired, or handle separately
+                    onClick={onPost}
                 >
                     Cancel
                 </Button>
@@ -418,7 +422,6 @@ const WholesaleUploadForm = ({ onPost }: { onPost?: () => void }) => {
                 </Button>
             </Box>
 
-            {/* Empty scrolling space */}
             <Box sx={{ height: '200px' }} />
         </Box >
     );

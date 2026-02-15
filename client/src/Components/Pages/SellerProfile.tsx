@@ -181,7 +181,7 @@ const SellerProfile = () => {
                         <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 4 }}>
                             <Box>
                                 <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase' }}>Legal Business Name</Typography>
-                                <Typography variant="subtitle1" sx={{ fontWeight: 700, color: '#1e293b' }}>{sellerProfile?.businessName || name}</Typography>
+                                <Typography variant="subtitle1" sx={{ fontWeight: 700, color: '#1e293b' }}>{sellerProfile?.businessDetails?.businessName || sellerProfile?.username || 'N/A'}</Typography>
                             </Box>
                             <Box>
                                 <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase' }}>Business Type</Typography>
@@ -189,7 +189,7 @@ const SellerProfile = () => {
                             </Box>
                             <Box>
                                 <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase' }}>Incorporation Date</Typography>
-                                <Typography variant="subtitle1" sx={{ fontWeight: 700, color: '#1e293b' }}>12 Oct 2018</Typography>
+                                <Typography variant="subtitle1" sx={{ fontWeight: 700, color: '#1e293b' }}>{new Date(sellerProfile?.createdAt).toLocaleDateString('en-GB') || 'N/A'}</Typography>
                             </Box>
                             <Box>
                                 <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase' }}>Primary Category</Typography>
@@ -211,37 +211,41 @@ const SellerProfile = () => {
                             <Box>
                                 <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase' }}>GSTIN</Typography>
                                 <Stack direction="row" spacing={1} alignItems="center">
-                                    <Typography variant="subtitle1" sx={{ fontWeight: 800, color: '#1e293b' }}>29AAAAA0000A1Z5</Typography>
-                                    <Chip label="Verified" size="small" icon={<CheckCircleIcon sx={{ fontSize: '12px !important' }} />} sx={{ height: 20, fontSize: '10px', fontWeight: 900, bgcolor: '#f0fdf4', color: '#16a34a' }} />
+                                    <Typography variant="subtitle1" sx={{ fontWeight: 800, color: '#1e293b' }}>{sellerProfile?.businessDetails?.gst || 'N/A'}</Typography>
+                                    {sellerProfile?.businessDetails?.gst && (
+                                        <Chip label="Verified" size="small" icon={<CheckCircleIcon sx={{ fontSize: '12px !important' }} />} sx={{ height: 20, fontSize: '10px', fontWeight: 900, bgcolor: '#f0fdf4', color: '#16a34a' }} />
+                                    )}
                                 </Stack>
                             </Box>
                             <Box>
                                 <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase' }}>PAN Number</Typography>
-                                <Typography variant="subtitle1" sx={{ fontWeight: 800, color: '#1e293b' }}>ABCDE1234F</Typography>
+                                <Typography variant="subtitle1" sx={{ fontWeight: 800, color: '#1e293b' }}>{sellerProfile?.freelancer?.panNumber || 'N/A'}</Typography>
                             </Box>
                         </Box>
                         <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase', display: 'block', mb: 2 }}>Uploaded Documents</Typography>
-                        <Stack direction="row" spacing={2}>
+                        <Stack direction="row" spacing={2} flexWrap="wrap">
                             {[
-                                { name: 'GST_Certificate.pdf', size: '2.4 MB', date: 'Aug 24', url: sellerProfile?.businessDetails?.idProof || sellerProfile?.freelancer?.freelancerIdFile },
-                                { name: 'PAN_Card_Corp.pdf', size: '1.1 MB', date: 'Aug 24', url: sellerProfile?.freelancer?.panFile }
+                                { name: 'GST Certificate', url: sellerProfile?.businessDetails?.idProof },
+                                { name: 'PAN Card', url: sellerProfile?.freelancer?.panFile }
                             ].map((doc, i) => (
-                                <Paper key={i} elevation={0} sx={{ p: 2, borderRadius: 3, border: '1px solid #f1f5f9', bgcolor: '#f8fafc', flexGrow: 1, display: 'flex', alignItems: 'center', gap: 2 }}>
-                                    <Box sx={{ p: 1, bgcolor: '#fee2e2', color: '#ef4444', borderRadius: 1.5 }}>
-                                        <FileIcon />
-                                    </Box>
-                                    <Box sx={{ flexGrow: 1 }}>
-                                        <Typography variant="body2" sx={{ fontWeight: 700 }}>{doc.name}</Typography>
-                                        <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 600 }}>{doc.size} • Uploaded on {doc.date}</Typography>
-                                    </Box>
-                                    <IconButton
-                                        size="small"
-                                        onClick={() => handleDownload(doc.url, doc.name)}
-                                        sx={{ color: doc.url ? '#1e293b' : '#cbd5e1' }}
-                                    >
-                                        <DownloadIcon sx={{ fontSize: 18 }} />
-                                    </IconButton>
-                                </Paper>
+                                doc.url ? (
+                                    <Paper key={i} elevation={0} sx={{ p: 2, borderRadius: 3, border: '1px solid #f1f5f9', bgcolor: '#f8fafc', flexGrow: 1, display: 'flex', alignItems: 'center', gap: 2 }}>
+                                        <Box sx={{ p: 1, bgcolor: '#fee2e2', color: '#ef4444', borderRadius: 1.5 }}>
+                                            <FileIcon />
+                                        </Box>
+                                        <Box sx={{ flexGrow: 1 }}>
+                                            <Typography variant="body2" sx={{ fontWeight: 700 }}>{doc.name}</Typography>
+                                            <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 600 }}>Uploaded</Typography>
+                                        </Box>
+                                        <IconButton
+                                            size="small"
+                                            onClick={() => handleDownload(doc.url, doc.name)}
+                                            sx={{ color: '#1e293b' }}
+                                        >
+                                            <DownloadIcon sx={{ fontSize: 18 }} />
+                                        </IconButton>
+                                    </Paper>
+                                ) : null
                             ))}
                         </Stack>
                     </Paper>
@@ -259,18 +263,22 @@ const SellerProfile = () => {
                             <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 4 }}>
                                 <Box>
                                     <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase' }}>Bank Name</Typography>
-                                    <Typography variant="subtitle1" sx={{ fontWeight: 800, color: '#1e293b' }}>International Finance Bank</Typography>
+                                    <Typography variant="subtitle1" sx={{ fontWeight: 800, color: '#1e293b' }}>{sellerProfile?.bankDetails?.bankName || 'N/A'}</Typography>
                                 </Box>
                                 <Box>
                                     <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase' }}>Account Number</Typography>
                                     <Stack direction="row" spacing={1} alignItems="center">
-                                        <Typography variant="subtitle1" sx={{ fontWeight: 800, color: '#1e293b' }}>**** **** 8920</Typography>
-                                        <Chip label="Verified" size="small" sx={{ height: 20, fontSize: '10px', fontWeight: 900, bgcolor: '#eff6ff', color: '#1d4ed8' }} />
+                                        <Typography variant="subtitle1" sx={{ fontWeight: 800, color: '#1e293b' }}>
+                                            {sellerProfile?.bankDetails?.accountNumber ? `**** **** ${sellerProfile.bankDetails.accountNumber.slice(-4)}` : 'N/A'}
+                                        </Typography>
+                                        {sellerProfile?.bankDetails?.accountNumber && (
+                                            <Chip label="Verified" size="small" sx={{ height: 20, fontSize: '10px', fontWeight: 900, bgcolor: '#eff6ff', color: '#1d4ed8' }} />
+                                        )}
                                     </Stack>
                                 </Box>
                                 <Box>
                                     <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase' }}>IFSC Code</Typography>
-                                    <Typography variant="subtitle1" sx={{ fontWeight: 800, color: '#1e293b' }}>IFBK0009122</Typography>
+                                    <Typography variant="subtitle1" sx={{ fontWeight: 800, color: '#1e293b' }}>{sellerProfile?.bankDetails?.ifsc || 'N/A'}</Typography>
                                 </Box>
                             </Box>
                         </Box>
@@ -286,11 +294,8 @@ const SellerProfile = () => {
                             <Button variant="contained" startIcon={<AddIcon />} sx={{ bgcolor: '#CFE8EC', color: '#1e293b', fontWeight: 800, textTransform: 'none', borderRadius: 2, boxShadow: 'none', '&:hover': { bgcolor: '#b8dbe2', boxShadow: 'none' } }}>ADD ADDRESS</Button>
                         </Stack>
                         <Stack spacing={2}>
-                            {[
-                                { name: 'Main Distribution Center', tag: 'PRIMARY', address: '402, Trade Tower, Sector 45, Bangalore, Karnataka - 560001' },
-                                { name: 'East Zone Hub', tag: '', address: 'Plot 12-B, Industrial Estate, Kolkata, West Bengal - 700091' }
-                            ].map((wh, i) => (
-                                <Paper key={i} elevation={0} sx={{ p: 3, borderRadius: 4, border: '1px solid #f1f5f9', bgcolor: 'white' }}>
+                            {sellerProfile?.profile?.address ? (
+                                <Paper elevation={0} sx={{ p: 3, borderRadius: 4, border: '1px solid #f1f5f9', bgcolor: 'white' }}>
                                     <Stack direction="row" justifyContent="space-between">
                                         <Stack direction="row" spacing={2}>
                                             <Box sx={{ p: 1, bgcolor: '#f1f5f9', borderRadius: 2, height: 'fit-content' }}>
@@ -298,19 +303,20 @@ const SellerProfile = () => {
                                             </Box>
                                             <Box>
                                                 <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 0.5 }}>
-                                                    <Typography variant="subtitle1" sx={{ fontWeight: 800 }}>{wh.name}</Typography>
-                                                    {wh.tag && <Chip label={wh.tag} size="small" sx={{ height: 18, fontSize: '9px', fontWeight: 900, bgcolor: '#eff6ff', color: '#1d4ed8' }} />}
+                                                    <Typography variant="subtitle1" sx={{ fontWeight: 800 }}>Main Registered Address</Typography>
+                                                    <Chip label="PRIMARY" size="small" sx={{ height: 18, fontSize: '9px', fontWeight: 900, bgcolor: '#eff6ff', color: '#1d4ed8' }} />
                                                 </Stack>
-                                                <Typography variant="body2" sx={{ color: '#64748b', fontWeight: 500 }}>{wh.address}</Typography>
+                                                <Typography variant="body2" sx={{ color: '#64748b', fontWeight: 500 }}>{sellerProfile.profile.address}</Typography>
                                             </Box>
                                         </Stack>
                                         <Stack direction="row" spacing={1}>
-                                            <IconButton size="small" sx={{ border: '1px solid #f1f5f9' }}><EditIcon sx={{ fontSize: 16 }} /></IconButton>
-                                            <IconButton size="small" sx={{ border: '1px solid #f1f5f9' }}><PayoutsIcon sx={{ fontSize: 16 }} /></IconButton>
+                                            <IconButton size="small" sx={{ border: '1px solid #f1f5f9' }} onClick={() => navigate('/seller/edit-profile')}><EditIcon sx={{ fontSize: 16 }} /></IconButton>
                                         </Stack>
                                     </Stack>
                                 </Paper>
-                            ))}
+                            ) : (
+                                <Typography variant="body2" sx={{ color: '#64748b' }}>No address added yet.</Typography>
+                            )}
                         </Stack>
                     </Paper>
                 </Stack>

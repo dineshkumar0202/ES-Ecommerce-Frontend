@@ -10,6 +10,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import LogoutIcon from '@mui/icons-material/Logout';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import ShoppingCartOutlinedIcon from '@mui/icons-material/ShoppingCartOutlined';
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import FavoriteBorderOutlinedIcon from '@mui/icons-material/FavoriteBorderOutlined';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import LocalMallOutlinedIcon from '@mui/icons-material/LocalMallOutlined';
@@ -251,6 +252,18 @@ const Profile = () => {
             toast.success("Removed from wishlist");
         } catch (error) {
             console.error("Error removing from wishlist:", error);
+            toast.error("Failed to remove");
+        }
+    };
+
+    const handleRemoveFromCart = async (productId: string) => {
+        try {
+            await CartService.removeFromCart(productId);
+            setCartItems(prev => prev.filter(item => (item.productId?._id || item.product?._id) !== productId));
+            toast.success("Removed from cart");
+            fetchData();
+        } catch (error) {
+            console.error("Error removing from cart:", error);
             toast.error("Failed to remove");
         }
     };
@@ -617,7 +630,16 @@ const Profile = () => {
                                                     <Typography variant="h6" sx={{ fontWeight: 800 }}>{item.productId?.title || item.product?.title}</Typography>
                                                     <Typography variant="body2" sx={{ color: '#64748b' }}>Quantity: {item.quantity}</Typography>
                                                 </Box>
-                                                <Typography variant="h5" sx={{ fontWeight: 900 }}>₹{item.productId?.price || item.product?.price}</Typography>
+                                                <Stack alignItems="flex-end" spacing={1}>
+                                                    <Typography variant="h5" sx={{ fontWeight: 900 }}>₹{item.productId?.price || item.product?.price}</Typography>
+                                                    <IconButton
+                                                        onClick={() => handleRemoveFromCart(item.productId?._id || item.product?._id || '')}
+                                                        size="small"
+                                                        sx={{ color: '#ef4444', bgcolor: '#fee2e2', borderRadius: 2, '&:hover': { bgcolor: '#fecaca' } }}
+                                                    >
+                                                        <DeleteOutlineIcon fontSize="small" />
+                                                    </IconButton>
+                                                </Stack>
                                             </Stack>
                                         </Paper>
                                     ))}

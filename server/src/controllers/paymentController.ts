@@ -1,8 +1,12 @@
 import { Request, Response } from 'express';
 import dotenv from 'dotenv';
-import Razorpay from 'razorpay';
+import Stripe from 'stripe';
 
 dotenv.config();
+
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || 'sk_test_placeholder', {
+    apiVersion: '2023-10-16',
+} as any);
 
 class PaymentController {
     /**
@@ -10,70 +14,40 @@ class PaymentController {
      * Returns public configuration for payment providers
      */
     async getPaymentConfig(req: Request, res: Response) {
-        const rzpKey = process.env.RAZORPAY_KEY_ID || '';
-
-        // Detection for mock mode (test/placeholder keys)
-        const isMock = !rzpKey || rzpKey === 'rzp_test_placeholder';
-
         res.status(200).json({
-            razorpayKey: rzpKey,
-            isMock
+            stripePublishableKey: process.env.STRIPE_PUBLISHABLE_KEY || ''
         });
     }
 
     /**
-     * POST /api/payments/create-razorpay-order
-     * Creates a new Razorpay order
+     * POST /api/payments/create-payment-intent
+     * Creates a new Stripe Payment Intent
      */
-    async createRazorpayOrder(req: Request, res: Response) {
+    async createPaymentIntent(req: Request, res: Response) {
         const { amount } = req.body;
-        const keyId = process.env.RAZORPAY_KEY_ID || '';
-        const keySecret = process.env.RAZORPAY_KEY_SECRET || '';
-
-        // Detection for mock mode
-        const isMock = !keyId || keyId === 'rzp_test_placeholder' || !keySecret || keySecret === 'rzp_secret_placeholder';
-
-        if (isMock) {
-            console.log('[Payment] Razorpay in MOCK mode (keys missing or placeholders)');
-            return res.status(200).json({
-                id: 'order_mock_' + Date.now(),
-                amount: Math.round(Number(amount) * 100),
-                currency: 'INR',
-                receipt: `receipt_${Date.now()}`,
-                isMock: true,
-            });
-        }
 
         try {
-            const razorpay = new Razorpay({
-                key_id: keyId,
-                key_secret: keySecret
+            const paymentIntent = await stripe.paymentIntents.create({
+                amount: Math.round(Number(amount) * 100), // Amount in paise/cents
+                currency: 'inr',
+                automatic_payment_methods: {
+                    enabled: true,
+                },
             });
 
-            const options = {
-                amount: Math.round(Number(amount) * 100), // Razorpay expects amount in paise
-                currency: 'INR',
-                receipt: `receipt_${Date.now()}`,
-            };
-
-            const order = await razorpay.orders.create(options);
             res.status(200).json({
-                ...order,
-                isMock: false
+                clientSecret: paymentIntent.client_secret,
             });
         } catch (error: any) {
-            console.error('[Payment] Razorpay Error:', error?.message || error);
-
-            // Fallback to mock so checkout doesn't break during development
-            return res.status(200).json({
-                id: 'order_mock_' + Date.now(),
-                amount: Math.round(Number(amount) * 100),
-                currency: 'INR',
-                receipt: `receipt_${Date.now()}`,
-                isMock: true,
+            console.error('[Payment] Stripe Error:', error.message);
+            res.status(400).json({
+                error: {
+                    message: error.message,
+                },
             });
         }
     }
 }
 
 export default new PaymentController();
+

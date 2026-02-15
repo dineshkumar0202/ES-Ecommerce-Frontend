@@ -337,29 +337,33 @@ const Navbar = () => {
                                     </Stack>
                                 )}
 
-                                <Stack
-                                    direction="row"
-                                    spacing={1}
-                                    alignItems="center"
-                                    sx={{ cursor: 'pointer', color: 'black' }}
-                                    onClick={() => navigate('/profile?view=wishlist')}
-                                >
-                                    <FavoriteBorderOutlinedIcon sx={{ fontSize: 24 }} />
-                                    <Typography sx={{ fontWeight: 600, fontSize: '0.9rem', ml: 1, display: { xs: 'none', lg: 'block' } }}>Wishlist</Typography>
-                                </Stack>
+                                {localStorage.getItem('userRole') !== 'Seller' && (
+                                    <>
+                                        <Stack
+                                            direction="row"
+                                            spacing={1}
+                                            alignItems="center"
+                                            sx={{ cursor: 'pointer', color: 'black' }}
+                                            onClick={() => navigate('/profile?view=wishlist')}
+                                        >
+                                            <FavoriteBorderOutlinedIcon sx={{ fontSize: 24 }} />
+                                            <Typography sx={{ fontWeight: 600, fontSize: '0.9rem', ml: 1, display: { xs: 'none', lg: 'block' } }}>Wishlist</Typography>
+                                        </Stack>
 
-                                <Stack
-                                    direction="row"
-                                    spacing={1}
-                                    alignItems="center"
-                                    sx={{ cursor: 'pointer', color: 'black', position: 'relative' }}
-                                    onClick={() => navigate('/profile?view=cart')}
-                                >
-                                    <Badge badgeContent={cartCount} sx={{ '& .MuiBadge-badge': { bgcolor: 'black', color: 'white', fontWeight: 800 } }}>
-                                        <ShoppingCartOutlinedIcon sx={{ fontSize: 24 }} />
-                                    </Badge>
-                                    <Typography sx={{ fontWeight: 600, fontSize: '0.9rem', ml: 1, display: { xs: 'none', lg: 'block' } }}>Cart</Typography>
-                                </Stack>
+                                        <Stack
+                                            direction="row"
+                                            spacing={1}
+                                            alignItems="center"
+                                            sx={{ cursor: 'pointer', color: 'black', position: 'relative' }}
+                                            onClick={() => navigate('/profile?view=cart')}
+                                        >
+                                            <Badge badgeContent={cartCount} sx={{ '& .MuiBadge-badge': { bgcolor: 'black', color: 'white', fontWeight: 800 } }}>
+                                                <ShoppingCartOutlinedIcon sx={{ fontSize: 24 }} />
+                                            </Badge>
+                                            <Typography sx={{ fontWeight: 600, fontSize: '0.9rem', ml: 1, display: { xs: 'none', lg: 'block' } }}>Cart</Typography>
+                                        </Stack>
+                                    </>
+                                )}
                             </Stack>
                         </Stack>
                     </Container>

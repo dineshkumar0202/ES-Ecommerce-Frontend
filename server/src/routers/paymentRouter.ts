@@ -5,6 +5,6 @@ import { protect } from '../middleware/authMiddleware';
 const router = express.Router();
 
 router.get('/config', protect, PaymentController.getPaymentConfig);
-router.post('/create-razorpay-order', protect, PaymentController.createRazorpayOrder);
+router.post('/create-payment-intent', protect, PaymentController.createPaymentIntent);
 
 export default router;
