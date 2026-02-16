@@ -24,16 +24,14 @@ api.interceptors.response.use(
     (response) => response,
     (error) => {
         if (error.response && error.response.status === 401) {
-            // Clear local storage and redirect to login if token is invalid
-            localStorage.removeItem('token');
-            localStorage.removeItem('userRole');
-            localStorage.removeItem('userName');
-            localStorage.removeItem('userId');
-
-            // Optional: Redirect to login page or reload to reset state
-            if (window.location.pathname !== '/login' && window.location.pathname !== '/register') {
-                // window.location.href = '/login'; 
-                // Better to just let the UI handle the missing token state refresh
+            // Only clear token on actual auth/token failures, not on permission errors
+            const msg = error.response.data?.message || '';
+            const isTokenFailure = msg.includes('token failed') || msg.includes('no token') || msg.includes('User not found');
+            if (isTokenFailure) {
+                localStorage.removeItem('token');
+                localStorage.removeItem('userRole');
+                localStorage.removeItem('userName');
+                localStorage.removeItem('userId');
             }
         }
         return Promise.reject(error);

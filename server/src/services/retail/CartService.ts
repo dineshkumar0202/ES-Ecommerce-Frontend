@@ -31,10 +31,35 @@ class CartService {
     }
 
     async getCart(userId: string) {
-        return await Cart.findOne({ user: userId }).populate({
+        let cart = await Cart.findOne({ user: userId }).populate({
             path: 'cartItems.product',
             select: 'name title price pricePerUnit image images thumbnail'
         });
+
+        if (!cart) return null;
+
+        const originalLength = cart.cartItems.length;
+
+        // Filter out items where product is null (referenced product was deleted)
+        // We need to cast to any because after populate, product is not just ObjectId
+        const validItems = cart.cartItems.filter(item => item.product != null);
+
+        if (validItems.length < originalLength) {
+            cart.cartItems = validItems as any;
+
+            // Recalculate total using the populated products we already have
+            let total = 0;
+            for (const item of cart.cartItems) {
+                const product = item.product as any;
+                const price = product.price || product.pricePerUnit || 0;
+                total += price * item.quantity;
+            }
+            cart.totalPrice = total;
+
+            await cart.save();
+        }
+
+        return cart;
     }
 
     async addToCart(userId: string, productId: string, quantity: number, productType: string = 'Retail') {

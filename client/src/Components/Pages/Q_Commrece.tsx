@@ -4,7 +4,7 @@ import Navbar from '../WrapperComponents/Navbar';
 import Footer from '../WrapperComponents/Footer';
 import QBanner from '../SpecifiedComponents/Q-Commerces/Q-Banner';
 import QCategory from '../SpecifiedComponents/Q-Commerces/Q-Category';
-import QProduct from '../SpecifiedComponents/Q-Commerces/Q-Procduct';
+import QProduct from '../SpecifiedComponents/Q-Commerces/Q-Product';
 import { QProductService } from '../../services/api';
 
 const QCommerce = () => {

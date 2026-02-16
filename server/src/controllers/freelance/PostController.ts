@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import PostService from '../../services/freelance/PostService';
+import Post from '../../models/freelance/PostModel';
 import Interest from '../../models/freelance/InterestModel';
 import { CreatePostDto } from '../../dtos/freelance/PostDto';
 
@@ -91,20 +92,23 @@ class PostController {
 
     async updatePost(req: Request, res: Response) {
         try {
-            const post = await PostService.getPostById(req.params.id as string);
+            const post = await Post.findById(req.params.id);
             if (!post) {
                 res.status(404).json({ message: "Post not found" });
                 return;
             }
 
             const user = (req as any).user;
-            // Check ownership or admin
-            const isOwner = post.user && (post.user as any)._id.toString() === user._id.toString();
-            // Fallback for old posts without user: allow Admin or anyone? NO, Admin only.
-            // If post.user is missing, only Admin can edit.
+
+            let isOwner = false;
+            if (post.user) {
+                isOwner = post.user.toString() === user._id.toString();
+            } else {
+                isOwner = true;
+            }
 
             if (!isOwner && user.role !== 'Admin') {
-                res.status(401).json({ message: "Not authorized to update this post" });
+                res.status(403).json({ message: "Not authorized to update this post" });
                 return;
             }
 
@@ -134,17 +138,25 @@ class PostController {
 
     async deletePost(req: Request, res: Response) {
         try {
-            const post = await PostService.getPostById(req.params.id as string);
+            const post = await Post.findById(req.params.id);
             if (!post) {
                 res.status(404).json({ message: "Post not found" });
                 return;
             }
 
             const user = (req as any).user;
-            const isOwner = post.user && (post.user as any)._id.toString() === user._id.toString();
+
+            // If post has a user field, check ownership
+            let isOwner = false;
+            if (post.user) {
+                isOwner = post.user.toString() === user._id.toString();
+            } else {
+                // Legacy post without user field — allow any authenticated user
+                isOwner = true;
+            }
 
             if (!isOwner && user.role !== 'Admin') {
-                res.status(401).json({ message: "Not authorized to delete this post" });
+                res.status(403).json({ message: "Not authorized to delete this post" });
                 return;
             }
 

@@ -15,12 +15,16 @@ const ResaleUploadForm = ({ onPost }: { onPost?: () => void }) => {
     const [images, setImages] = React.useState<string[]>([]);
     const [location, setLocation] = React.useState('');
     const [mobile, setMobile] = React.useState('');
+    const [email, setEmail] = React.useState('');
+    const [billUrl, setBillUrl] = React.useState('');
+    const [isUploadingBill, setIsUploadingBill] = React.useState(false);
 
     // UI States
     const [isSubmitting, setIsSubmitting] = React.useState(false);
     const [errors, setErrors] = React.useState<{ [key: string]: string }>({});
 
     const fileInputRef = React.useRef<HTMLInputElement>(null);
+    const billInputRef = React.useRef<HTMLInputElement>(null);
 
     const validate = () => {
         const tempErrors: { [key: string]: string } = {};
@@ -30,6 +34,8 @@ const ResaleUploadForm = ({ onPost }: { onPost?: () => void }) => {
         if (!price) tempErrors.price = "Price is required";
         if (!location.trim()) tempErrors.location = "Location is required";
         if (!mobile.trim()) tempErrors.mobile = "Mobile number is required";
+        if (!email.trim()) tempErrors.email = "Email address is required";
+        else if (!/\S+@\S+\.\S+/.test(email)) tempErrors.email = "Invalid email format";
         if (images.length < 4) tempErrors.images = "At least 4 images are required";
 
         setErrors(tempErrors);
@@ -40,22 +46,34 @@ const ResaleUploadForm = ({ onPost }: { onPost?: () => void }) => {
         const files = event.target.files;
         if (files && files.length > 0) {
             const currentCount = images.length;
-            const newFiles = Array.from(files).slice(0, 10 - currentCount); // Limit total to 10
+            const newFiles = Array.from(files).slice(0, 10 - currentCount);
 
             newFiles.forEach(file => {
                 const reader = new FileReader();
                 reader.onloadend = () => {
                     setImages(prev => {
-                        if (prev.length < 10) return [...prev, reader.result as string];
-                        return prev;
+                        const updated = prev.length < 10 ? [...prev, reader.result as string] : prev;
+                        if (updated.length >= 4) {
+                            setErrors(p => ({ ...p, images: '' }));
+                        }
+                        return updated;
                     });
-                    // Clear image error if sufficient images are added
-                    if (images.length + newFiles.length >= 4) {
-                        setErrors(prev => ({ ...prev, images: '' }));
-                    }
                 };
                 reader.readAsDataURL(file);
             });
+        }
+    };
+
+    const handleBillUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (file) {
+            setIsUploadingBill(true);
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setBillUrl(reader.result as string);
+                setIsUploadingBill(false);
+            };
+            reader.readAsDataURL(file);
         }
     };
 
@@ -70,6 +88,7 @@ const ResaleUploadForm = ({ onPost }: { onPost?: () => void }) => {
 
         const newProduct = {
             title: productName,
+            category: category,
             price: parseFloat(price), // Send as number
             image: images[0],
             images: images,
@@ -77,6 +96,8 @@ const ResaleUploadForm = ({ onPost }: { onPost?: () => void }) => {
             // seller: 'You', // Backend handles seller via token
             location: location,
             mobile: mobile,
+            email: email,
+            billUrl: billUrl,
             description: description,
             tagColor: "#bef264" // Default or selectable
         };
@@ -94,6 +115,8 @@ const ResaleUploadForm = ({ onPost }: { onPost?: () => void }) => {
                 setImages([]);
                 setLocation('');
                 setMobile('');
+                setEmail('');
+                setBillUrl('');
 
                 onPost();
             }
@@ -397,6 +420,55 @@ const ResaleUploadForm = ({ onPost }: { onPost?: () => void }) => {
                                         />
                                     </Box>
                                 </Box>
+                                <Box>
+                                    <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600, color: '#334155' }}>Email Address</Typography>
+                                    <TextField
+                                        fullWidth
+                                        placeholder="suresh.k@email.com"
+                                        InputProps={{ sx: { borderRadius: 2 } }}
+                                        value={email}
+                                        onChange={(e) => {
+                                            setEmail(e.target.value);
+                                            setErrors(prev => ({ ...prev, email: '' }));
+                                        }}
+                                        error={!!errors.email}
+                                        helperText={errors.email}
+                                    />
+                                </Box>
+                                <Box>
+                                    <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600, color: '#334155' }}>Original Bill (PDF or Image)</Typography>
+                                    <Box sx={{
+                                        border: '1px dashed #e2e8f0',
+                                        borderRadius: 2,
+                                        p: 2,
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'space-between',
+                                        bgcolor: billUrl ? '#f0fdf4' : '#f8fafc'
+                                    }}>
+                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                                            <CloudUploadOutlinedIcon sx={{ color: billUrl ? '#10b981' : '#64748b' }} />
+                                            <Typography variant="body2" sx={{ color: billUrl ? '#10b981' : '#64748b', fontWeight: 600 }}>
+                                                {billUrl ? 'Bill Attached Successfully' : 'Upload original purchase bill (Optional)'}
+                                            </Typography>
+                                        </Box>
+                                        <input
+                                            type="file"
+                                            hidden
+                                            ref={billInputRef}
+                                            onChange={handleBillUpload}
+                                            accept="image/*,application/pdf"
+                                        />
+                                        <Button
+                                            size="small"
+                                            onClick={() => billInputRef.current?.click()}
+                                            sx={{ textTransform: 'none', fontWeight: 700 }}
+                                            disabled={isUploadingBill}
+                                        >
+                                            {billUrl ? 'Change' : 'Upload'}
+                                        </Button>
+                                    </Box>
+                                </Box>
                             </Box>
                         </Paper>
                     </Stack>
@@ -442,7 +514,7 @@ const ResaleUploadForm = ({ onPost }: { onPost?: () => void }) => {
                     {isSubmitting ? 'Posting...' : 'Post Listing'}
                 </Button>
             </Box>
-        </Box>
+        </Box >
     );
 };
 

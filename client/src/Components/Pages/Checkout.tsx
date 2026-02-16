@@ -21,6 +21,7 @@ const Checkout = () => {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [cart, setCart] = useState<any>(null);
     const [paymentMethod, setPaymentMethod] = useState(location.state?.preferredPaymentMethod || 'COD');
+    const channel = location.state?.channel || 'retail';
     const [stripePromise, setStripePromise] = useState<any>(null);
     const [clientSecret, setClientSecret] = useState("");
 
@@ -132,7 +133,7 @@ const Checkout = () => {
 
             const { data } = await OrderService.create(orderData);
             toast.success('Order placed successfully!');
-            navigate(`/payment-success?orderId=${data._id}`);
+            navigate(`/payment-success?orderId=${data._id}&channel=${channel}`);
         } catch (error) {
             console.error("Error placing order:", error);
             toast.error('Failed to place order.');
