@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Box,
     Container,
@@ -20,7 +20,8 @@ import {
     TableCell,
     TableContainer,
     TableHead,
-    TableRow
+    TableRow,
+    TextField
 } from '@mui/material';
 import {
     Business as BusinessIcon,
@@ -37,7 +38,14 @@ import {
     Launch as LaunchIcon,
     Download as DownloadIcon,
     WorkOutline as WorkIcon,
-    Warehouse as WarehouseIcon
+    Warehouse as WarehouseIcon,
+    Delete as DeleteIcon,
+    Search as SearchIcon,
+    FilterList as FilterIcon,
+    FileUpload as ExportIcon,
+    MoreVert as MoreVertIcon,
+    TrendingUp as TrendingUpIcon,
+    BarChart as BarChartIcon
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { AuthService, FreelanceService, WholesaleService } from '../../services/api';
@@ -48,6 +56,7 @@ const SellerProfile = () => {
     const [myInterests, setMyInterests] = useState<any[]>([]);
     const [wholesaleProducts, setWholesaleProducts] = useState<any[]>([]);
     const [sellerProfile, setSellerProfile] = useState<any>(null);
+    const [searchQuery, setSearchQuery] = useState('');
 
     const name = sellerProfile?.username || sellerProfile?.profile?.name || 'Seller Name';
     const avatar = sellerProfile?.profile?.avatar || '';
@@ -80,6 +89,17 @@ const SellerProfile = () => {
 
         } catch (error) {
             console.error("Error loading seller profile:", error);
+        }
+    };
+
+    const handleDeleteWholesale = async (id: string) => {
+        if (!window.confirm("Are you sure you want to delete this listing?")) return;
+        try {
+            await WholesaleService.delete(id);
+            setWholesaleProducts(prev => prev.filter(p => p._id !== id));
+        } catch (error) {
+            console.error("Failed to delete wholesale product:", error);
+            alert("Failed to delete product.");
         }
     };
 
@@ -390,77 +410,180 @@ const SellerProfile = () => {
         </Box>
     );
 
-    const renderWholesale = () => (
-        <Box>
-            <Typography variant="h5" sx={{ fontWeight: 900, mb: 3 }}>Wholesale Details</Typography>
+    const renderWholesale = () => {
 
-            <Paper elevation={0} sx={{ p: 4, borderRadius: 6, border: '1px solid #f1f5f9', bgcolor: 'white', mb: 4 }}>
-                <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 3 }}>
-                    <Box sx={{ p: 1.5, bgcolor: '#e0f2fe', borderRadius: 2, color: '#0284c7' }}>
-                        <WarehouseIcon />
-                    </Box>
-                    <Box>
-                        <Typography variant="h4" sx={{ fontWeight: 900, color: '#0f172a' }}>{wholesaleProducts.length}</Typography>
-                        <Typography variant="caption" sx={{ fontWeight: 700, color: '#64748b' }}>ACTIVE WHOLESALE LISTINGS</Typography>
-                    </Box>
+
+        const filteredProducts = wholesaleProducts.filter(p =>
+            p.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            p.sku?.toLowerCase().includes(searchQuery.toLowerCase())
+        );
+
+        return (
+            <Box>
+                {/* Overview Section */}
+                <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: '2fr 1fr' }, gap: 3, mb: 4 }}>
+                    {/* Wholesale Overview Card */}
+                    <Paper elevation={0} sx={{ p: 3.5, borderRadius: 6, border: '1px solid #f1f5f9', display: 'flex', justifyContent: 'space-between' }}>
+                        <Box>
+                            <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 800, letterSpacing: 1 }}>WHOLESALE OVERVIEW</Typography>
+                            <Stack direction="row" alignItems="baseline" spacing={1.5} sx={{ mt: 1, mb: 2 }}>
+                                <Typography variant="h3" sx={{ fontWeight: 900, color: '#0f172a' }}>{wholesaleProducts.length}</Typography>
+                                <Typography variant="h6" sx={{ color: '#adc9d1', fontWeight: 700 }}>Active Listings</Typography>
+                            </Stack>
+
+                            <Stack direction="row" spacing={4}>
+                                <Box>
+                                    <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 700 }}>Total Stock Value</Typography>
+                                    <Typography variant="subtitle1" sx={{ fontWeight: 800, color: '#0f172a' }}>₹{wholesaleProducts.reduce((sum, p) => sum + (p.pricePerUnit || 0) * (p.packSize || 1), 0).toLocaleString()}</Typography>
+                                </Box>
+                                <Box>
+                                    <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 700 }}>Growth (Monthly)</Typography>
+                                    <Stack direction="row" alignItems="center" spacing={0.5}>
+                                        <TrendingUpIcon sx={{ fontSize: 16, color: '#22c55e' }} />
+                                        <Typography variant="subtitle1" sx={{ fontWeight: 800, color: '#22c55e' }}>+12.5%</Typography>
+                                    </Stack>
+                                </Box>
+                            </Stack>
+                        </Box>
+                        <Box sx={{ display: 'flex', alignItems: 'flex-end', opacity: 0.1 }}>
+                            <BarChartIcon sx={{ fontSize: 120, color: '#adc9d1' }} />
+                        </Box>
+                    </Paper>
+
+                    {/* Pending Approvals Card */}
+                    <Paper elevation={0} sx={{ p: 3.5, borderRadius: 6, bgcolor: '#0f172a', color: 'white', display: 'flex', flexDirection: 'column' }}>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
+                            <Box sx={{ p: 1, bgcolor: 'rgba(255,255,255,0.1)', borderRadius: 2 }}>
+                                <NotificationsIcon sx={{ fontSize: 24, color: '#adc9d1' }} />
+                            </Box>
+                        </Box>
+                        <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.5)', fontWeight: 800, letterSpacing: 1 }}>PENDING APPROVALS</Typography>
+                        <Typography variant="h3" sx={{ fontWeight: 900, mt: 0.5, mb: 'auto' }}>
+                            {wholesaleProducts.filter(p => !p.isApproved).length || 0} Items
+                        </Typography>
+                        <Button
+                            endIcon={<LaunchIcon sx={{ fontSize: 16 }} />}
+                            sx={{ color: '#adc9d1', textTransform: 'none', fontWeight: 800, justifyContent: 'flex-start', p: 0, '&:hover': { bgcolor: 'transparent', color: 'white' } }}
+                        >
+                            View Details
+                        </Button>
+                    </Paper>
+                </Box>
+
+                {/* Filters and Actions Bar */}
+                <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ mb: 4 }} alignItems="center" justifyContent="space-between">
+                    <TextField
+                        placeholder="Search wholesale items..."
+                        size="small"
+                        value={searchQuery}
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchQuery(e.target.value)}
+                        InputProps={{
+                            startAdornment: <SearchIcon sx={{ color: '#94a3b8', mr: 1 }} />,
+                            sx: { borderRadius: 3, bgcolor: 'white', minWidth: { sm: 320 } }
+                        }}
+                    />
+                    <Stack direction="row" spacing={1.5}>
+                        <Button startIcon={<FilterIcon />} variant="outlined" sx={{ borderRadius: 3, textTransform: 'none', fontWeight: 700, borderColor: '#e2e8f0', color: '#64748b' }}>Filters</Button>
+                        <Button startIcon={<ExportIcon />} variant="outlined" sx={{ borderRadius: 3, textTransform: 'none', fontWeight: 700, borderColor: '#e2e8f0', color: '#64748b' }}>Export</Button>
+                        <Button
+                            startIcon={<AddIcon />}
+                            variant="contained"
+                            onClick={() => navigate('/wholesale', { state: { view: 'upload' } })}
+                            sx={{ borderRadius: 3, textTransform: 'none', fontWeight: 900, bgcolor: '#0f172a', '&:hover': { bgcolor: '#1e293b' } }}
+                        >
+                            Post New
+                        </Button>
+                    </Stack>
                 </Stack>
 
-                {wholesaleProducts.length > 0 ? (
-                    <TableContainer>
-                        <Table>
-                            <TableHead sx={{ bgcolor: '#f8fafc' }}>
-                                <TableRow>
-                                    <TableCell sx={{ fontWeight: 800, color: '#64748b' }}>PRODUCT</TableCell>
-                                    <TableCell sx={{ fontWeight: 800, color: '#64748b' }}>CATEGORY</TableCell>
-                                    <TableCell sx={{ fontWeight: 800, color: '#64748b' }}>PRICE / UNIT</TableCell>
-                                    <TableCell sx={{ fontWeight: 800, color: '#64748b' }}>MIN ORDER</TableCell>
-                                    <TableCell sx={{ fontWeight: 800, color: '#64748b' }}>STOCK</TableCell>
-                                </TableRow>
-                            </TableHead>
-                            <TableBody>
-                                {wholesaleProducts.map((product: any) => (
-                                    <TableRow key={product._id} hover>
-                                        <TableCell>
-                                            <Stack direction="row" spacing={2} alignItems="center">
-                                                <Avatar variant="rounded" src={product.images?.[0]} sx={{ width: 48, height: 48 }} />
-                                                <Box>
-                                                    <Typography variant="subtitle2" sx={{ fontWeight: 800, color: '#0f172a' }}>{product.title}</Typography>
-                                                    <Typography variant="caption" sx={{ color: '#94a3b8' }}>SKU: {product.sku || 'N/A'}</Typography>
-                                                </Box>
-                                            </Stack>
-                                        </TableCell>
-                                        <TableCell sx={{ fontWeight: 600, color: '#475569' }}>{product.category}</TableCell>
-                                        <TableCell sx={{ fontWeight: 800, color: '#0f172a' }}>₹{product.pricePerUnit}</TableCell>
-                                        <TableCell sx={{ fontWeight: 600, color: '#475569' }}>{product.minOrderQuantity} units</TableCell>
-                                        <TableCell>
-                                            <Chip
-                                                label={product.stock > 0 ? 'In Stock' : 'Out of Stock'}
-                                                size="small"
-                                                color={product.stock > 0 ? 'success' : 'error'}
-                                                sx={{ fontWeight: 800, height: 24 }}
-                                            />
-                                        </TableCell>
-                                    </TableRow>
-                                ))}
-                            </TableBody>
-                        </Table>
-                    </TableContainer>
-                ) : (
-                    <Box sx={{ textAlign: 'center', py: 4 }}>
-                        <Typography variant="body1" sx={{ color: '#94a3b8', fontWeight: 600 }}>No active wholesale listings found.</Typography>
-                        <Button
-                            variant="text"
-                            startIcon={<AddIcon />}
-                            sx={{ mt: 1, fontWeight: 800, textTransform: 'none' }}
-                            onClick={() => navigate('/wholesale')}
+                {/* Products Grid/List */}
+                <Stack spacing={2.5}>
+                    {filteredProducts.map((product) => (
+                        <Paper
+                            key={product._id}
+                            elevation={0}
+                            sx={{
+                                p: 2,
+                                borderRadius: 5,
+                                border: '1px solid #f1f5f9',
+                                bgcolor: 'white',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: 3,
+                                transition: 'all 0.2s',
+                                '&:hover': { border: '1px solid #adc9d1', boxShadow: '0 4px 20px rgba(0,0,0,0.03)' }
+                            }}
                         >
-                            Go to Wholesale Management
-                        </Button>
-                    </Box>
-                )}
-            </Paper>
-        </Box>
-    );
+                            {/* Product Image */}
+                            <Box
+                                component="img"
+                                src={product.images?.[0] || 'https://images.unsplash.com/photo-1581094751197-2732481323b0?auto=format&fit=crop&q=80&w=200'}
+                                sx={{ width: 100, height: 100, borderRadius: 4, objectFit: 'cover', bgcolor: '#f8fafc' }}
+                            />
+
+                            {/* Info Section */}
+                            <Box sx={{ flexGrow: 1 }}>
+                                <Stack direction="row" alignItems="center" spacing={1.5}>
+                                    <Typography variant="h6" sx={{ fontWeight: 900, color: '#0f172a' }}>{product.title}</Typography>
+                                    <Chip
+                                        label={product.category?.toUpperCase() || 'UNCLASSIFIED'}
+                                        size="small"
+                                        sx={{ height: 20, fontSize: '0.65rem', fontWeight: 800, bgcolor: '#f1f5f9', color: '#64748b', letterSpacing: 0.5 }}
+                                    />
+                                </Stack>
+                                <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 700, display: 'block', mt: 0.5 }}>SKU: {product.sku || 'N/A'}</Typography>
+                            </Box>
+
+                            {/* Stats in Middle */}
+                            <Box sx={{ textAlign: 'center', minWidth: 100, p: 1.5, borderRadius: 3, bgcolor: '#f8fafc' }}>
+                                <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 800, fontSize: '0.6rem', letterSpacing: 1, display: 'block', mb: 0.5 }}>MIN ORDER</Typography>
+                                <Typography variant="subtitle2" sx={{ fontWeight: 900, color: '#0f172a' }}>{product.packSize} Units</Typography>
+                            </Box>
+
+                            <Box sx={{ textAlign: 'center', minWidth: 120, p: 1.5, borderRadius: 3, bgcolor: (product.stock > 0 || product.inStock) ? '#f0fdf4' : '#fef2f2' }}>
+                                <Typography variant="caption" sx={{ color: (product.stock > 0 || product.inStock) ? '#16a34a' : '#ef4444', fontWeight: 800, fontSize: '0.6rem', letterSpacing: 1, display: 'block', mb: 0.5 }}>STOCK STATUS</Typography>
+                                <Stack direction="row" spacing={0.5} alignItems="center" justifyContent="center">
+                                    <Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: (product.stock > 0 || product.inStock) ? '#16a34a' : '#ef4444' }} />
+                                    <Typography variant="subtitle2" sx={{ fontWeight: 900, color: (product.stock > 0 || product.inStock) ? '#16a34a' : '#ef4444' }}>
+                                        {(product.stock > 0 || product.inStock) ? 'In Stock' : 'Out of Stock'}
+                                    </Typography>
+                                </Stack>
+                            </Box>
+
+                            {/* Actions Right */}
+                            <Stack direction="row" spacing={1}>
+                                <IconButton
+                                    size="small"
+                                    sx={{ bgcolor: '#f8fafc', '&:hover': { bgcolor: '#f1f5f9' } }}
+                                    onClick={() => navigate('/wholesale', { state: { view: 'upload', editProduct: product } })}
+                                >
+                                    <EditIcon sx={{ fontSize: 18 }} />
+                                </IconButton>
+                                <IconButton
+                                    size="small"
+                                    sx={{ bgcolor: '#f8fafc', '&:hover': { bgcolor: '#fee2e2', color: '#ef4444' } }}
+                                    onClick={() => handleDeleteWholesale(product._id)}
+                                >
+                                    <DeleteIcon sx={{ fontSize: 18 }} />
+                                </IconButton>
+                                <IconButton size="small" sx={{ bgcolor: '#f8fafc' }}>
+                                    <MoreVertIcon sx={{ fontSize: 18 }} />
+                                </IconButton>
+                            </Stack>
+                        </Paper>
+                    ))}
+
+                    {filteredProducts.length === 0 && (
+                        <Box sx={{ textAlign: 'center', py: 10, bgcolor: 'white', borderRadius: 6, border: '2px dashed #e2e8f0' }}>
+                            <WarehouseIcon sx={{ fontSize: 48, color: '#e2e8f0', mb: 2 }} />
+                            <Typography variant="h6" sx={{ color: '#94a3b8', fontWeight: 800 }}>No products found</Typography>
+                            <Typography variant="body2" sx={{ color: '#cbd5e1', mt: 1 }}>Try adjusting your search or add a new listing.</Typography>
+                        </Box>
+                    )}
+                </Stack>
+            </Box>
+        );
+    };
 
     const renderFreelance = () => {
         const freelancer = sellerProfile?.freelancer;

@@ -40,10 +40,12 @@ const Wholesale = () => {
     };
 
     useEffect(() => {
-        if (location.state && (location.state as any).view) {
-            setView((location.state as any).view);
+        if (location.state) {
+            if (location.state.view) setView(location.state.view);
         }
     }, [location]);
+
+    const editProduct = location.state?.editProduct;
 
     const handleCloseSnackbar = () => {
         setSnackbarOpen(false);
@@ -88,7 +90,7 @@ const Wholesale = () => {
                             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
                                 <Button onClick={handleCancelUpload} startIcon={<CloseIcon />} sx={{ color: '#64748b' }}>Back to Feed</Button>
                             </Box>
-                            <WholesaleUploadForm onPost={handleProductPosted} />
+                            <WholesaleUploadForm onPost={handleProductPosted} editProduct={editProduct} />
                         </Box>
                     ) : (
                         // Requests Feed View

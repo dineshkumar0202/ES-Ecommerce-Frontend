@@ -319,6 +319,13 @@ const FreelanceManagement = () => {
                                                     <Stack spacing={1} sx={{ p: 1.5, bgcolor: '#f8fafc', borderRadius: 2 }}>
                                                         <Typography variant="caption" sx={{ color: '#64748b' }}><strong>PAN:</strong> {user.freelancer?.panNumber || 'N/A'}</Typography>
                                                         <Typography variant="caption" sx={{ color: '#64748b' }}><strong>ID:</strong> {user.freelancer?.freelancerId || 'N/A'}</Typography>
+                                                        {user.freelancer?.question && (
+                                                            <Typography variant="caption" sx={{ color: '#64748b' }}><strong>Question:</strong> {user.freelancer.question}</Typography>
+                                                        )}
+                                                        <Stack direction="row" spacing={2}>
+                                                            <Typography variant="caption" sx={{ color: '#64748b' }}><strong>Type:</strong> {user.freelancer?.categoryType || 'N/A'}</Typography>
+                                                            <Typography variant="caption" sx={{ color: '#64748b' }}><strong>Timeline:</strong> {user.freelancer?.timeline || 'N/A'}</Typography>
+                                                        </Stack>
                                                     </Stack>
                                                 </Box>
 
@@ -343,13 +350,47 @@ const FreelanceManagement = () => {
                                                     </Stack>
                                                 </Box>
 
+                                                {user.freelancer?.taskDescription && (
+                                                    <Box sx={{ mb: 2 }}>
+                                                        <Typography variant="body2" sx={{ fontWeight: 600, mb: 1 }}>Task Details:</Typography>
+                                                        <Typography variant="caption" sx={{ color: '#475569', bgcolor: '#f1f5f9', p: 1.5, borderRadius: 2, display: 'block' }}>
+                                                            {user.freelancer.taskDescription}
+                                                        </Typography>
+                                                    </Box>
+                                                )}
+
+                                                {user.freelancer?.extraImages && user.freelancer.extraImages.length > 0 && (
+                                                    <Box sx={{ mb: 2 }}>
+                                                        <Typography variant="body2" sx={{ fontWeight: 600, mb: 1 }}>Extra Images:</Typography>
+                                                        <Stack direction="row" spacing={1} sx={{ overflowX: 'auto', pb: 1 }}>
+                                                            {user.freelancer.extraImages.map((img: string, idx: number) => (
+                                                                <Box
+                                                                    key={idx}
+                                                                    component="img"
+                                                                    src={img}
+                                                                    onClick={() => window.open(img, '_blank')}
+                                                                    sx={{
+                                                                        width: 60,
+                                                                        height: 60,
+                                                                        objectFit: 'cover',
+                                                                        borderRadius: 2,
+                                                                        cursor: 'pointer',
+                                                                        border: '1px solid #e2e8f0',
+                                                                        '&:hover': { opacity: 0.8 }
+                                                                    }}
+                                                                />
+                                                            ))}
+                                                        </Stack>
+                                                    </Box>
+                                                )}
+
                                                 {user.freelancer?.answers && user.freelancer.answers.length > 0 && (
                                                     <Box sx={{ mb: 3 }}>
-                                                        <Typography variant="body2" sx={{ fontWeight: 600, mb: 1 }}>Skill Assessment:</Typography>
+                                                        <Typography variant="body2" sx={{ fontWeight: 600, mb: 1 }}>Skill Assessment (5 Questions):</Typography>
                                                         <Stack spacing={1} sx={{ p: 1.5, bgcolor: '#f1f5f9', borderRadius: 2 }}>
                                                             {user.freelancer.answers.map((answer: string, idx: number) => (
                                                                 <Typography key={idx} variant="caption" sx={{ color: '#475569', display: 'block' }}>
-                                                                    <strong>Q{idx + 1}:</strong> {answer}
+                                                                    <strong>Q{idx + 1}:</strong> {answer || 'No answer provided'}
                                                                 </Typography>
                                                             ))}
                                                         </Stack>

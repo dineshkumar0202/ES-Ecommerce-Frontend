@@ -38,8 +38,13 @@ export interface ISeller extends Document {
         portfolio?: string;
         taskLink?: string;
         taskFile?: string;
+        taskDescription?: string;
         answers?: string[];
         rejectionReason?: string;
+        timeline?: string;
+        categoryType?: string;
+        question?: string;
+        extraImages?: string[];
     };
     createdAt: Date;
     matchPassword(enteredPassword: string): Promise<boolean>;
@@ -110,8 +115,13 @@ const sellerSchema: Schema = new mongoose.Schema({
         portfolio: String,
         taskLink: String,
         taskFile: String,
+        taskDescription: String,
         answers: [String],
-        rejectionReason: String
+        rejectionReason: String,
+        timeline: String,
+        categoryType: String,
+        question: String,
+        extraImages: [String]
     },
     createdAt: {
         type: Date,

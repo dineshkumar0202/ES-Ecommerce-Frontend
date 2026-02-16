@@ -8,20 +8,20 @@ import CalendarTodayOutlinedIcon from '@mui/icons-material/CalendarTodayOutlined
 
 import { WholesaleService } from '../../../../services/api';
 
-const WholesaleUploadForm = ({ onPost }: { onPost?: () => void }) => {
+const WholesaleUploadForm = ({ onPost, editProduct }: { onPost?: () => void, editProduct?: any }) => {
     // const navigate = useNavigate();
 
-    const [productName, setProductName] = React.useState('');
-    const [category, setCategory] = React.useState('');
-    const [startDate, setStartDate] = React.useState('');
-    const [endDate, setEndDate] = React.useState('');
-    const [description, setDescription] = React.useState('');
-    const [quantity, setQuantity] = React.useState('');
-    const [companyName, setCompanyName] = React.useState('');
-    const [location, setLocation] = React.useState('');
-    const [phoneNumber, setPhoneNumber] = React.useState('');
-    const [email, setEmail] = React.useState('');
-    const [images, setImages] = React.useState<string[]>([]);
+    const [productName, setProductName] = React.useState(editProduct?.title || '');
+    const [category, setCategory] = React.useState(editProduct?.category || '');
+    const [startDate, setStartDate] = React.useState(editProduct?.startDate ? new Date(editProduct.startDate).toISOString().split('T')[0] : '');
+    const [endDate, setEndDate] = React.useState(editProduct?.endDate ? new Date(editProduct.endDate).toISOString().split('T')[0] : '');
+    const [description, setDescription] = React.useState(editProduct?.description || '');
+    const [quantity, setQuantity] = React.useState(editProduct?.packSize?.toString() || '');
+    const [companyName, setCompanyName] = React.useState(editProduct?.companyName || '');
+    const [location, setLocation] = React.useState(editProduct?.location || '');
+    const [phoneNumber, setPhoneNumber] = React.useState(editProduct?.phoneNumber || '');
+    const [email, setEmail] = React.useState(editProduct?.email || '');
+    const [images, setImages] = React.useState<string[]>(editProduct?.images || []);
     const [activeImageIndex, setActiveImageIndex] = React.useState(0);
 
     const fileInputRef = React.useRef<HTMLInputElement>(null);
@@ -67,13 +67,17 @@ const WholesaleUploadForm = ({ onPost }: { onPost?: () => void }) => {
         };
 
         try {
-            await WholesaleService.create(newProduct);
+            if (editProduct) {
+                await WholesaleService.update(editProduct._id, newProduct);
+            } else {
+                await WholesaleService.create(newProduct);
+            }
             if (onPost) {
                 onPost();
             }
         } catch (error) {
-            console.error("Failed to post wholesale product:", error);
-            alert("Failed to post product. Please try again.");
+            console.error("Failed to post/update wholesale product:", error);
+            alert("Failed to save product. Please try again.");
         } finally {
             setIsSubmitting(false);
         }
@@ -84,10 +88,10 @@ const WholesaleUploadForm = ({ onPost }: { onPost?: () => void }) => {
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
                 <Box>
                     <Typography variant="h5" sx={{ fontWeight: 800, color: '#0f172a' }}>
-                        Add New Wholesale Product
+                        {editProduct ? 'Edit Wholesale Product' : 'Add New Wholesale Product'}
                     </Typography>
                     <Typography variant="body2" sx={{ color: '#64748b', mt: 0.5 }}>
-                        Populate the fields below to create a new bulk-ready listing.
+                        {editProduct ? 'Update your listing details below.' : 'Populate the fields below to create a new bulk-ready listing.'}
                     </Typography>
                 </Box>
             </Box>
@@ -418,7 +422,7 @@ const WholesaleUploadForm = ({ onPost }: { onPost?: () => void }) => {
                         '&:hover': { bgcolor: '#1d4ed8' }
                     }}
                 >
-                    {isSubmitting ? 'Posting...' : 'Post'}
+                    {isSubmitting ? (editProduct ? 'Updating...' : 'Posting...') : (editProduct ? 'Update listing' : 'Post')}
                 </Button>
             </Box>
 

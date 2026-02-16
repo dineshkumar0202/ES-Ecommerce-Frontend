@@ -11,25 +11,29 @@ import { useNavigate } from 'react-router-dom';
 
 interface FreelancerSidebarBuyerProps {
     onPost: (newPost: any) => void;
+    initialData?: any;
+    autoOpenDialog?: boolean;
 }
 
-const FreelancerSidebarBuyer = ({ onPost }: FreelancerSidebarBuyerProps) => {
+const FreelancerSidebarBuyer = ({ onPost, initialData, autoOpenDialog }: FreelancerSidebarBuyerProps) => {
     const navigate = useNavigate();
-    const [prompt, setPrompt] = useState('');
+
+    // State
+    const [prompt, setPrompt] = useState(initialData?.prompt || '');
     const [isGenerating, setIsGenerating] = useState(false);
-    const [generatedImage, setGeneratedImage] = useState<string | null>(null);
-    const [openPostDialog, setOpenPostDialog] = useState(false);
+    const [generatedImage, setGeneratedImage] = useState<string | null>(initialData?.image || null);
+    const [openPostDialog, setOpenPostDialog] = useState(autoOpenDialog || false);
 
     // Form State
     const [formData, setFormData] = useState({
-        name: '',
-        productName: '',
-        contact: '',
-        email: '',
-        requirements: '',
-        description: '',
-        location: '',
-        price: '',
+        name: initialData?.formData?.name || '',
+        productName: initialData?.formData?.productName || initialData?.prompt?.substring(0, 30) || '',
+        contact: initialData?.formData?.contact || '',
+        email: initialData?.formData?.email || '',
+        requirements: initialData?.formData?.requirements || '',
+        description: initialData?.formData?.description || '',
+        location: initialData?.formData?.location || '',
+        price: initialData?.formData?.price || '',
     });
 
     const handleGenerate = async () => {
